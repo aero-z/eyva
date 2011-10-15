@@ -1,4 +1,5 @@
 # -c means: create object files instead of executables
+# -I means: headers being in that directory can be included with <blabla>
 CC = g++
 CFLAGS = -c -Wall -Isrc/utils
 LDFLAGS = 
