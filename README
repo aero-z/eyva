@@ -5,14 +5,14 @@ Readme file
 
 Introduction:
 
-   "Eyva" is a "Rogue"-like game for the CLI.
+   eyva is a "Rogue"-like game for the CLI.
    It's basically a proof-of-concept, playground and still in development, so
    don't expect it to do a lot.
 
-   "Eyva" consists of a server component and a client component.
+   eyva consists of a server component and a client component.
    Both components are independent programs.
 
-   This means you may decide to either play "Eyva" as a single-player (by
+   This means you may decide to either play eyva as a single-player (by
    starting both the client and the server on your local machine) or together
    with other players (by starting the client on your local machine and
    connecting to a remote (or locale) shared server).
@@ -20,8 +20,14 @@ Introduction:
 
 Compile:
 
+   +---------------------------------------------------------------------------+
+   | ATTENTION:                                                                |
+   | This version of the code does not properly run. The last version that     |
+   | "worked" is placed in /hist.                                              |
+   +---------------------------------------------------------------------------+
+
    This aplies to both the server and the client:
-   cd into the directory; you should now see a `Makefile'.
+   cd into the /-directory; you should now see a `Makefile'.
    Next, run `make'. This will compile the program and create an executable
    binary.
    
@@ -29,9 +35,9 @@ Compile:
 Run:
    
    It doesn't do anything yet.
-
    But it's supposed to work like this:
-   First start the client by running the executable. It will print a message and
+
+   First start the server by running the executable. It will print a message and
    indicate what port it is listening to.
    Next, start the client as follows:
 
@@ -50,4 +56,4 @@ Run:
 Bugs:
 
    Please report bugs to the project site:
-   https://github.com/ayekat/Eyva
+   https://github.com/ayekat/eyva

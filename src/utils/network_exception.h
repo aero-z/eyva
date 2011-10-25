@@ -1,15 +1,8 @@
 #ifndef _NETWORK_EXCEPTION_H_
 #define _NETWORK_EXCEPTION_H_
+#include "exception.h"
 
-#define TXTBUF 80
-
-class NetworkException {
-	public:
-		NetworkException(char const*, ...);
-		char const* str();
-	private:
-		char message[TXTBUF];
-};
+class NetworkException : public Exception {};
 
 #endif
 

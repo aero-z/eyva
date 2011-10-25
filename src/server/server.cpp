@@ -2,95 +2,147 @@
 
 using namespace AyeLog;
 
-Server::Server(int port) {
-	client_addr_len = sizeof(client_addr);
+/* PUBLIC METHODS/CONSTRUCTOR ------------------------------------------------*/
 
-	/* AF_INET:     domain (ARPA, IPv4)
+Server::Server(int port) {
+	this->port = port;
+	connection_handler = new ConnectionHandler(this);
+
+	/* clear the server_addr struct, then fill with appropriate data:
+	 */
+	memset(&server_addr, 0, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;                  // use IPv4
+	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);   // allow all connections
+	server_addr.sin_port = htons(port);                // port to listen to
+
+	/* create listening socket:
+	 * AF_INET:     domain (ARPA, IPv4)
 	 * SOCK_STREAM: type (stream socket: TCP)
 	 * 0:           protocol (standard protocol)
 	 */
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if(sockfd < 0)
+	sockl = socket(AF_INET, SOCK_STREAM, 0);
+	if(sockl < 0)
 		throw new NetworkException("socket() failed");
 
-	setNonBlocking(sockfd);     // so we can also go on if there's no content
-
-	struct sockaddr_in my_addr;
-	my_addr.sin_addr.s_addr = INADDR_ANY;   // allow connections from everywhere
-	my_addr.sin_port = htons(port);         // port to listen to
-	my_addr.sin_family = AF_INET;           // use IPv4
-
-	/* sockfd:      socket that should bind to the address
-	 * my_addr:     the address (IP and port, as declared above)
+	/* bind socket:
+	 * sockfd:      socket that should bind to the address
+	 * my_addr:     the address (IP and port, declared above) as type "sockaddr"
 	 * addrlen:     size of the address struct
 	 */
-	if(bind(sockfd, (sockaddr*)&my_addr, sizeof(my_addr)) < 0) {
+	if(bind(sockl, (sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
 		throw new NetworkException("bind() failed: %s", strerror(errno));
 	}
 
-	/* sockfd:      socket that should start listening
-	 * 3:           number of connections to keep in queue
+	/* start socket (listen):
+	 * sockl:         socket that should start listening
+	 * CLIENTS_MAX:   #connections to keep in queue and to listen to
 	 */
-	if(listen(sockfd, 3) == -1) {
+	if(listen(sockl, CLIENTS_MAX) == -1) {
 		throw new NetworkException("listen() failed");
 	}
-
 	logf(NORMAL_LOG, "Listening on port %d ...", port);
 }
 
-bool Server::run() {
-	/* Accept incoming connections:
-	 * sockfd:      socket that should accept connections
-	 * client_addr: the address (IP and port) of the client
-	 * address_len: size of the address struct, as socklen_t*
+void Server::run() {
+	/* We're going to check all the socket/file descriptors by using select()
+	 * (connection, read, write, console input, etc).
+	 * As select() needs an fd_set containing those socket descriptors, we're
+	 * going to create a such:
 	 */
-	csockfd = accept(sockfd, (sockaddr*)&client_addr, &client_addr_len);
-	if(csockfd > 0) {
-		/* accept */
-		logf(NORMAL_LOG, "\e[32m%s:\e[0m connection established",
-				inet_ntoa(client_addr.sin_addr));
-		setNonBlocking(csockfd);
-		clients.push_back(new Client(csockfd, inet_ntoa(client_addr.sin_addr)));
-	}
+	fd_set socket_set;
 
-	/* receive */
-	int read_len, write_res;
-	for(unsigned int i = 0; i < clients.size(); i++) {
-		read_len = read(clients[i]->getSocket(), buf, BUFFER_SIZE);
-		if(read_len <= 0) {
-			if(read_len < 0) {
-				logf(WARNING_LOG, "%s: connection crash: %s",
-						clients[i]->getIPName(), strerror(errno));
-			} else if(read_len == 0) {
-				logf(NORMAL_LOG, "%s: connection closed",
-						clients[i]->getIPName());
-			}
-			clients.erase(clients.begin()+i);
-		} else {
-			printf("socket %d: received bytes = %d (%d)\n",
-					clients[i]->getSocket(), read_len, BUFFER_SIZE);
-			char message[2048];
-			sprintf(message, "[%d]", buf[0]);
-			for(int j = 1; j < BUFFER_SIZE; j++)
-				snprintf(message, 2048, "%s [%d]", message, buf[j]);
-			logf(NORMAL_LOG, "received: %s (%s)", message, buf);
-			write_res = write(clients[i]->getSocket(), "Thanks!\n", 9);
-			if(write_res >= 0) {
-				logf(NORMAL_LOG, "sent: \"Thanks!\"");
-			} else {
-				logf(WARNING_LOG, "could not send \"Thanks!\": %s",
-						strerror(errno));
-			}
-		}
-	}
+	bool term_signal;
+	do {
+		/* before adding all used sockets to the fd_set, clear it:
+		 */
+		FD_ZERO(&socket_set);
 
-	sleep(1);
-	return true; // TODO let's run forever, for the moment
+		/* first add the listening socket (for incoming connections), then
+		 * cycle through the list of clients:
+		 */
+		FD_SET(sockl, &socket_set);
+		for(int i = 0; i < connection_handler->countClients(); i++)
+			FD_SET(connection_handler->getClient(i)->getSocket(), &socket_set);
+
+		/* select() checks every socket in the socket_set, if there's something
+		 * to do (e.g. data received, connection requested, ...)
+		 * This method blocks until there's anything, so as soon as select()
+		 * returns, we should have things to do:
+		 */
+		int selected = select(FD_SETSIZE, &socket_set, NULL, NULL, NULL);
+
+		/* select() should return -1 if something went wrong. As we don't want
+		 * to handle the error yet, just let's crash!
+		 */
+		if(selected < 0)
+			throw new IOException("select() failed");
+
+		/* otherwise, select() should have had success, and we can check what
+		 * happened:
+		 */
+		else {
+			/* Check if there is a connection request, and react accordingly:
+			 */
+			if(FD_ISSET(sockl, &socket_set)) {
+				/* Accept the connection:
+				 */
+				int sock_new = accept(sockl, NULL, NULL);
+
+				/* accept() should return -1 if something went wrong. Again,
+				 * as we don't want to handle the error yet, crash!
+				 */
+				if(sock_new < 0)
+					throw new NetworkException("accept() failed");
+
+				/* Add the new client to the list of clients, if there's still
+				 * space for. Otherwise reject the client (close the socket):
+				 */
+				if(clients.size() < CLIENTS_MAX) {
+					connection_handler->addClient(new Client(sock_new));
+				} else {
+					close(sock_new);
+				}
+			}
+
+			/* Cycle through all connections to check if there is data and react
+			 * accordingly:
+			 */
+			for(int i = 0; i < connection_handler->countClients(); i++) {
+				if(FD_ISSET(connection_handler->getClient(i)->getSocket(),
+						&socket_set)) {
+					/* Read data to buffer:
+					 */
+					int received = read(
+							connection_handler->getClient(i)->socket, buffer,
+							BUFFER_SIZE);
+
+					/* read() should return the number of bytes received. If the
+					 * number is negative, there was an error, and we'll crash:
+					 */
+					if(received < 0) {
+						throw new NetworkException("read() failed");
+					}
+
+					/* If the number of bytes received is equal to zero, the
+					 * the connection has been closed by peer:
+					 */
+					else if(received == 0) {
+						connection_handler->removeClient(i);
+					}
+
+					/* If the number is positive, read to buffer and let the
+					 * connection_handler take over:
+					 */
+					else {
+						printf("interacting...\n");
+						//connection_handler->interact(i, buffer);
+					}
+				}
+			} // end "for"
+		} // end "selected" handle
+	} while(!term_signal);
+	close(sockl);
 }
 
-void Server::setNonBlocking(int sockfd) {
-	int old_modes;
-	if((old_modes = fcntl(sockfd, F_GETFL, 0)) < 0)
-		throw new NetworkException("setNonBlocking() failed");
-	fcntl(sockfd, F_SETFL, old_modes | O_NONBLOCK | SO_REUSEADDR);
-}
+/* PRIVATE METHODS/CONSTRUCTOR -----------------------------------------------*/
+

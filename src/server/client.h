@@ -3,13 +3,10 @@
 
 class Client {
 	public:
-		Client(int, char const*);
+		Client(int);
 		int getSocket();
-		char const* getIPName();
-
 	private:
-		int sockfd;
-		char const* ip_name;
+		int socket;
 };
 
 #endif

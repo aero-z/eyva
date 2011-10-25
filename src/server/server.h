@@ -2,35 +2,35 @@
 #define _SERVER_H_
 
 #include "client.h"
-#include <ayelog.h>
-#include <network_exception.h>
+#include <ayelog.h>             // for handling messages
+#include <network_exception.h>  // for various socket errors
+#include <io_exception.h>       // for errors with select()
 
-#include <vector>
-#include <sys/types.h>  // for ??? TODO
-#include <sys/socket.h> // for sockets
-#include <netinet/in.h> // for inet_addr
-#include <arpa/inet.h>  // for inet_ntoa
-#include <fcntl.h>      // for fcntl
-#include <unistd.h>     // for sleep, write
-#include <cstring>      // for strerr
-#include <errno.h>      // for errno
+#include <sys/types.h>  // socket types
+#include <sys/socket.h> // sockets
+#include <arpa/inet.h>  // inet (3) functions
+#include <fcntl.h>      // for O_NONBLOCK
+#include <unistd.h>     // for write, read
 
-#include <cstdio>       // TODO remove
+#include <cstdio>       // TODO debugging
 
-#define BUFFER_SIZE 20
+ /* This is the maximum amount of bytes that can be stored in the buffer.
+  * See doc/data_definition.txt for further information.
+  */
+#define BUFFER_SIZE 1024
+
+/* Number of clients that we can handle on this server. */ 
+#define CLIENTS_MAX = 3
 
 class Server {
 	public:
 		Server(int);
-		bool run();
+		void run();
 	private:
-		std::vector<Client*> clients;
-		void setNonBlocking(int);
-		int sockfd;
-		int csockfd;
-		struct sockaddr_in client_addr;
-		socklen_t client_addr_len;
-		char buf[BUFFER_SIZE];
+		ConnectionHandler* connection_handler;
+		int sockl;
+		struct sockaddr_in server_addr;
+		char buffer[BUFFER_SIZE];
 };
 
 #endif
