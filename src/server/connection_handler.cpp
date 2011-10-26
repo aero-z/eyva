@@ -1,22 +1,14 @@
 #include "connection_handler.h"
 
-ConnectionHandler::ConnectionHandler(Server* server) {
-	this->server = server;
-};
+ConnectionHandler::ConnectionHandler(void) {};
 
-void ConnectionHandler::addClient(Client* client) {
-	client_list->push_back(client);
+/* PUBLIC METHODS */
+
+void process(char const* request, char* response, int RESPONSE_BUF) {
+	for(int i = 0; i < 3; i++) {
+		response[i] = 0;
+	}
 }
 
-int ConnectionHandler::countClients(void) {
-	return client_list.size();
-}
-
-void ConnectionHandler::removeClient(int id) {
-	client_list->erase(client_list.begin()+id);
-}
-
-void interact(int id, char const* buffer) {
-	// TODO
-}
+/* PRIVATE METHODS */
 

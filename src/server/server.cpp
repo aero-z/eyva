@@ -2,11 +2,9 @@
 
 using namespace AyeLog;
 
-/* PUBLIC METHODS/CONSTRUCTOR ------------------------------------------------*/
-
 Server::Server(int port) {
 	this->port = port;
-	connection_handler = new ConnectionHandler(this);
+	connection_handler = new ConnectionHandler();
 
 	/* clear the server_addr struct, then fill with appropriate data:
 	 */
@@ -38,7 +36,7 @@ Server::Server(int port) {
 	 * CLIENTS_MAX:   #connections to keep in queue and to listen to
 	 */
 	if(listen(sockl, CLIENTS_MAX) == -1) {
-		throw new NetworkException("listen() failed");
+		throw new NetworkException("listen() failed: %s", strerror(errno));
 	}
 	logf(NORMAL_LOG, "Listening on port %d ...", port);
 }
@@ -51,8 +49,8 @@ void Server::run() {
 	 */
 	fd_set socket_set;
 
-	bool term_signal;
-	do {
+	bool term_signal = false;
+	while(!term_signal) {
 		/* before adding all used sockets to the fd_set, clear it:
 		 */
 		FD_ZERO(&socket_set);
@@ -61,8 +59,8 @@ void Server::run() {
 		 * cycle through the list of clients:
 		 */
 		FD_SET(sockl, &socket_set);
-		for(int i = 0; i < connection_handler->countClients(); i++)
-			FD_SET(connection_handler->getClient(i)->getSocket(), &socket_set);
+		for(unsigned int i = 0; i < clients.size(); i++)
+			FD_SET(clients[i]->getSocket(), &socket_set);
 
 		/* select() checks every socket in the socket_set, if there's something
 		 * to do (e.g. data received, connection requested, ...)
@@ -85,8 +83,12 @@ void Server::run() {
 			 */
 			if(FD_ISSET(sockl, &socket_set)) {
 				/* Accept the connection:
+				 * sockl:       listening socket for establishing a connection
+				 * client_addr: struct to store client information
+				 * client_addr: (size) of struct
 				 */
-				int sock_new = accept(sockl, NULL, NULL);
+				int sock_new = accept(sockl, (sockaddr*)&client_addr,
+						&client_addr_len);
 
 				/* accept() should return -1 if something went wrong. Again,
 				 * as we don't want to handle the error yet, crash!
@@ -98,7 +100,10 @@ void Server::run() {
 				 * space for. Otherwise reject the client (close the socket):
 				 */
 				if(clients.size() < CLIENTS_MAX) {
-					connection_handler->addClient(new Client(sock_new));
+					clients.push_back(new Client(sock_new,
+							inet_ntoa(client_addr.sin_addr)));
+					logf(NORMAL_LOG, "\e[32m%s\e[0m: new connection",
+							clients[clients.size()-1]->getIP());
 				} else {
 					close(sock_new);
 				}
@@ -107,13 +112,11 @@ void Server::run() {
 			/* Cycle through all connections to check if there is data and react
 			 * accordingly:
 			 */
-			for(int i = 0; i < connection_handler->countClients(); i++) {
-				if(FD_ISSET(connection_handler->getClient(i)->getSocket(),
-						&socket_set)) {
+			for(unsigned int i = 0; i < clients.size(); i++) {
+				if(FD_ISSET(clients[i]->getSocket(), &socket_set)) {
 					/* Read data to buffer:
 					 */
-					int received = read(
-							connection_handler->getClient(i)->socket, buffer,
+					int received = read(clients[i]->getSocket(), input_buffer,
 							BUFFER_SIZE);
 
 					/* read() should return the number of bytes received. If the
@@ -127,22 +130,30 @@ void Server::run() {
 					 * the connection has been closed by peer:
 					 */
 					else if(received == 0) {
-						connection_handler->removeClient(i);
+						clients.erase(clients.begin()+i);
 					}
 
-					/* If the number is positive, read to buffer and let the
-					 * connection_handler take over:
+					/* If the number is positive, we have successfully received
+					 * data.
 					 */
 					else {
-						printf("interacting...\n");
-						//connection_handler->interact(i, buffer);
+						/* First, we send a confirmation message, the purpose
+						 * of which being:
+						 * 1) confirmation for server: client is still here!
+						 * 2) confirmation for client: my message was delivered!
+						 */
+						logf(DEBUG_LOG, "interacting...");
+						// TODO
 					}
 				}
 			} // end "for"
 		} // end "selected" handle
-	} while(!term_signal);
+	} // end endless loop
+
 	close(sockl);
 }
 
-/* PRIVATE METHODS/CONSTRUCTOR -----------------------------------------------*/
+/* PUBLIC METHODS */
+
+/* PRIVATE METHODS */
 

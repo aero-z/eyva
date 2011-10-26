@@ -1,12 +1,13 @@
 #include "ayelog.h"
 
-#include <cstdio>   // (v)(s)(f)(n)printf
-#include <cstdarg>  // va_list
-#include <ctime>    // struct tm
-
-#define TXTBUF 120   // 80 is recommended, since it's the default terminal width
-
-int AyeLog::verbosity_level = 0;
+/* Verbosity level for log printouts.
+ * 0: no printout
+ * 1: normal printout
+ * 2: debug printout (attention! this produces a lot of output) // TODO
+ *
+ * Log files are always written with log_verbosity level 1.
+ */
+int AyeLog::log_verbosity = 0;
 
 /* This basically works the same way as printf, but prints the formated string
  * to a file instead of stdout.
@@ -28,34 +29,37 @@ void AyeLog::logf(log_type type, char const* format, ...) {
 	/* vsnprintf does the same as snprintf, except that it does not need a
 	 * variable amount of arguments, but a "pointer" (va_list) to them:
 	 */
-	char b1[TXTBUF];            // buffer
-	vsnprintf(b1, TXTBUF, format, args);
+	char b1[LOG_BUF];            // buffer
+	vsnprintf(b1, LOG_BUF, format, args);
 
 	/* End access: */
 	va_end(args);
 
 	/* Add additional stuff to the message: */
-	char b2[TXTBUF];            // buffer
+	char b2[LOG_BUF];            // buffer
 	switch(type) {
 		case WARNING_LOG:
-			snprintf(b2, TXTBUF, "! \e[33mwarning:\e[0m %s", b1);
+			snprintf(b2, LOG_BUF, "! \e[33mwarning:\e[0m %s", b1);
 			break;
 		case ERROR_LOG:
-			snprintf(b2, TXTBUF, "! \e[31mERROR:\e[0m %s", b1);
+			snprintf(b2, LOG_BUF, "! \e[31mERROR:\e[0m %s", b1);
+			break;
+		case DEBUG_LOG:
+			snprintf(b2, LOG_BUF, "  \e[36m%s\e[0m", b1);
 			break;
 		default:
-			snprintf(b2, TXTBUF, "  %s", b1);
+			snprintf(b2, LOG_BUF, "  %s", b1);
 			break;
 	}
 
-	char b3[TXTBUF];            // buffer
+	char b3[LOG_BUF];            // buffer
 	time_t x = time(NULL);
 	tm* timestamp = localtime(&x);
-	snprintf(b3, TXTBUF, "\e[36m[%02d:%02d:%02d]\e[0m %s",
+	snprintf(b3, LOG_BUF, "\e[36m[%02d:%02d:%02d]\e[0m %s",
 			timestamp->tm_hour, timestamp->tm_min, timestamp->tm_sec, b2);
 
-	// TODO write to log file
+	// TODO write to log file, ignore DEBUG_LOG
 
-	if(verbosity_level > 0)
+	if(log_verbosity > 0)
 		printf("%s\n", b3);
 }

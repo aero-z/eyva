@@ -1,26 +1,36 @@
-DATA DEFINITION
-===============
-
-SCHEMA:
-1111................................11111
-||<--------------- data --------------->|
-||                                      + termination byte
-|+ data type
-+ client id
-
-So data's maximum size is 1021 (1024-1-1-1)
+EYVA 0.1d2
+==========
+Data definition
 
 
-================================================================================
-DATA TYPES (BYTE 2) : CLIENT->SERVER
+Structure:
 
-connection layer:
-00000000 (00)  disconnect
-00000001 (01)  login request
+   The structure of a package following the eyva protocol looks like this:
 
-ingame layer:
-00001000 (08)  move up
-00001001 (09)  move down
-00001010 (0A)  move left
-00001011 (0B)  move right
-00001100 (0C)  request bag content
+   byte   meaning
+      0   Client ID (or broadcast if zero, doesn't matter for client)
+      1   Message
+      2+  Message data, terminated with zero-byte. The message data is optional,
+          for nonexistent message data, simply a zero-byte is sent.
+
+
+Messages (structure byte 1):
+
+   [] indicates what will be sent as message data
+   () indicates the size
+   (*) means: variable size
+   ... means: several instances of that type
+
+   value  meaning
+   -  05  total refresh request
+   -  10  login [username(*)]
+      11  logout
+   -  20  move up
+      21  move down
+      22  move left
+      23  move right
+      24  action
+   -  30  request property list
+      31  send property list [property_id(1)+name_length(1)+name(*)...]
+      31  request property information [property_id(1)]
+      32  use property [property_id(1)]

@@ -3,10 +3,8 @@
 #include <ayelog.h>
 #include <network_exception.h>
 
-using namespace AyeLog;
-
 int main() {
-	verbosity_level = 1;
+	AyeLog::log_verbosity = 1;
 
 	try {
 		Server* server = new Server();
@@ -15,6 +13,6 @@ int main() {
 		msg[1] = 2;
 		server->transmit(msg);
 	} catch(NetworkException* e) {
-		logf(WARNING_LOG, "%s", e);
+		AyeLog::logf(WARNING_LOG, "%s", e);
 	}
 }
