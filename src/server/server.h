@@ -18,9 +18,10 @@
 #include <cstdio>       // for user IO
 
  /* This is the maximum amount of bytes that can be stored in the buffer.
+  * DO NOT CHANGE THIS VALUE, UNLESS YOU LIKE TO BREAK THINGS.
   * See doc/data_definition.txt for further information.
   */
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 65539
 
 /* Number of clients that we can handle on this server. */ 
 #define CLIENTS_MAX 3
@@ -38,7 +39,6 @@ class Server {
 		void handleResponse();
 		ConnectionHandler* connection_handler;
 		int sockl;
-		int port;
 		struct sockaddr_in server_addr;  // our server's network properties
 		struct sockaddr_in client_addr;  // temporal struct to store client info
 		socklen_t client_addr_len;       // ... and it's size

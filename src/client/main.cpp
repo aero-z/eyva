@@ -1,18 +1,15 @@
-#include "server.h"
+#include "session.h"
 
 #include <ayelog.h>
 #include <network_exception.h>
 
 int main() {
-	AyeLog::log_verbosity = 1;
+	AyeLog::log_verbosity = 2;
 
 	try {
-		Server* server = new Server();
-		char msg[2];
-		msg[0] = 1;
-		msg[1] = 2;
-		server->transmit(msg);
+		Session* session = new Session("127.0.0.1", 1251);
+		session->run();
 	} catch(NetworkException* e) {
-		AyeLog::logf(WARNING_LOG, "%s", e);
+		AyeLog::logf(WARNING_LOG, "%s", e->str());
 	}
 }

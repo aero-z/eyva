@@ -8,30 +8,125 @@ Structure:
    The structure of a package following the `eyva' protocol looks like this:
 
    byte   meaning
-      0   Client ID (or broadcast if zero, doesn't matter for client)
-      1   Message
-      2+  Message data, terminated by zero-byte. The message data is optional.
-          For nonexistent message data, simply a zero-byte is sent.
+      0   Client ID (or broadcast if zero, doesn't matter for client).
+      1   Command.
+    2-3   Message length (little endian).
+    4-*   Message data. The length is defined by the bytes 2 and 3, thus the
+          length can vary between 0 and 2^16 (65535).
+
+   This means, an `eyva' conform package has a total length of 4 at least and
+   65539 at most.
 
 
-Messages (structure byte 1):
+Commands (structure byte 1):
+   
+   Command numbers in hex.
 
-   [] indicates what will be sent as message data
-   () indicates the size
-   (*) means: variable size
-   ... means: several instances of that type
+## Connection level:
 
-   value  meaning
-   -  00  disconnect [message(*)]
-      05  total refresh request
-   -  10  login [username(*)]
-      11  logout
-   -  20  move up
-      21  move down
-      22  move left
-      23  move right
-      24  action
-   -  30  request property list
-      31  send property list [property_id(1)+name_length(1)+name(*)...]
-      31  request property information [property_id(1)]
-      32  use property [property_id(1)]
+   00  DISCONNECT - [client][server]
+       Disconnects the indicated client from the server.
+       It's not recommended to use this, since there are higher-level commands
+       such as [11 LOGOUT] (by client) or [12 REQUEST_LOGIN] (by server).
+       There are also lower-level ways to achieve this (such as sending
+       zero-length data).
+
+   01  COMMAND_REFUSED - [server]
+       If an error happens while trying to execute a command, this is the
+       server's response.
+
+## Session level:
+
+   10  REQUEST_CLIENT_VERSION - [server]
+       Asks for the client's software version. This is sent before the login
+       process. The client is supposed to answer with [11 CLIENT_VERSION].
+      
+   11  CLIENT_VERSION - [client]
+       Sends the client's software version. If the version is OK, the server is
+       supposed to send a [13 REQUEST_LOGIN], otherwise the server will send a
+       [12 REQUEST_CLIENT_UPDATE].
+       Note that non-critical updates will not trigger a
+       [12 REQUEST_CLIENT_UPDATE], so it's possible to connect an older client
+       to a newer server.
+       Message:
+       ++ version (3 bytes) (version, subversion, subsubversion)
+
+   12  REQUEST_CLIENT_UPDATE - [server]
+       The client should be updated. No further login is possible.
+
+   13  REQUEST_LOGIN - [server]
+       Asks for username and password. Client is supposed to answer with
+       [14 LOGIN].
+       If a login request arrives during the game, the client must consider
+       itself as "kicked out".
+       Message:
+       ++ reason (or just a welcome message) (* bytes)
+
+   14  LOGIN - [client]
+       Sends the name and password to log in to the server.
+       Message:
+       ++ username length (1 byte)
+       ++ username (* bytes)
+       ++ password length (1 byte)
+       ++ password (* bytes)
+
+   15  LOGOUT - [client]
+       Sends a logout message to the server, resulting in saving the user's
+       ingame state. Server is supposed to answer with [13 REQUEST_LOGIN].
+      
+## Ingame level:
+
+   20  MOVE_UP - [client]
+       Moves the character one step to north.
+
+   21  MOVE_DOWN - [client]
+       Moves the character one step to south.
+
+   22  MOVE_LEFT - [client]
+       Moves the character one step to west.
+
+   23  MOVE_RIGHT - [client]
+       Moves the character one step to east.
+
+   24  REQUEST_ACTION - [client]
+       Triggers an action on the field the character is placed on.
+
+   25  REQUEST_MAP_REFRESH - [client]
+       Usually only changes are sent by the server (to reduce overall traffic).
+       Mostly this is only required after logging in with a character.
+       But it also be sent else (although it should not happen, if the protocol
+       works correctly).
+
+## Properties level:
+
+   30  REQUEST_PROPERTY_LIST - [client]
+       The server is supposed to answer with [31 PROPERTY_LIST].
+      
+   31  PROPERTY_LIST - [server]
+       Message:
+       ++ number of properties (2 bytes)
+       ++ repeating * times:
+          ++ property ID (2 bytes)
+          ++ property name length (1 byte)
+          ++ property name (* bytes)
+
+   32  REQUEST_PROPERTY_INFORMATION - [client]
+       The server is supposed to answer with [34 PROPERTY_INFORMATION]
+       Message:
+       ++ property ID (2 bytes)
+
+   33  PROPERTY_INFORMATION - [server]
+       Message:
+       ++ property ID (2 bytes)
+       ++ property name length (1 byte)
+       ++ property name (* bytes)
+       ++ property type (1 byte)
+       ++ property description length (2 bytes)
+       ++ property description (* bytes)
+
+   34  USE_PROPERTY - [client]
+       This will result in the server executing the command linked to that
+       property.
+       Message:
+       ++ property ID (2 bytes)
+
