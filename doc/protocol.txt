@@ -1,11 +1,11 @@
 EYVA 0.1d2
 ==========
-Data definition
+protocol
 
 
 Structure:
 
-   The structure of a package following the eyva protocol looks like this:
+   The structure of a package following the `eyva' protocol looks like this:
 
    byte   meaning
       0   Client ID (or broadcast if zero, doesn't matter for client)
@@ -22,7 +22,8 @@ Messages (structure byte 1):
    ... means: several instances of that type
 
    value  meaning
-   -  05  total refresh request
+   -  00  disconnect [message(*)]
+      05  total refresh request
    -  10  login [username(*)]
       11  logout
    -  20  move up
