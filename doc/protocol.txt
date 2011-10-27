@@ -27,7 +27,7 @@ Commands (structure byte 1):
    00  DISCONNECT - [client][server]
        Disconnects the indicated client from the server.
        It's not recommended to use this, since there are higher-level commands
-       such as [11 LOGOUT] (by client) or [12 REQUEST_LOGIN] (by server).
+       such as [15 LOGOUT] (by client) or [13 REQUEST_LOGIN] (by server).
        There are also lower-level ways to achieve this (such as sending
        zero-length data).
 
@@ -49,10 +49,10 @@ Commands (structure byte 1):
        [12 REQUEST_CLIENT_UPDATE], so it's possible to connect an older client
        to a newer server.
        Message:
-       ++ version (3 bytes) (version, subversion, subsubversion)
+        - version (3 bytes) (version, subversion, subsubversion)
 
    12  REQUEST_CLIENT_UPDATE - [server]
-       The client should be updated. No further login is possible.
+       The client must be updated. No further login is possible.
 
    13  REQUEST_LOGIN - [server]
        Asks for username and password. Client is supposed to answer with
@@ -60,15 +60,15 @@ Commands (structure byte 1):
        If a login request arrives during the game, the client must consider
        itself as "kicked out".
        Message:
-       ++ reason (or just a welcome message) (* bytes)
+        - reason (or just a welcome message) (* bytes)
 
    14  LOGIN - [client]
        Sends the name and password to log in to the server.
        Message:
-       ++ username length (1 byte)
-       ++ username (* bytes)
-       ++ password length (1 byte)
-       ++ password (* bytes)
+        - username length (1 byte)
+        - username (* bytes)
+        - password length (1 byte)
+        - password (* bytes)
 
    15  LOGOUT - [client]
        Sends a logout message to the server, resulting in saving the user's
@@ -104,29 +104,29 @@ Commands (structure byte 1):
       
    31  PROPERTY_LIST - [server]
        Message:
-       ++ number of properties (2 bytes)
-       ++ repeating * times:
-          ++ property ID (2 bytes)
-          ++ property name length (1 byte)
-          ++ property name (* bytes)
+        - number of properties (2 bytes)
+        - repeating * times:
+           - property ID (2 bytes)
+           - property name length (1 byte)
+           - property name (* bytes)
 
    32  REQUEST_PROPERTY_INFORMATION - [client]
        The server is supposed to answer with [34 PROPERTY_INFORMATION]
        Message:
-       ++ property ID (2 bytes)
+        - property ID (2 bytes)
 
    33  PROPERTY_INFORMATION - [server]
        Message:
-       ++ property ID (2 bytes)
-       ++ property name length (1 byte)
-       ++ property name (* bytes)
-       ++ property type (1 byte)
-       ++ property description length (2 bytes)
-       ++ property description (* bytes)
+        - property ID (2 bytes)
+        - property name length (1 byte)
+        - property name (* bytes)
+        - property type (1 byte)
+        - property description length (2 bytes)
+        - property description (* bytes)
 
    34  USE_PROPERTY - [client]
        This will result in the server executing the command linked to that
-       property.
+       property (see property definition for further information).
        Message:
-       ++ property ID (2 bytes)
+        - property ID (2 bytes)
 
