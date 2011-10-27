@@ -1,0 +1,9 @@
+eyva 0.1d2
+==========
+Todo file
+
+
+src/server/server:
+
+   Modularize the whole process; the run() method is awfully bloated and bad
+   style.

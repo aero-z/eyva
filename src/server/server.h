@@ -16,8 +16,6 @@
 #include <cstring>      // memset()
 #include <cerrno>       // for the "errno" macro
 
-#include <cstdio>       // TODO debugging
-
  /* This is the maximum amount of bytes that can be stored in the buffer.
   * See doc/data_definition.txt for further information.
   */
@@ -31,6 +29,7 @@ class Server {
 		Server(int);
 		void run();
 	private:
+		void copyFirstLine(char*, char const*);
 		ConnectionHandler* connection_handler;
 		int sockl;
 		int port;
@@ -39,6 +38,7 @@ class Server {
 		socklen_t client_addr_len;       // ... and it's size
 		char input_buffer[BUFFER_SIZE];
 		char output_buffer[BUFFER_SIZE];
+		char confirmation_byte;
 		std::vector<Client*> clients;
 };
 

@@ -2,12 +2,17 @@
 #include <network_exception.h>
 #include <io_exception.h>
 #include <ayelog.h>
+#include <cstdio>
 
 int main(int argc, char** argv) {
-	AyeLog::log_verbosity = 1;
+	AyeLog::log_verbosity = 2;
+
+	printf("Welcome to the eyva server\n");
+	printf("Feel free to use an eyva client to connect and play.\n");
+	printf("Type `help' to see a list of available commands.\n\n");
 
 	try {
-		Server* server = new Server(47208);
+		Server* server = new Server(1251);
 		server->run();
 	} catch(NetworkException* e) {
 		AyeLog::logf(ERROR_LOG, e->str());

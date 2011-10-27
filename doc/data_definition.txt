@@ -10,8 +10,8 @@ Structure:
    byte   meaning
       0   Client ID (or broadcast if zero, doesn't matter for client)
       1   Message
-      2+  Message data, terminated with zero-byte. The message data is optional,
-          for nonexistent message data, simply a zero-byte is sent.
+      2+  Message data, terminated by zero-byte. The message data is optional.
+          For nonexistent message data, simply a zero-byte is sent.
 
 
 Messages (structure byte 1):

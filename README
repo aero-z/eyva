@@ -5,7 +5,7 @@ Readme file
 
 Introduction:
 
-   eyva is a "Rogue"-like game for the CLI.
+   eyva is supposed to become a "Rogue"-like game for the CLI.
    It's basically a proof-of-concept, playground and still in development, so
    don't expect it to do a lot.
 
@@ -15,42 +15,22 @@ Introduction:
    This means you may decide to either play eyva as a single-player (by
    starting both the client and the server on your local machine) or together
    with other players (by starting the client on your local machine and
-   connecting to a remote (or locale) shared server).
+   connecting to a remote (or local) shared server).
 
 
 Compile:
 
-   +---------------------------------------------------------------------------+
-   | ATTENTION:                                                                |
-   | This version of the code does not properly run. The last version that     |
-   | "worked" is placed in /hist.                                              |
-   +---------------------------------------------------------------------------+
-
-   This aplies to both the server and the client:
-   cd into the /-directory; you should now see a `Makefile'.
-   Next, run `make'. This will compile the program and create an executable
-   binary.
+   cd into the project directory; you should now see a `Makefile'.
+   Next, run `make'. This will compile the server and client binaries.
    
 
 Run:
    
    It doesn't do anything yet.
-   But it's supposed to work like this:
-
-   First start the server by running the executable. It will print a message and
-   indicate what port it is listening to.
-   Next, start the client as follows:
-
-   +---------------------------------------------------------------------------+
-   | EyvaClient -h [ip_address] -p [port_number]                               |
-   +---------------------------------------------------------------------------+
-
-   You may also use `localhost' instead of the IP address of the local machine.
-
-   You may either run the server in the background and run the client in the
-   same terminal, or you may start the server and the client in two different
-   terminals. The later might be useful if you want to see the server's log
-   messages. See the server's README file for further information.
+   You may execute the `EyvaServer', which will listen to port 1251, and use
+   netcat to send and receive data.
+   `EyvaClient' won't do much, since the development has recently been focused
+   on the server, and the code in there is pretty much obsolete.
 
 
 Bugs:
