@@ -4,7 +4,7 @@
 class ConnectionHandler {
 	public:
 		ConnectionHandler();
-		void process(char const*, char*, int);
+		void process(char*, char const*, int);
 };
 
 #endif

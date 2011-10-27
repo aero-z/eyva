@@ -4,10 +4,11 @@ ConnectionHandler::ConnectionHandler(void) {};
 
 /* PUBLIC METHODS */
 
-void process(char const* request, char* response, int RESPONSE_BUF) {
-	for(int i = 0; i < 3; i++) {
-		response[i] = 0;
-	}
+void ConnectionHandler::process(char* response, char const* request,
+		int RESPONSE_BUF) {
+	response[0] = 0;
+	response[1] = 'y';
+	response[2] = 0;
 }
 
 /* PRIVATE METHODS */

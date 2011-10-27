@@ -7,8 +7,6 @@
 int main(int argc, char** argv) {
 	AyeLog::log_verbosity = 2;
 
-	printf("Welcome to the eyva server\n");
-	printf("Feel free to use an eyva client to connect and play.\n");
 	printf("Type `help' to see a list of available commands.\n\n");
 
 	try {

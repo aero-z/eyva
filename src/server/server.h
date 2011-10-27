@@ -15,6 +15,7 @@
 #include <unistd.h>     // for write, read
 #include <cstring>      // memset()
 #include <cerrno>       // for the "errno" macro
+#include <cstdio>       // for user IO
 
  /* This is the maximum amount of bytes that can be stored in the buffer.
   * See doc/data_definition.txt for further information.
@@ -30,6 +31,11 @@ class Server {
 		void run();
 	private:
 		void copyFirstLine(char*, char const*);
+		void prepareFDSet();
+		void handleIncomingConnection();
+		void handleIncomingData(int);
+		void handleStdInput();
+		void handleResponse();
 		ConnectionHandler* connection_handler;
 		int sockl;
 		int port;
@@ -40,6 +46,8 @@ class Server {
 		char output_buffer[BUFFER_SIZE];
 		char confirmation_byte;
 		std::vector<Client*> clients;
+		fd_set socket_set;               // set of socket that select() handles
+		bool term_signal;                // will be set to true for shutdown
 };
 
 #endif
