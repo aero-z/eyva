@@ -29,7 +29,22 @@ Session::Session(char const* ip, int port) {
 }
 
 void Session::run(void) {
-	// TODO
+	bool term_signal = false;
+	while(!term_signal) {
+		/* TODO
+		prepareFDSet();
+		*/
+
+		/* select() checks every socket in the socket_set if there's some data
+		 * on it.
+		 * This method would block until there's anything, but since we just
+		 * want to poll (in order for the data guard to go on), we don't block
+		 * by setting the timeout to 0:
+		 */
+		/* TODO
+		int selected = select(FD_SETSIZE, &socket_set, NULL, NULL, NULL);
+		*/
+	}
 
 	// send
 	output_buffer[0] = 'h';

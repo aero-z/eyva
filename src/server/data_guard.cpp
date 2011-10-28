@@ -1,10 +1,10 @@
-#include "connection_handler.h"
+#include "data_guard.h"
 
-ConnectionHandler::ConnectionHandler(void) {};
+DataGuard::DataGuard(void) {};
 
 /* PUBLIC METHODS */
 
-void ConnectionHandler::process(char* response, char const* request,
+void DataGuard::process(char *response, char const *request,
 		int RESPONSE_BUF) {
 	// TODO
 	response[0] = 0;

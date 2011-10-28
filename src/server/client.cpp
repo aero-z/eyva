@@ -1,6 +1,6 @@
 #include "client.h"
 
-Client::Client(int socket, char const* ip) {
+Client::Client(int socket, char const *ip) {
 	this->socket = socket;
 	int string_length = strlen(ip);
 	this->ip = new char[string_length+1];// +1 because we also need to store \0
@@ -20,7 +20,7 @@ int Client::getSocket(void) {
 	return socket;
 }
 
-char const* Client::getIP(void) {
+char const *Client::getIP(void) {
 	return ip;
 }
 

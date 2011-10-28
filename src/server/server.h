@@ -2,7 +2,7 @@
 #define _SERVER_H_
 
 #include "client.h"
-#include "connection_handler.h"
+#include "data_guard.h"
 #include <ayelog.h>             // for handling messages
 #include <network_exception.h>  // for various socket errors
 #include <io_exception.h>       // for errors with select()
@@ -31,13 +31,13 @@ class Server {
 		Server(int);
 		void run();
 	private:
-		void copyFirstLine(char*, char const*);
+		void copyFirstLine(char *, char const *);
 		void prepareFDSet();
 		void handleIncomingConnection();
 		void handleIncomingData(int);
 		void handleStdInput();
 		void handleResponse();
-		ConnectionHandler* connection_handler;
+		DataGuard *data_guard;
 		int sockl;
 		struct sockaddr_in server_addr;  // our server's network properties
 		struct sockaddr_in client_addr;  // temporal struct to store client info
@@ -45,7 +45,7 @@ class Server {
 		char input_buffer[BUFFER_SIZE];
 		char output_buffer[BUFFER_SIZE];
 		char confirmation_byte;
-		std::vector<Client*> clients;
+		std::vector<Client *> clients;
 		fd_set socket_set;               // set of socket that select() handles
 		bool term_signal;                // will be set to true for shutdown
 };
