@@ -22,24 +22,32 @@ Commands (structure byte 1):
    
    Command numbers in hex.
 
-## Connection level:
+## Connection/internal level:
 
-   00  DISCONNECT - [client][server]
-       Disconnects the indicated client from the server.
-       It's not recommended to use this, since there are higher-level commands
-       such as [15 LOGOUT] (by client) or [13 REQUEST_LOGIN] (by server).
-       There are also lower-level ways to achieve this (such as sending
-       zero-length data).
+   00  SUCCESS - [internal]
+       This command is neither sent over the network, nor does it trigger
+       anything.
+       Every routine is built up on request+response, but it may happen that a
+       request does not need a response. This command serves as an internal
+       confirmation that a request was handled successfully.
 
-   01  COMMAND_REFUSED - [server]
+   01  FAIL - [internal]
+       This command is neither sent over the network, nor does it trigger
+       anything.
+       Every routine is built up on request+response, but it may happen that a
+       request does not need a response. This command serves as an internal
+       advice that a request could not be executed successfully.
+
+   02  COMMAND_REFUSED - [server]
        If an error happens while trying to execute a command, this is the
        server's response.
 
 ## Session level:
 
    10  REQUEST_CLIENT_VERSION - [server]
-       Asks for the client's software version. This is sent before the login
-       process. The client is supposed to answer with [11 CLIENT_VERSION].
+       Asks for the client's software version.
+       Usually the client should start with a [11 CLIENT_VERSION] command, but
+       if the server receives something else, it will answer with this command.
       
    11  CLIENT_VERSION - [client]
        Sends the client's software version. If the version is OK, the server is
@@ -52,7 +60,7 @@ Commands (structure byte 1):
         - version (3 bytes) (version, subversion, subsubversion)
 
    12  REQUEST_CLIENT_UPDATE - [server]
-       The client must be updated. No further login is possible.
+       The client must be updated, no further login is possible.
 
    13  REQUEST_LOGIN - [server]
        Asks for username and password. Client is supposed to answer with

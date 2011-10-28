@@ -2,7 +2,7 @@
 # -I means: headers being in that directory can be included with <blabla>
 CC = g++
 CFLAGS = -c -Wall -Isrc/utils
-LDFLAGS = 
+LDFLAGS = -lncurses
 SERVER_SOURCES = $(wildcard src/server/*.cpp) $(wildcard src/utils/*.cpp)
 CLIENT_SOURCES = $(wildcard src/client/*.cpp) $(wildcard src/utils/*.cpp)
 SERVER_HEADER = $(wildcard src/server/*.h) $(wildcard src/utils/*.h)
