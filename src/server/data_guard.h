@@ -8,11 +8,11 @@
 
 class DataGuard {
 	public:
-		DataGuard();
-		void process(char *, char const *);
+		DataGuard(void);
+		void process(char* buffer_out, char const* buffer_in);
 	
 	private:
-		std::vector<User *> users;
+		std::vector<User*> users;
 };
 
 #endif

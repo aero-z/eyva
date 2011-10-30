@@ -17,12 +17,12 @@
 
 class Session {
 	public:
-		Session(char const*, int);
-		void run();
+		Session(char const* ip, int port);
+		void run(void);
 
 	private:
-		void prepareFDSet();
-		void handleData();
+		void prepareFDSet(void);
+		void handleData(void);
 		int sockc;
 		fd_set socket_set;
 		struct sockaddr_in server_addr;

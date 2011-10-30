@@ -20,8 +20,8 @@ Introduction:
 
 Compile:
 
-   cd into the project directory; you should now see a `Makefile'.
-   Next, run `make'. This will compile the server and client binaries.
+   Run `make' in the project's root directory. This will create server and
+   client binaries.
    
 
 Run:
@@ -29,8 +29,8 @@ Run:
    It doesn't do anything yet.
    You may execute the `EyvaServer', which will listen to port 1251, and use
    netcat to send and receive data.
-   `EyvaClient' won't do much, since the development has recently been focused
-   on the server, and the code in there is pretty much obsolete.
+   `EyvaClient' is currently under heavy development and won't do anything
+   useful.
 
 
 Bugs:

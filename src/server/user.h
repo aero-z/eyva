@@ -5,12 +5,12 @@
 
 class User {
 	public:
-		User(char const *);
-		~User();
-		char const *getName();
+		User(char const* name);
+		~User(void);
+		char const* getName();
 	
 	private:
-		char *name;
+		char* name;
 };
 
 #endif

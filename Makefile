@@ -4,7 +4,7 @@ CC = g++
 CFLAGS = -c -Wall -Isrc/utils
 LDFLAGS = -lncurses
 SERVER_SOURCES = $(wildcard src/server/*.cpp) $(wildcard src/utils/*.cpp)
-CLIENT_SOURCES = $(wildcard src/client/*.cpp) $(wildcard src/utils/*.cpp)
+CLIENT_SOURCES = $(wildcard src/client/*.cpp) $(wildcard src/client/ui/*.cpp) $(wildcard src/utils/*.cpp)
 SERVER_HEADER = $(wildcard src/server/*.h) $(wildcard src/utils/*.h)
 CLIENT_HEADER = $(wildcard src/client/*.h) $(wildcard src/utils/*.h)
 SERVER_OBJECTS = $(SERVER_SOURCES:.cpp=.o)
@@ -26,3 +26,4 @@ $(CLIENT_EXECUTABLE): $(CLIENT_OBJECTS) $(CLIENT_HEADER)
 
 clean:
 	rm -f $(SERVER_OBJECTS) $(CLIENT_OBJECTS) $(SERVER_EXECUTABLE) $(CLIENT_EXECUTABLE) valgrind.log
+

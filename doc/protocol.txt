@@ -12,65 +12,46 @@ Structure:
       1   Command.
     2-3   Message length (little endian).
     4-*   Message data. The length is defined by the bytes 2 and 3, thus the
-          length can vary between 0 and 2^16 (65535).
+          length can vary between 0 and 2^16-1 (65535).
 
    This means, an `eyva' conform package has a total length of 4 at least and
    65539 at most.
 
+   Commands (structure byte 1) are defined as follows:
 
-Commands (structure byte 1):
-   
-   Command numbers in hex.
 
-## Connection/internal level:
+Connection level:
 
    00  SUCCESS - [internal]
-       This command is neither sent over the network, nor does it trigger
-       anything.
-       Every routine is built up on request+response, but it may happen that a
-       request does not need a response. This command serves as an internal
-       confirmation that a request was handled successfully.
-
    01  FAIL - [internal]
-       This command is neither sent over the network, nor does it trigger
+       These commands are neither sent over the network, nor do they trigger
        anything.
        Every routine is built up on request+response, but it may happen that a
-       request does not need a response. This command serves as an internal
-       advice that a request could not be executed successfully.
+       request does not need a response. These commande serve as an internal
+       confirmation whether a request was handled successfully or not.
 
-   02  COMMAND_REFUSED - [server]
-       If an error happens while trying to execute a command, this is the
-       server's response.
 
-## Session level:
+Session level:
 
-   10  REQUEST_CLIENT_VERSION - [server]
-       Asks for the client's software version.
-       Usually the client should start with a [11 CLIENT_VERSION] command, but
-       if the server receives something else, it will answer with this command.
-      
-   11  CLIENT_VERSION - [client]
-       Sends the client's software version. If the version is OK, the server is
-       supposed to send a [13 REQUEST_LOGIN], otherwise the server will send a
-       [12 REQUEST_CLIENT_UPDATE].
-       Note that non-critical updates will not trigger a
-       [12 REQUEST_CLIENT_UPDATE], so it's possible to connect an older client
-       to a newer server.
+   10  CLIENT_VERSION - [client]
+       This is the first command sent in the conversation.
+       Sends the software version to the server. If the version is OK, the
+       server is supposed to send a [12 REQUEST_LOGIN], otherwise the server
+       will send a [11 REQUEST_CLIENT_UPDATE].
        Message:
-        - version (3 bytes) (version, subversion, subsubversion)
+        - version (3 bytes) (version, subversion, update)
 
-   12  REQUEST_CLIENT_UPDATE - [server]
+   11  REQUEST_CLIENT_UPDATE - [server]
        The client must be updated, no further login is possible.
 
-   13  REQUEST_LOGIN - [server]
-       Asks for username and password. Client is supposed to answer with
-       [14 LOGIN].
+   12  REQUEST_LOGIN - [server]
+       Asks for authentication. Client is supposed to answer with [13 LOGIN].
        If a login request arrives during the game, the client must consider
        itself as "kicked out".
        Message:
         - reason (or just a welcome message) (* bytes)
 
-   14  LOGIN - [client]
+   13  LOGIN - [client]
        Sends the name and password to log in to the server.
        Message:
         - username length (1 byte)
@@ -78,34 +59,40 @@ Commands (structure byte 1):
         - password length (1 byte)
         - password (* bytes)
 
-   15  LOGOUT - [client]
+   14  LOGOUT - [client]
        Sends a logout message to the server, resulting in saving the user's
-       ingame state. Server is supposed to answer with [13 REQUEST_LOGIN].
+       ingame state. Server is supposed to answer with [12 REQUEST_LOGIN].
       
-## Ingame level:
 
-   20  MOVE_UP - [client]
-       Moves the character one step to north.
+Ingame level:
 
-   21  MOVE_DOWN - [client]
-       Moves the character one step to south.
+   20  SEND_MOVE_UP - [client]
+   21  SEND_MOVE_DOWN - [client]
+   22  SEND_MOVE_LEFT - [client]
+   23  SEND_MOVE_RIGHT - [client]
+       Asks the server to move the active character one step to
+       north/south/east/west.
 
-   22  MOVE_LEFT - [client]
-       Moves the character one step to west.
-
-   23  MOVE_RIGHT - [client]
-       Moves the character one step to east.
-
-   24  REQUEST_ACTION - [client]
+   24  ACTION - [client]
        Triggers an action on the field the character is placed on.
 
    25  REQUEST_MAP_REFRESH - [client]
-       Usually only changes are sent by the server (to reduce overall traffic).
-       Mostly this is only required after logging in with a character.
-       But it also be sent else (although it should not happen, if the protocol
-       works correctly).
+       Asks the server to send all information (map, players, objects, etc.).
+       Usually invoked after logging in with a character and changing region,
+       but also possible otherwise.
 
-## Properties level:
+   26  MOVE [server]
+       Broadcasts that something has been moved.
+       Message:
+        - type (1 byte) (character, property, object, etc.)
+        - id (1 byte)
+        - xstart (1 byte)
+        - ystart (1 byte)
+        - xend (1 byte)
+        - yend (1 byte)
+
+
+Interaction level:
 
    30  REQUEST_PROPERTY_LIST - [client]
        The server is supposed to answer with [31 PROPERTY_LIST].
@@ -115,26 +102,18 @@ Commands (structure byte 1):
         - number of properties (2 bytes)
         - repeating * times:
            - property ID (2 bytes)
-           - property name length (1 byte)
-           - property name (* bytes)
+           - property type (1 byte)
 
-   32  REQUEST_PROPERTY_INFORMATION - [client]
-       The server is supposed to answer with [34 PROPERTY_INFORMATION]
-       Message:
-        - property ID (2 bytes)
-
-   33  PROPERTY_INFORMATION - [server]
-       Message:
-        - property ID (2 bytes)
-        - property name length (1 byte)
-        - property name (* bytes)
-        - property type (1 byte)
-        - property description length (2 bytes)
-        - property description (* bytes)
-
-   34  USE_PROPERTY - [client]
+   32  USE_PROPERTY - [client]
        This will result in the server executing the command linked to that
        property (see property definition for further information).
        Message:
         - property ID (2 bytes)
+
+   33  SEND_CHAT - [client]
+       Asks the server to broadcast a chat message.
+       Message:
+        - region (1 byte)
+        - chat message length (2 bytes)
+        - chat message
 

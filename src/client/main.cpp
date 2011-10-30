@@ -62,21 +62,21 @@ int main(int argc, char **argv) {
 	log_verbosity = 0; // no log output
 
 	initscr();  // start ncurses
-	logf(DEBUG_LOG, "setting up ncurses ...");
+	logf(LOG_DEBUG, "setting up ncurses ...");
 	if(!setUpCurses()) {
 		endwin();
-		logf(ERROR_LOG, "color not supported by your terminal.");
+		logf(LOG_ERROR, "color not supported by your terminal.");
 		return -1;
 	}
 
 	/*
-	logf(DEBUG_LOG, "establishing session to 127.0.0.1:1251");
+	logf(LOG_DEBUG, "establishing session to 127.0.0.1:1251");
 	Session *session;
 	try {
 		session = new Session("127.0.0.1", 1251);
 		session->run();
 	} catch(NetworkException *e) {
-		logf(WARNING_LOG, "%s", e->str());
+		logf(LOG_WARNING, "%s", e->str());
 		delete session;
 	}
 	*/

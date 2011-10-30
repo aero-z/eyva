@@ -9,16 +9,16 @@ int main(int argc, char **argv) {
 
 	AyeLog::log_verbosity = 2; // normal log
 
-	printf("Type `help' to see a list of available commands.\n\n");
+	printf("\nType `help' to see a list of available commands.\n\n");
 
 	Server *server = new Server(1251);
 	try {
 		server->run();
 	} catch(NetworkException *e) {
 		delete server;
-		AyeLog::logf(ERROR_LOG, e->str());
+		AyeLog::logf(LOG_ERROR, e->str());
 	} catch(IOException *e) {
 		delete server;
-		AyeLog::logf(ERROR_LOG, e->str());
+		AyeLog::logf(LOG_ERROR, e->str());
 	}
 }

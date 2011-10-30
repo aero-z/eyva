@@ -5,13 +5,13 @@
 
 class Client {
 	public:
-		Client(int, char const *);
-		~Client();
-		int getSocket();
-		char const *getIP();
+		Client(int socket, char const* ip);
+		~Client(void);
+		int getSocket(void);
+		char const* getIP(void);
 	private:
 		int socket;
-		char *ip;
+		char* ip;
 };
 
 #endif

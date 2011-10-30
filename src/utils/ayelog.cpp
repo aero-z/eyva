@@ -39,13 +39,13 @@ void AyeLog::logf(log_type type, char const* format, ...) {
 	/* Add additional stuff to the message: */
 	char b2[LOG_BUF];            // buffer
 	switch(type) {
-		case WARNING_LOG:
+		case LOG_WARNING:
 			snprintf(b2, LOG_BUF, "! \e[33mwarning:\e[0m %s", b1);
 			break;
-		case ERROR_LOG:
+		case LOG_ERROR:
 			snprintf(b2, LOG_BUF, "! \e[31mERROR:\e[0m %s", b1);
 			break;
-		case DEBUG_LOG:
+		case LOG_DEBUG:
 			snprintf(b2, LOG_BUF, "  \e[36m%s\e[0m", b1);
 			break;
 		default:
@@ -59,12 +59,12 @@ void AyeLog::logf(log_type type, char const* format, ...) {
 	snprintf(b3, LOG_BUF, "\e[36m[%02d:%02d:%02d]\e[0m %s",
 			timestamp->tm_hour, timestamp->tm_min, timestamp->tm_sec, b2);
 
-	// TODO write to log file, ignore DEBUG_LOG
+	// TODO write to log file, ignore LOG_DEBUG
 
 	/* Write log message to stdout, depending on log level:
 	 */
-	if((type == DEBUG_LOG && log_verbosity >= 3)
-			|| (type == NORMAL_LOG && log_verbosity >= 2)
-			|| (type == WARNING_LOG && log_verbosity >= 1))
+	if((type == LOG_DEBUG && log_verbosity >= 3)
+			|| (type == LOG_NORMAL && log_verbosity >= 2)
+			|| (type == LOG_WARNING && log_verbosity >= 1))
 		printf("%s\n", b3);
 }

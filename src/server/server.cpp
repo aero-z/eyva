@@ -38,7 +38,7 @@ Server::Server(int port) {
 	if(listen(sockl, CLIENTS_MAX) == -1) {
 		throw new NetworkException("listen() failed: %s", strerror(errno));
 	}
-	logf(NORMAL_LOG, "Listening on port %d ...", port);
+	logf(LOG_NORMAL, "Listening on port %d ...", port);
 }
 
 /* PUBLIC METHODS */
@@ -84,13 +84,13 @@ void Server::run() {
 
 	/* Close all sockets and quit:
 	 */
-	logf(NORMAL_LOG, "received shutdown signal, closing sockets ...");
+	logf(LOG_NORMAL, "received shutdown signal, closing sockets ...");
 
 	close(sockl);
 	for(unsigned int i = 0; i < clients.size(); i++)
 		close(clients[i]->getSocket());
 	
-	logf(NORMAL_LOG, "Bye!");
+	logf(LOG_NORMAL, "Bye!");
 }
 
 /* PRIVATE METHODS */
@@ -116,7 +116,7 @@ void Server::prepareFDSet(void) {
 
 /* This method handles incoming connections:
  */
-void Server::handleConnection() {
+void Server::handleConnection(void) {
 	/* Accept the connection:
 	 * sockl:       listening socket for establishing a connection
 	 * client_addr: struct to store client information
@@ -136,9 +136,9 @@ void Server::handleConnection() {
 	 */
 	if(clients.size() < CLIENTS_MAX) {
 		clients.push_back(new Client(sock_new,inet_ntoa(client_addr.sin_addr)));
-		logf(NORMAL_LOG, "\e[32m%s\e[0m: new connection",
+		logf(LOG_NORMAL, "\e[32m%s\e[0m: new connection",
 				clients[clients.size()-1]->getIP());
-		logf(DEBUG_LOG, "new connection established on socket %d",
+		logf(LOG_DEBUG, "new connection established on socket %d",
 				clients[clients.size()-1]->getSocket());
 	} else {
 		close(sock_new);
@@ -151,7 +151,7 @@ void Server::handleData(int id) {
 	/* Read data to buffer:
 	 */
 	int received = read(clients[id]->getSocket(), input_buffer, BUFFER_SIZE);
-	logf(DEBUG_LOG, "received %d bytes", received);
+	logf(LOG_DEBUG, "received %d bytes", received);
 
 	/* read() should return the number of bytes received. If the number is
 	 * negative, there was an error, and we'll crash:
@@ -163,7 +163,7 @@ void Server::handleData(int id) {
 	 * closed by the peer:
 	 */
 	if(received == 0) {
-		logf(NORMAL_LOG, "> %s: connection closed by peer",
+		logf(LOG_NORMAL, "> %s: connection closed by peer",
 				clients[id]->getIP());
 		/* TODO
 		data_guard->disconnect(clients[id]->getSocket());
@@ -183,7 +183,7 @@ void Server::handleData(int id) {
 		 */
 		int sent = send(clients[id]->getSocket(), &confirmation_byte, 1,
 				MSG_NOSIGNAL);
-		logf(DEBUG_LOG, "confirmation: sent %d bytes", sent);
+		logf(LOG_DEBUG, "confirmation: sent %d bytes", sent);
 
 		/* send() should return the number of bytes sent. If there's something
 		 * wrong, we couldn't send the one byte (the value should be different
@@ -191,7 +191,7 @@ void Server::handleData(int id) {
 		 * We may assume that the client has disconnected.
 		 */
 		if(sent != 1) {
-			logf(WARNING_LOG, "%s: connection lost", clients[id]->getIP());
+			logf(LOG_WARNING, "%s: connection lost", clients[id]->getIP());
 			/* TODO
 			data_guard->disconnect(clients[id]->getSocket());
 			*/
@@ -203,7 +203,7 @@ void Server::handleData(int id) {
 		else {
 			char debug_msg[BUFFER_SIZE];
 			copyFirstLine(debug_msg, input_buffer);
-			logf(DEBUG_LOG, "%s: received '%s'", clients[id]->getIP(),
+			logf(LOG_DEBUG, "%s: received '%s'", clients[id]->getIP(),
 					debug_msg);
 
 			/* Here, the data guard takes over. The content of the input_buffer
@@ -250,7 +250,7 @@ void Server::handleStdInput(void) {
 /* This method copies everything from `src' to `dest' until a newline or the
  * terminating \0 (= strlen) appears:
  */
-void Server::copyFirstLine(char *dest, char const *src) {
+void Server::copyFirstLine(char* dest, char const* src) {
 	int pos;
 	strncpy(dest, src, pos = ((unsigned int)(strstr(src,"\n")-src)<strlen(src))
 			? strstr(src,"\n")-src : strlen(src));
@@ -270,7 +270,7 @@ void Server::handleResponse(void) {
 		 * otherwise already stop at the first byte:
 		 */
 		output_buffer[0] = 32;
-		logf(DEBUG_LOG, "broadcast message: '%s'", output_buffer);
+		logf(LOG_DEBUG, "broadcast message: '%s'", output_buffer);
 		for(unsigned int i = 0; i < clients.size(); i++) {
 			sent = send(clients[i]->getSocket(), output_buffer,
 					strlen(output_buffer), MSG_NOSIGNAL);
@@ -278,7 +278,7 @@ void Server::handleResponse(void) {
 			/* Check connection and disconnect in case of error:
 			 */
 			if(sent < 0) {
-				logf(WARNING_LOG, "%s: connection lost", clients[i]->getIP());
+				logf(LOG_WARNING, "%s: connection lost", clients[i]->getIP());
 				/* TODO
 				data_guard->disconnect(clients[j]->getSocket());
 				*/
@@ -291,7 +291,7 @@ void Server::handleResponse(void) {
 	 * client file descriptor:
 	 */
 	else {
-		logf(DEBUG_LOG, "message to: %s on %s",
+		logf(LOG_DEBUG, "message to: %s on %s",
 				clients[output_buffer[0]]->getIP(),
 				clients[output_buffer[0]]->getSocket());
 		sent = send(clients[output_buffer[0]]->getSocket(), output_buffer,
@@ -299,7 +299,7 @@ void Server::handleResponse(void) {
 		/* Check connection and disconnect in case of error:
 		 */
 		if(sent < 0) {
-			logf(WARNING_LOG, "%s: connection lost",
+			logf(LOG_WARNING, "%s: connection lost",
 					clients[output_buffer[0]]->getIP());
 			/* TODO
 			data_guard->disconnect(clients[output_buffer[0]]->getSocket());

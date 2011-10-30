@@ -25,7 +25,7 @@ Session::Session(char const* ip, int port) {
 	if(connect(sockc, (sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
 		throw new NetworkException("connect() failed: %s", strerror(errno));
 	}
-	logf(NORMAL_LOG, "Connected to %s on port %d ...", ip, port);
+	logf(LOG_NORMAL, "Connected to %s on port %d ...", ip, port);
 }
 
 /* PUBLIC METHODS */
@@ -52,7 +52,7 @@ void Session::run(void) {
 		 */
 		if(selected >= 0) {
 			if(FD_ISSET(sockc, &socket_set)) {
-				logf(DEBUG_LOG, "input from server");
+				logf(LOG_DEBUG, "input from server");
 			}
 		}
 	}

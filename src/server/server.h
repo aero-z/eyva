@@ -24,15 +24,15 @@
 class Server {
 	public:
 		Server(int);
-		void run();
+		void run(void);
 	private:
-		void copyFirstLine(char *, char const *);
-		void prepareFDSet();
-		void handleConnection();
-		void handleData(int);
-		void handleStdInput();
-		void handleResponse();
-		DataGuard *data_guard;
+		void copyFirstLine(char* dest, char const* src);
+		void prepareFDSet(void);
+		void handleConnection(void);
+		void handleData(int ip);
+		void handleStdInput(void);
+		void handleResponse(void);
+		DataGuard* data_guard;
 		int sockl;
 		struct sockaddr_in server_addr;  // our server's network properties
 		struct sockaddr_in client_addr;  // temporal struct to store client info
@@ -40,7 +40,7 @@ class Server {
 		char input_buffer[BUFFER_SIZE];
 		char output_buffer[BUFFER_SIZE];
 		char confirmation_byte;
-		std::vector<Client *> clients;
+		std::vector<Client*> clients;
 		fd_set socket_set;               // set of socket that select() handles
 		bool term_signal;                // will be set to true for shutdown
 };
