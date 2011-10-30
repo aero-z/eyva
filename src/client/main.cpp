@@ -2,15 +2,21 @@
 #include <ayelog.h>
 #include <network_exception.h>
 
-#include <curses.h>     // for ncurses
+#include <ncurses.h>     // for ncurses
 #include <cstdlib>
 
 #define CLIENT_VERSION 0.1
 #define UPDATE 0
 
+using namespace AyeLog;
+
 WINDOW *w_map, *w_panel;
 
 bool setUpCurses(void) {
+	/* Create a WINDOW object for the map and the panel:
+	 */
+	//w_panel = newwin(2, 15, 5, 5);
+
 	/* Check if color output is supported, and activate, if yes, otherwise
 	 * quit:
 	 */
@@ -22,11 +28,6 @@ bool setUpCurses(void) {
 	 * terminal emulators otherwise won't display colors):
 	 */
 	use_default_colors();
-
-	/* Create a WINDOW object for the map and the panel:
-	 */
-	w_map = initscr();
-	w_panel = initscr();
 
 	/* User input shall be handled immediately without waiting for newline. Note
 	 * that ^C, ^Z and the rest still work (those would be handled if raw() was
@@ -42,7 +43,7 @@ bool setUpCurses(void) {
 	/* We allow buttons like F1, F2 and (important!) arrow keys:
 	 */
 	keypad(w_map, true);
-	keypad(w_panel, true);
+	//keypad(w_panel, true);
 
 	/* We won't show the cursor by default (only in panel mode):
 	 */
@@ -51,7 +52,6 @@ bool setUpCurses(void) {
 	/* We will block 0.1 seconds for a user input, then go on (in other words:
 	 * check for network activity):
 	 */
-	halfdelay(1);  // in tenth of seconds
 
 	return true;
 }
@@ -59,25 +59,42 @@ bool setUpCurses(void) {
 int main(int argc, char **argv) {
 	// TODO parse user input
 
-	AyeLog::log_verbosity = 2;  // also print debug messages
+	log_verbosity = 0; // no log output
 
+	initscr();  // start ncurses
+	logf(DEBUG_LOG, "setting up ncurses ...");
 	if(!setUpCurses()) {
 		endwin();
-		AyeLog::logf(ERROR_LOG, "color not supported by your terminal.");
+		logf(ERROR_LOG, "color not supported by your terminal.");
 		return -1;
 	}
 
-	Session *session = new Session("127.0.0.1", 1251);
+	/*
+	logf(DEBUG_LOG, "establishing session to 127.0.0.1:1251");
+	Session *session;
 	try {
+		session = new Session("127.0.0.1", 1251);
 		session->run();
 	} catch(NetworkException *e) {
-		AyeLog::logf(WARNING_LOG, "%s", e->str());
+		logf(WARNING_LOG, "%s", e->str());
 		delete session;
 	}
+	*/
 
-	wprintw(w_panel, "Hello World!!!");
-	refresh();
+	w_map = newwin(10, 30, 10, 20);
+	printw("welcome to Eyva!");
 	getch();
+	halfdelay(1);  // in tenth of seconds
+	do {
+		//             l    r    t    b    tl   tr   bl   br
+		wborder(w_map, '|', '|', '=', '-', '+', '+', '+', '+');
+		//wborder(w_map, 179, 179, 205, 196, 213, 184, 192, 217);
+		wrefresh(w_map);
+	} while(getch() != 'c');
 
-	endwin();
+	curs_set(1);
+
+	delwin(w_map);
+	//delwin(w_panel);
+	endwin(); // end ncurses
 }

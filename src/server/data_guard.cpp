@@ -4,8 +4,7 @@ DataGuard::DataGuard(void) {};
 
 /* PUBLIC METHODS */
 
-void DataGuard::process(char *response, char const *request,
-		int RESPONSE_BUF) {
+void DataGuard::process(char *response, char const *request) {
 	// TODO
 	response[0] = 0;
 	response[1] = 'y';

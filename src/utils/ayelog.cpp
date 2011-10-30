@@ -1,9 +1,10 @@
 #include "ayelog.h"
 
 /* Verbosity level for log printouts.
- * 0: no printout
- * 1: normal printout
- * 2: debug printout (attention! this produces a lot of output) // TODO
+ * 0: no printout (only errors)
+ * 1: warnings and errors
+ * 2: normal printout
+ * 3: debug printout (attention! this produces a lot of output) // TODO
  *
  * Log files are always written with log_verbosity level 1.
  */
@@ -60,6 +61,10 @@ void AyeLog::logf(log_type type, char const* format, ...) {
 
 	// TODO write to log file, ignore DEBUG_LOG
 
-	if(log_verbosity > 0)
+	/* Write log message to stdout, depending on log level:
+	 */
+	if((type == DEBUG_LOG && log_verbosity >= 3)
+			|| (type == NORMAL_LOG && log_verbosity >= 2)
+			|| (type == WARNING_LOG && log_verbosity >= 1))
 		printf("%s\n", b3);
 }

@@ -28,12 +28,12 @@ Session::Session(char const* ip, int port) {
 	logf(NORMAL_LOG, "Connected to %s on port %d ...", ip, port);
 }
 
+/* PUBLIC METHODS */
+
 void Session::run(void) {
 	bool term_signal = false;
 	while(!term_signal) {
-		/* TODO
 		prepareFDSet();
-		*/
 
 		/* select() checks every socket in the socket_set if there's some data
 		 * on it.
@@ -41,9 +41,20 @@ void Session::run(void) {
 		 * want to poll (in order for the data guard to go on), we don't block
 		 * by setting the timeout to 0:
 		 */
-		/* TODO
-		int selected = select(FD_SETSIZE, &socket_set, NULL, NULL, NULL);
-		*/
+		select_timeout.tv_sec = 0;
+		select_timeout.tv_usec = 0;
+		int selected = select(FD_SETSIZE, &socket_set, NULL, NULL,
+				&select_timeout);
+
+		/* select() should return a -1 if something went wrong. As we have set a
+		 * timeout, the error just indicates that there was no data after the
+		 * timeout (usually we would crash here, but we'll just go on):
+		 */
+		if(selected >= 0) {
+			if(FD_ISSET(sockc, &socket_set)) {
+				logf(DEBUG_LOG, "input from server");
+			}
+		}
 	}
 
 	// send
@@ -61,4 +72,43 @@ void Session::run(void) {
 	send(sockc, output_buffer, 0, MSG_NOSIGNAL);
 
 	close(sockc);
+}
+
+/* The select() command checks the availability of data on sockets. select()
+ * requires the sockets to be in a fd_set, so we'll prepare the fd_set
+ * appropriately:
+ */
+void Session::prepareFDSet(void) {
+	/* Add the connection socket to the fd_set that is checked by select() for
+	 * available data on it:
+	 */
+	FD_SET(sockc, &socket_set);
+}
+
+/* This method handles incoming data from the server:
+ */
+void Session::handleData() {
+	/* Read data to buffer:
+	 */
+	int received = read(sockc, input_buffer, BUFFER_SIZE);
+
+	/* read() should return the number of bytes received. If the number is
+	 * negative, there was an error, and we'll crash:
+	 */
+	if(received < 0)
+		throw new NetworkException("read() failed");
+	
+	/* If the number of bytes received is equal to zero, the connection has been
+	 * closed by the server.
+	 */
+	if(received == 0)
+		throw new NetworkException("client disconnect");
+	
+	/* OK, if we haven't crashed yet, the number of received bytes should be
+	 * positive.
+	 * The data guard may take over at this point:
+	 */
+	/* TODO
+	data_guard->process(output_buffer, input_buffer);
+	*/
 }

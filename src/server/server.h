@@ -6,6 +6,7 @@
 #include <ayelog.h>             // for handling messages
 #include <network_exception.h>  // for various socket errors
 #include <io_exception.h>       // for errors with select()
+#include <eyva_constants.h>     // various values that are used again and again
 
 #include <vector>       // for the list of clients
 #include <sys/types.h>  // socket types
@@ -17,12 +18,6 @@
 #include <cerrno>       // for the "errno" macro
 #include <cstdio>       // for user IO
 
- /* This is the maximum amount of bytes that can be stored in the buffer.
-  * DO NOT CHANGE THIS VALUE, UNLESS YOU LIKE TO BREAK THINGS.
-  * See doc/data_definition.txt for further information.
-  */
-#define BUFFER_SIZE 65539
-
 /* Number of clients that we can handle on this server. */ 
 #define CLIENTS_MAX 3
 
@@ -33,8 +28,8 @@ class Server {
 	private:
 		void copyFirstLine(char *, char const *);
 		void prepareFDSet();
-		void handleIncomingConnection();
-		void handleIncomingData(int);
+		void handleConnection();
+		void handleData(int);
 		void handleStdInput();
 		void handleResponse();
 		DataGuard *data_guard;

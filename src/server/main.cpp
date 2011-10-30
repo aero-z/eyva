@@ -6,7 +6,8 @@
 
 int main(int argc, char **argv) {
 	// TODO parse user input
-	AyeLog::log_verbosity = 2;
+
+	AyeLog::log_verbosity = 2; // normal log
 
 	printf("Type `help' to see a list of available commands.\n\n");
 

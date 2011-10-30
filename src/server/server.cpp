@@ -65,14 +65,14 @@ void Server::run() {
 		 * and react accordingly:
 		 */
 		if(FD_ISSET(sockl, &socket_set))
-			handleIncomingConnection();
+			handleConnection();
 
 		/* Cycle through all connections to check if there is data and react
 		 * accordingly:
 		 */
 		for(unsigned int i = 0; i < clients.size(); i++) {
 			if(FD_ISSET(clients[i]->getSocket(), &socket_set)) {
-				handleIncomingData(i);
+				handleData(i);
 			}
 		}
 
@@ -102,8 +102,8 @@ void Server::prepareFDSet(void) {
 	 */
 	FD_ZERO(&socket_set);
 
-	/* First, add the listening socket (for incoming connections), then
-	 * cycle through the list of clients:
+	/* First, add the listening socket (for incoming connections), then cycle
+	 * through the list of clients:
 	 */
 	FD_SET(sockl, &socket_set);
 	for(unsigned int i = 0; i < clients.size(); i++)
@@ -116,7 +116,7 @@ void Server::prepareFDSet(void) {
 
 /* This method handles incoming connections:
  */
-void Server::handleIncomingConnection() {
+void Server::handleConnection() {
 	/* Accept the connection:
 	 * sockl:       listening socket for establishing a connection
 	 * client_addr: struct to store client information
@@ -125,14 +125,14 @@ void Server::handleIncomingConnection() {
 	int sock_new = accept(sockl, (sockaddr *)&client_addr,
 			&client_addr_len);
 
-	/* accept() should return -1 if something went wrong. Again,
-	 * as we don't want to handle the error yet, crash!
+	/* accept() should return -1 if something went wrong. Again, as we don't
+	 * want to handle the error yet, crash!
 	 */
 	if(sock_new < 0)
 		throw new NetworkException("accept() failed");
 
-	/* Add the new client to the list of clients, if there's still
-	 * space for. Otherwise reject the client (close the socket):
+	/* Add the new client to the list of clients, if there's still space for.
+	 * Otherwise reject the client (close the socket):
 	 */
 	if(clients.size() < CLIENTS_MAX) {
 		clients.push_back(new Client(sock_new,inet_ntoa(client_addr.sin_addr)));
@@ -147,20 +147,20 @@ void Server::handleIncomingConnection() {
 
 /* This method handles incoming data from clients:
  */
-void Server::handleIncomingData(int id) {
+void Server::handleData(int id) {
 	/* Read data to buffer:
 	 */
 	int received = read(clients[id]->getSocket(), input_buffer, BUFFER_SIZE);
 	logf(DEBUG_LOG, "received %d bytes", received);
 
-	/* read() should return the number of bytes received. If the
-	 * number is negative, there was an error, and we'll crash:
+	/* read() should return the number of bytes received. If the number is
+	 * negative, there was an error, and we'll crash:
 	 */
 	if(received < 0)
 		throw new NetworkException("read() failed");
 
-	/* If the number of bytes received is equal to zero, the
-	 * the connection has been closed by peer:
+	/* If the number of bytes received is equal to zero, the connection has been
+	 * closed by the peer:
 	 */
 	if(received == 0) {
 		logf(NORMAL_LOG, "> %s: connection closed by peer",
@@ -171,25 +171,23 @@ void Server::handleIncomingData(int id) {
 		clients.erase(clients.begin()+id);
 	}
 
-	/* If the number is positive, we have successfully received
-	 * data:
+	/* If the number is positive, we have successfully received data:
 	 */
 	else {
-		/* First, we send a confirmation message, the purpose
-		 * of which being:
+		/* First, we send a confirmation message, the purpose of which being:
 		 * 1) confirmation for server: client is still here!
 		 * 2) confirmation for client: my message was delivered!
-		 * The purpose of MSG_NOSIGNAL is to ignore the SIGPIPE
-		 * signal that would be kill the process if there's a
-		 * send() error (default behaviour, FSM knows why).
+		 * The purpose of MSG_NOSIGNAL is to ignore the SIGPIPE signal that
+		 * would be kill the process if there's a send() error (default
+		 * behaviour, FSM knows why).
 		 */
 		int sent = send(clients[id]->getSocket(), &confirmation_byte, 1,
 				MSG_NOSIGNAL);
 		logf(DEBUG_LOG, "confirmation: sent %d bytes", sent);
 
-		/* send() should return the number of bytes sent. If
-		 * there's something wrong, we couldn't send the one
-		 * byte (the value should be different from 1).
+		/* send() should return the number of bytes sent. If there's something
+		 * wrong, we couldn't send the one byte (the value should be different
+		 * from 1).
 		 * We may assume that the client has disconnected.
 		 */
 		if(sent != 1) {
@@ -200,8 +198,7 @@ void Server::handleIncomingData(int id) {
 			clients.erase(clients.begin()+id);
 		}
 
-		/* Otherwise, we can let the connection handler take
-		 * over:
+		/* Otherwise, we can let the data guard take over:
 		 */
 		else {
 			char debug_msg[BUFFER_SIZE];
@@ -209,13 +206,11 @@ void Server::handleIncomingData(int id) {
 			logf(DEBUG_LOG, "%s: received '%s'", clients[id]->getIP(),
 					debug_msg);
 
-			/* Here, the connection handler takes over. The content
-			 * of the input_buffer tells the connection handler what
-			 * to do (that will take a lot of time).
-			 * The response will be stored in the output_buffer.
+			/* Here, the data guard takes over. The content of the input_buffer
+			 * tells the connection handler what to do (that will take a lot of
+			 * time). The response will be stored in the output_buffer.
 			 */
-			data_guard->process(output_buffer, input_buffer,
-					BUFFER_SIZE);
+			data_guard->process(output_buffer, input_buffer);
 
 			/* Handle the response generated by the connection handler:
 			 */
@@ -229,8 +224,8 @@ void Server::handleIncomingData(int id) {
 void Server::handleStdInput(void) {
 	int received = read(STDIN_FILENO, input_buffer, BUFFER_SIZE);
 
-	/* read() should return the number of bytes read. If something went
-	 * wrong there, we don't want to handle the error, so let's crash:
+	/* read() should return the number of bytes read. If something went wrong
+	 * there, we don't want to handle the error, so let's crash:
 	 */
 	if(received < 0)
 		throw new IOException("input failed");
@@ -267,13 +262,12 @@ void Server::copyFirstLine(char *dest, char const *src) {
 void Server::handleResponse(void) {
 	int sent;
 
-	/* In case that the first byte is set to zero, it's a
-	 * broadcast message and shall be sent to all clients:
+	/* In case that the first byte is set to zero, it's a broadcast message and
+	 * shall be sent to all clients:
 	 */
 	if(output_buffer[0] == 0) {
-		/* We set the first byte to a value other than 0,
-		 * since strlen() would otherwise already stop at
-		 * the first byte:
+		/* We set the first byte to a value other than 0, since strlen() would
+		 * otherwise already stop at the first byte:
 		 */
 		output_buffer[0] = 32;
 		logf(DEBUG_LOG, "broadcast message: '%s'", output_buffer);
@@ -281,22 +275,20 @@ void Server::handleResponse(void) {
 			sent = send(clients[i]->getSocket(), output_buffer,
 					strlen(output_buffer), MSG_NOSIGNAL);
 
-			/* Check connection and disconnect in case of
-			 * error:
+			/* Check connection and disconnect in case of error:
 			 */
 			if(sent < 0) {
 				logf(WARNING_LOG, "%s: connection lost", clients[i]->getIP());
 				/* TODO
-				connection_handler->disconnect(
-						clients[j]->getSocket());
+				data_guard->disconnect(clients[j]->getSocket());
 				*/
 				clients.erase(clients.begin()+i);
 			}
 		}
 	}
 	
-	/* In case the first byte is NOT set to zero, it shall
-	 * be interpreted as the client filedescriptor:
+	/* In case the first byte is NOT set to zero, it shall be interpreted as the
+	 * client file descriptor:
 	 */
 	else {
 		logf(DEBUG_LOG, "message to: %s on %s",
@@ -310,8 +302,7 @@ void Server::handleResponse(void) {
 			logf(WARNING_LOG, "%s: connection lost",
 					clients[output_buffer[0]]->getIP());
 			/* TODO
-			data_guard->disconnect(
-					clients[output_buffer[0]]->getSocket());
+			data_guard->disconnect(clients[output_buffer[0]]->getSocket());
 			*/
 			clients.erase(clients.begin()+output_buffer[0]);
 		}
