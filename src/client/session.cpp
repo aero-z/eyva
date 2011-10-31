@@ -10,7 +10,7 @@ Session::Session(char const* ip, int port) {
 	 */
 	sockc = socket(AF_INET, SOCK_STREAM, 0);
 	if(sockc < 0)
-		throw new NetworkException("socket() failed");
+		throw new Exception("socket() failed");
 	
 	/* Clear the server_addr struct, then fill with appropriate data:
 	 */
@@ -23,7 +23,7 @@ Session::Session(char const* ip, int port) {
 	 * struct that was just defined:
 	 */
 	if(connect(sockc, (sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-		throw new NetworkException("connect() failed: %s", strerror(errno));
+		throw new Exception("connect() failed: %s", strerror(errno));
 	}
 	logf(LOG_NORMAL, "Connected to %s on port %d ...", ip, port);
 }
@@ -55,22 +55,23 @@ void Session::run(void) {
 				logf(LOG_DEBUG, "input from server");
 			}
 		}
+
+		// send TODO
+		buffer_out[0] = 'h';
+		buffer_out[1] = 'e';
+		buffer_out[2] = 'l';
+		buffer_out[3] = 'l';
+		buffer_out[4] = 'o';
+		send(sockc, buffer_out, strlen(buffer_out), MSG_NOSIGNAL);
+	
+		// receive
+		read(sockc, buffer_in, BUFFER_SIZE);
+	
+		// quit
+		term_signal = true;
 	}
 
-	// send
-	output_buffer[0] = 'h';
-	output_buffer[1] = 'e';
-	output_buffer[2] = 'l';
-	output_buffer[3] = 'l';
-	output_buffer[4] = 'o';
-	send(sockc, output_buffer, strlen(output_buffer), MSG_NOSIGNAL);
-
-	// receive
-	read(sockc, input_buffer, BUFFER_SIZE);
-
-	// quit
-	send(sockc, output_buffer, 0, MSG_NOSIGNAL);
-
+	send(sockc, buffer_out, 0, MSG_NOSIGNAL);
 	close(sockc);
 }
 
@@ -90,25 +91,25 @@ void Session::prepareFDSet(void) {
 void Session::handleData() {
 	/* Read data to buffer:
 	 */
-	int received = read(sockc, input_buffer, BUFFER_SIZE);
+	int received = read(sockc, buffer_in, BUFFER_SIZE);
 
 	/* read() should return the number of bytes received. If the number is
 	 * negative, there was an error, and we'll crash:
 	 */
 	if(received < 0)
-		throw new NetworkException("read() failed");
+		throw new Exception("read() failed");
 	
 	/* If the number of bytes received is equal to zero, the connection has been
 	 * closed by the server.
 	 */
 	if(received == 0)
-		throw new NetworkException("client disconnect");
+		throw new Exception("client disconnect");
 	
 	/* OK, if we haven't crashed yet, the number of received bytes should be
 	 * positive.
 	 * The data guard may take over at this point:
 	 */
 	/* TODO
-	data_guard->process(output_buffer, input_buffer);
+	data_guard->process(buffer_out, buffer_in);
 	*/
 }

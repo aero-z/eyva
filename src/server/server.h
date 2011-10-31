@@ -3,10 +3,9 @@
 
 #include "client.h"
 #include "data_guard.h"
-#include <ayelog.h>             // for handling messages
-#include <network_exception.h>  // for various socket errors
-#include <io_exception.h>       // for errors with select()
-#include <eyva_constants.h>     // various values that are used again and again
+#include <ayelog.h>
+#include <exception.h>
+#include <eyva.h>     // various values that are used again and again
 
 #include <vector>       // for the list of clients
 #include <sys/types.h>  // socket types

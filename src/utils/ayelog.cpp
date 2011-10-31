@@ -8,7 +8,7 @@
  *
  * Log files are always written with log_verbosity level 1.
  */
-int AyeLog::log_verbosity = 0;
+int AyeLog::log_verbosity = 1;    // default value
 
 /* This basically works the same way as printf, but prints the formated string
  * to a file instead of stdout.

@@ -1,5 +1,5 @@
-EYVA 0.1d2
-==========
+EYVA 0.1
+========
 Readme file
 
 
@@ -26,11 +26,13 @@ Compile:
 
 Run:
    
-   It doesn't do anything yet.
-   You may execute the `EyvaServer', which will listen to port 1251, and use
-   netcat to send and receive data.
-   `EyvaClient' is currently under heavy development and won't do anything
-   useful.
+   Currently, the components have no real functionality:
+   
+   `EyvaServer' will listen to port 1251. You may use `netcat' to send and
+   receive data.
+
+   `EyvaClient' will just connect to the default IP and port where the server is
+   supposed to run, send a package and disconnect.
 
 
 Bugs:

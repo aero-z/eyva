@@ -7,3 +7,10 @@ DataGuard::DataGuard(void) {
 DataGuard::~DataGuard(void) {
 	delete ui;
 }
+
+/* PUBLIC METHODS */
+
+void DataGuard::process(char* output_buffer, char const* input_buffer) {
+	// TODO
+}
+

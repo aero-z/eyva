@@ -2,9 +2,8 @@
 #define _SESSION_H_
 
 #include <ayelog.h>
-#include <network_exception.h>
-#include <io_exception.h>
-#include <eyva_constants.h>
+#include <exception.h>
+#include <eyva.h>
 
 #include <sys/types.h>   // socket types
 #include <sys/socket.h>  // sockets
@@ -27,8 +26,8 @@ class Session {
 		fd_set socket_set;
 		struct sockaddr_in server_addr;
 		struct timeval select_timeout;
-		char input_buffer[BUFFER_SIZE];
-		char output_buffer[BUFFER_SIZE];
+		char buffer_in[BUFFER_SIZE];
+		char buffer_out[BUFFER_SIZE];
 };
 
 #endif

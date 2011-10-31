@@ -13,7 +13,7 @@ Server::Server(int port) {
 	 */
 	sockl = socket(AF_INET, SOCK_STREAM, 0);
 	if(sockl < 0)
-		throw new NetworkException("socket() failed");
+		throw new Exception("socket() failed");
 
 	/* Clear the server_addr struct, then fill with appropriate data:
 	 */
@@ -28,7 +28,7 @@ Server::Server(int port) {
 	 * addrlen:     size of the address struct
 	 */
 	if(bind(sockl, (sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-		throw new NetworkException("bind() failed: %s", strerror(errno));
+		throw new Exception("bind() failed: %s", strerror(errno));
 	}
 
 	/* Start socket (we will use it to listen, since this is a server):
@@ -36,7 +36,7 @@ Server::Server(int port) {
 	 * CLIENTS_MAX:   #connections to keep in queue and to listen to
 	 */
 	if(listen(sockl, CLIENTS_MAX) == -1) {
-		throw new NetworkException("listen() failed: %s", strerror(errno));
+		throw new Exception("listen() failed: %s", strerror(errno));
 	}
 	logf(LOG_NORMAL, "Listening on port %d ...", port);
 }
@@ -59,7 +59,7 @@ void Server::run() {
 		 * to handle the error yet, just let's crash!
 		 */
 		if(selected < 0)
-			throw new IOException("select() failed");
+			throw new Exception("select() failed");
 
 		/* If we haven't crashed yet, check if there is a connection request,
 		 * and react accordingly:
@@ -129,7 +129,7 @@ void Server::handleConnection(void) {
 	 * want to handle the error yet, crash!
 	 */
 	if(sock_new < 0)
-		throw new NetworkException("accept() failed");
+		throw new Exception("accept() failed");
 
 	/* Add the new client to the list of clients, if there's still space for.
 	 * Otherwise reject the client (close the socket):
@@ -157,7 +157,7 @@ void Server::handleData(int id) {
 	 * negative, there was an error, and we'll crash:
 	 */
 	if(received < 0)
-		throw new NetworkException("read() failed");
+		throw new Exception("read() failed");
 
 	/* If the number of bytes received is equal to zero, the connection has been
 	 * closed by the peer:
@@ -228,7 +228,7 @@ void Server::handleStdInput(void) {
 	 * there, we don't want to handle the error, so let's crash:
 	 */
 	if(received < 0)
-		throw new IOException("input failed");
+		throw new Exception("input failed");
 
 	/* Copy the first line (it's all that's interesting):
 	 */

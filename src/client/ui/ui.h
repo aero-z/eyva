@@ -4,17 +4,16 @@
 #ifndef _UI_H_
 #define _UI_H_
 
-enum command {
-	SEND_MOVE_UP,
-	SEND_MOVE_DOWN,
-	SEND_MOVE_LEFT,
-	SEND_MOVE_RIGHT,
-	ACTION
-};
+#include <eyva.h>
+
+#include <cstdio>   // (v)(s)(f)(n)printf
+#include <cstdarg>  // va_list
 
 class UI {
 	public:
-		virtual bool pollInput(command com, double timeout) = 0;
+		UI(void) {};
+		virtual void pollInput(char* buffer_out, double timeout) = 0;
+		virtual bool prompt(char const* format, ...) = 0;
 };
 
 #endif

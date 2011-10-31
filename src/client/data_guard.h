@@ -2,7 +2,7 @@
 #define _DATA_GUARD_H_
 
 #include "ui/ncurses_ui.h"
-#include <eyva_constants.h>
+#include <eyva.h>
 
 class DataGuard {
 	public:
@@ -15,3 +15,4 @@ class DataGuard {
 };
 
 #endif
+

@@ -1,24 +1,22 @@
-#include "server.h"
-#include <network_exception.h>
-#include <io_exception.h>
-#include <ayelog.h>
-#include <cstdio>
+#include "main.h"
 
-int main(int argc, char **argv) {
+void cleanUp(void) {
+	delete server;
+}
+
+int main(int argc, char** argv) {
 	// TODO parse user input
 
 	AyeLog::log_verbosity = 2; // normal log
 
 	printf("\nType `help' to see a list of available commands.\n\n");
 
-	Server *server = new Server(1251);
 	try {
+		server = new Server(1251);
 		server->run();
-	} catch(NetworkException *e) {
-		delete server;
-		AyeLog::logf(LOG_ERROR, e->str());
-	} catch(IOException *e) {
-		delete server;
+	} catch(Exception* e) {
 		AyeLog::logf(LOG_ERROR, e->str());
 	}
+
+	cleanUp();
 }
