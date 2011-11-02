@@ -6,14 +6,10 @@
 
 #include <eyva.h>
 
-#include <cstdio>   // (v)(s)(f)(n)printf
-#include <cstdarg>  // va_list
-
 class UI {
 	public:
 		UI(void) {};
-		virtual void pollInput(char* buffer_out, double timeout) = 0;
-		virtual bool prompt(char const* format, ...) = 0;
+		virtual void poll(double timeout) = 0;
 };
 
 #endif

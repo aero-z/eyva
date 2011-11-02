@@ -7,7 +7,7 @@ void cleanUp(void) {
 int main(int argc, char** argv) {
 	// TODO parse user input
 
-	AyeLog::log_verbosity = 2; // normal log
+	AyeLog::log_verbosity = 3; // normal log
 
 	printf("\nType `help' to see a list of available commands.\n\n");
 

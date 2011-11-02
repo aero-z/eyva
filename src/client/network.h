@@ -1,6 +1,7 @@
-#ifndef _SESSION_H_
-#define _SESSION_H_
+#ifndef _NETWORK_H_
+#define _NETWORK_H_
 
+#include "data_handler.h"
 #include <ayelog.h>
 #include <exception.h>
 #include <eyva.h>
@@ -14,14 +15,16 @@
 
 #include <cstdio>        // TODO debug
 
-class Session {
+class Network {
 	public:
-		Session(char const* ip, int port);
-		void run(void);
+		Network(DataHandler* data_handler, char const* ip, int port);
+		~Network(void);
+		void poll(void);
 
 	private:
-		void prepareFDSet(void);
-		void handleData(void);
+		void pollIn(void);
+		void pollOut(void);
+		DataHandler* data_handler;
 		int sockc;
 		fd_set socket_set;
 		struct sockaddr_in server_addr;

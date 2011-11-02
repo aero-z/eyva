@@ -1,5 +1,5 @@
-EYVA 0.1d2
-==========
+EYVA 0.1
+========
 protocol
 
 
@@ -18,17 +18,6 @@ Structure:
    65539 at most.
 
    Commands (structure byte 1) are defined as follows:
-
-
-Connection level:
-
-   00  SUCCESS - [internal]
-   01  FAIL - [internal]
-       These commands are neither sent over the network, nor do they trigger
-       anything.
-       Every routine is built up on request+response, but it may happen that a
-       request does not need a response. These commande serve as an internal
-       confirmation whether a request was handled successfully or not.
 
 
 Session level:

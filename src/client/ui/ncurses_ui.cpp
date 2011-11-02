@@ -1,8 +1,10 @@
 #include "ncurses_ui.h"
 
-NCursesUI::NCursesUI(void) {
-	initscr();  // start ncurses mode
-	wm = new NCursesWM();
+NCursesUI::NCursesUI(DataHandler* data_handler) {
+	this->data_handler = data_handler;
+
+	initscr();             // start ncurses mode
+	wm = new NCursesWM();  // our window manager
 
 	/* Check for colors and active if available:
 	 */
@@ -30,19 +32,12 @@ NCursesUI::~NCursesUI(void) {
 /* PUBLIC METHODS */
 
 // virtual
-void NCursesUI::pollInput(char* buffer_out, double timeout) {
-	// TODO
-}
-
-// virtual
-bool NCursesUI::prompt(char const* format, ...) {
-	va_list args;                                     // access handler for args
-	va_start(args, format);                           // prepare access
-	vsnprintf(buffer_text, BUFFER_SIZE, format, args);// copy to buffer
-	va_end(args);                                     // end access
+void NCursesUI::poll(double timeout) {
+	//halfdelay((int)(timeout*10));
+	mvaddch(3, 4, 'h');
+	refresh();
+	getch();
 
 	// TODO
-
-	return true;
 }
 

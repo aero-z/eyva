@@ -9,8 +9,8 @@ SERVER_HEADER = $(wildcard src/server/*.h) $(wildcard src/utils/*.h)
 CLIENT_HEADER = $(wildcard src/client/*.h) $(wildcard src/utils/*.h)
 SERVER_OBJECTS = $(SERVER_SOURCES:.cpp=.o)
 CLIENT_OBJECTS = $(CLIENT_SOURCES:.cpp=.o)
-SERVER_EXECUTABLE = EyvaServer
-CLIENT_EXECUTABLE = EyvaClient
+SERVER_EXECUTABLE = eyva-server
+CLIENT_EXECUTABLE = eyva-client
 SHELL = /bin/bash
 
 all: $(SERVER_SOURCES) $(CLIENT_SOURCES) $(SERVER_EXECUTABLE) $(CLIENT_EXECUTABLE)

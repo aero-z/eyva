@@ -3,23 +3,20 @@
 
 #include "ui.h"
 #include "ncurses_wm.h"
+#include "../data_handler.h"
 #include <exception.h>
 
 #include <ncurses.h>
-#include <cstdio>    // (v)(s)(f)(n)printf
-#include <cstdarg>   // va_list
 
 class NCursesUI : public UI {
 	public:
-		NCursesUI(void);
+		NCursesUI(DataHandler* data_handler);
 		~NCursesUI(void);
-
-		// virtual:
-		void pollInput(char* buffer_out, double timeout);
-		bool prompt(char const* format, ...);
+		void poll(double timeout); // virtual
 
 	private:
 		NCursesWM* wm;
+		DataHandler* data_handler;
 		char buffer_text[BUFFER_SIZE];
 };
 
