@@ -28,11 +28,11 @@ Run:
    
    Currently, the components have no real functionality:
    
-   `EyvaServer' will listen to port 1251. You may use `netcat' to send and
-   receive data.
+   `eserver' will listen to port 1251. You may use `netcat' to send and receive
+   data.
 
-   `EyvaClient' will just connect to the default IP and port where the server is
-   supposed to run, send a package and disconnect.
+   `eclient' will just connect to the default IP and port where the server is
+   supposed to run, send nothing, and display messages until killed.
 
 
 Bugs:
