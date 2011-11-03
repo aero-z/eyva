@@ -124,28 +124,28 @@ Network::pollOut(void) {
 	/* Check if there's data to send. The packet will be stored to buffer_out
 	 * and the packet's length to to_send:
 	 */
-	int to_send = data_handler->getNetworkTask(buffer_out);
+	size_t command_len = data_handler->getNetworkTask(buffer_out);
 
-	/* The `eyva' protocol requires byte 0 to be the client's ID on the server.
-     * If this byte isn't the correct ID, we won't send the packet:
-     */
-    // TODO check client_id
-    if(buffer_out[0] != 0) {
-    	/* MSG_NOSIGNAL avoids a program crash by a SIGPIPE that would
-    	 * normally be raised if there's a sending error:
-    	 */
-    	int sent = send(sockc, buffer_out, to_send, MSG_NOSIGNAL);
+	/* 00_NULL means: data should not be sent:
+	 */
+	if(buffer_out[0] == 0)
+		return;
 
-    	/* send() should return the number of bytes sent. If the number is
-    	 * negative, there was an error, so we'll crash:
-    	 */
-    	if(sent < 0)
-    		throw new Exception("send() failed");
+   	/* MSG_NOSIGNAL avoids a program crash by a SIGPIPE that would normally be
+   	 * raised if there's a sending error. That's the default behaviour, FSM
+   	 * knows why:
+   	 */
+   	int sent = send(sockc, buffer_out, command_len, MSG_NOSIGNAL);
 
-    	/* If the number of bytes sent is equal to zero, there was an error,
-    	 * too, so we crash:
-    	 */
-    	if(sent == 0)
-    		throw new Exception("no bytes sent");
-    }
+   	/* send() should return the number of bytes sent. If the number is
+   	 * negative, there was an error, so we'll crash:
+   	 */
+   	if(sent < 0)
+   		throw new Exception("send() failed");
+
+   	/* If the number of bytes sent is equal to zero, there was an error,
+   	 * too, so we crash:
+   	 */
+   	if(sent == 0)
+   		throw new Exception("no bytes sent");
 }
