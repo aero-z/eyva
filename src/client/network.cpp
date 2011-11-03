@@ -2,6 +2,13 @@
 
 using namespace AyeLog;
 
+/**
+ * Constructor
+ * @param data_handler The data handler that is needed to communicate to the UI,
+ *                     and that handles all data related stuff.
+ * @param ip The server's IP address.
+ * @param port The port on which the server is running on.
+ */
 Network::Network(DataHandler* data_handler, char const* ip, int port) {
 	this->data_handler = data_handler;
 
@@ -31,30 +38,43 @@ Network::Network(DataHandler* data_handler, char const* ip, int port) {
 	logf(LOG_NORMAL, "Connection established to %s on port %d", ip, port);
 }
 
+/**
+ * Destructor.
+ */
 Network::~Network(void) {
 	// VOID
 }
 
+
 /* PUBLIC METHODS */
 
-void Network::poll(void) {
+/**
+ * This method checks the network socket if there is data on it, and it checks
+ * the data handler if this object has been alerted by the UI, so there is data
+ * to be sent to the server.
+ */
+void
+Network::poll(void) {
 	pollIn();
 	pollOut();
 }
 
+
 /* PRIVATE METHODS */
 
-/* This method checks incoming network data and forwards them to the data
- * handler to alert the UI:
+/**
+ * This method checks incoming network data and forwards them to the data
+ * handler to alert the UI.
  */
-void Network::pollIn(void) {
+void
+Network::pollIn(void) {
 	/* We'll add the connection socket to the fd_set that is checked by select()
 	 * for available data on it (see below):
 	 */
 	FD_SET(sockc, &socket_set);
 
-	/* select() checks every socket in the socket_set if there's some data
-	 * on it.
+	/* select() checks every socket in the socket_set if there's some data on
+	 * it.
 	 * This method would block until there's anything, but since we just
 	 * want to poll (in order for the data guard to go on), we don't block
 	 * by setting the timeout to 0:
@@ -90,20 +110,21 @@ void Network::pollIn(void) {
 			 * should be positive.
 			 * The data handler processes the received bytes and alerts the UI:
 			 */
-			data_handler->alertUI(buffer_in);
+			data_handler->setUITask(buffer_in, received);
 		}
 	}
 }
 
-/* This method checks the data handler if there's data to be sent and reacts
- * accordingly:
+/**
+ * This method checks the data handler if there's data to be sent and reacts
+ * accordingly.
  */
-void Network::pollOut(void) {
+void
+Network::pollOut(void) {
 	/* Check if there's data to send. The packet will be stored to buffer_out
 	 * and the packet's length to to_send:
 	 */
-	int to_send;
-	data_handler->getNetworkTask(buffer_out, &to_send);
+	int to_send = data_handler->getNetworkTask(buffer_out);
 
 	/* The `eyva' protocol requires byte 0 to be the client's ID on the server.
      * If this byte isn't the correct ID, we won't send the packet:

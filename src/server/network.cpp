@@ -1,9 +1,17 @@
-#include "server.h"
+#include "network.h"
 
 using namespace AyeLog;
 
-Server::Server(int port) {
-	data_guard = new DataGuard();
+/**
+ * Constructor.
+ * @param data_handler The data handler that is needed to communicate to the
+ *                     game object.
+ * @param port The TCP port to listen to.
+ * @throws Exception If there was an error while setting up the network
+ *                   connection.
+ */
+Network::Network(DataHandler* data_handler, int port) {
+	this->data_handler = data_handler;
 	confirmation_byte = 0;
 
 	/* Create socket:
@@ -35,69 +43,52 @@ Server::Server(int port) {
 	 * sockl:         socket that should start listening
 	 * CLIENTS_MAX:   #connections to keep in queue and to listen to
 	 */
-	if(listen(sockl, CLIENTS_MAX) == -1) {
+	if(listen(sockl, CLIENTS_MAX) < 0) {
 		throw new Exception("listen() failed: %s", strerror(errno));
 	}
+
 	logf(LOG_NORMAL, "Listening on port %d ...", port);
 }
 
-/* PUBLIC METHODS */
-
-void Server::run() {
-	term_signal = false;
-	while(!term_signal) {
-		prepareFDSet();
-
-		/* select() checks every socket in the socket_set, if there's something
-		 * to do (e.g. data received, connection requested, ...)
-		 * This method blocks until there's anything, so as soon as select()
-		 * returns, we should have things to do:
-		 */
-		int selected = select(FD_SETSIZE, &socket_set, NULL, NULL, NULL);
-
-		/* select() should return -1 if something went wrong. As we don't want
-		 * to handle the error yet, just let's crash!
-		 */
-		if(selected < 0)
-			throw new Exception("select() failed");
-
-		/* If we haven't crashed yet, check if there is a connection request,
-		 * and react accordingly:
-		 */
-		if(FD_ISSET(sockl, &socket_set))
-			handleConnection();
-
-		/* Cycle through all connections to check if there is data and react
-		 * accordingly:
-		 */
-		for(unsigned int i = 0; i < clients.size(); i++) {
-			if(FD_ISSET(clients[i]->getSocket(), &socket_set)) {
-				handleData(i);
-			}
-		}
-
-		/* Check if there is standard input:
-		 */
-		if(FD_ISSET(STDIN_FILENO, &socket_set))
-			handleStdInput();
-	}
-
+/**
+ * Destructor.
+ * All clients are correctly (savegame, logout) disconected and the network
+ * connection is shut down.
+ */
+Network::~Network(void) {
 	/* Close all sockets and quit:
 	 */
 	logf(LOG_NORMAL, "received shutdown signal, closing sockets ...");
 
 	close(sockl);
-	for(unsigned int i = 0; i < clients.size(); i++)
-		close(clients[i]->getSocket());
-	
-	logf(LOG_NORMAL, "Bye!");
+	for(size_t i = 0; i < clients.size(); i++) {
+		removeClient(i);
+	}
 }
+
+
+/* PUBLIC METHODS */
+
+/**
+ * This method polls incoming data (new connections, data, user input
+ * (deprecated)) and sends data to clients if required by the data handler.
+ */
+void
+Network::poll(void) {
+	pollIn();
+	pollOut();
+}
+
 
 /* PRIVATE METHODS */
 
-/* This methods updates the file descriptor set:
+/**
+ * This method checks the sockets for data. select() is used, that will block
+ * until there is data, so as long as there's no data, the program will sleep
+ * here.
  */
-void Server::prepareFDSet(void) {
+void
+Network::pollIn(void) {
 	/* Before adding all used sockets to the fd_set, clear it:
 	 */
 	FD_ZERO(&socket_set);
@@ -106,17 +97,89 @@ void Server::prepareFDSet(void) {
 	 * through the list of clients:
 	 */
 	FD_SET(sockl, &socket_set);
-	for(unsigned int i = 0; i < clients.size(); i++)
+	for(size_t i = 0; i < clients.size(); i++)
 		FD_SET(clients[i]->getSocket(), &socket_set);
 
 	/* To control the server, we also listen to STDIN:
 	 */
 	FD_SET(STDIN_FILENO, &socket_set);
+
+	/* select() checks every socket in the socket_set, if there's some data on
+	 * it (e.g. data received, connection requested, ...)
+	 * This method blocks until there's anything, so as soon as select()
+	 * returns, we should have things to do:
+	 */
+	int selected = select(FD_SETSIZE, &socket_set, NULL, NULL, NULL);
+
+	/* select() should return -1 if something went wrong. As we don't want to
+	 * handle the error yet, just let's crash!
+	 */
+	if(selected < 0)
+		throw new Exception("select() failed");
+
+	/* If we haven't crashed yet, check if there is a connection request, and
+	 * react accordingly:
+	 */
+	if(FD_ISSET(sockl, &socket_set))
+		handleConnection();
+
+	/* Cycle through all connections to check if there is data and react
+	 * accordingly:
+	 */
+	for(size_t i = 0; i < clients.size(); i++) {
+		if(FD_ISSET(clients[i]->getSocket(), &socket_set)) {
+			handleData(i);
+		}
+	}
+
+	/* TODO deprecated
+	 * Check if there is standard input:
+	 */
+	if(FD_ISSET(STDIN_FILENO, &socket_set))
+		handleStdInput();
 }
 
-/* This method handles incoming connections:
+/**
+ * This method checks the data handler for a command to be sent to the client
+ * and sends it if required.
  */
-void Server::handleConnection(void) {
+void
+Network::pollOut(void) {
+	int command_len = data_handler->getNetworkTask(buffer_out, &targets);
+
+	/* 00_NULL means a command should not be sent over the network:
+	 */
+	if(buffer_out[0] == 0)
+		return;
+
+	/* Otherwise, we're going to cycle through all the clients that have been
+	 * put into the `targets' vector:
+	 */
+	int sent;
+	for(size_t i = 0; i < targets.size(); i++) {
+		logf(LOG_DEBUG, "message to: %s on %s",
+				targets[i]->getIP(),
+				targets[i]->getSocket());
+
+		sent = send(targets[i]->getSocket(), buffer_out, command_len,
+				MSG_NOSIGNAL);
+
+		/* Check connection and disconnect in case of error:
+		 */
+		if(sent < 0) {
+			logf(LOG_WARNING, "%s: connection lost",
+					targets[i]->getIP());
+			removeClient(i);
+		}
+	}
+}
+
+/**
+ * This method handles incoming connections. For each connection accepted, it
+ * creates a Client object and stores it to the std::vector.
+ */
+void
+Network::handleConnection(void) {
 	/* Accept the connection:
 	 * sockl:       listening socket for establishing a connection
 	 * client_addr: struct to store client information
@@ -145,12 +208,16 @@ void Server::handleConnection(void) {
 	}
 }
 
-/* This method handles incoming data from clients:
+/**
+ * This method handles incoming data from a client.
+ * @param id The client's ID (which is also the position in the std::vector the
+ *           client is stored in).
  */
-void Server::handleData(int id) {
+void
+Network::handleData(int id) {
 	/* Read data to buffer:
 	 */
-	int received = read(clients[id]->getSocket(), input_buffer, BUFFER_SIZE);
+	int received = read(clients[id]->getSocket(), buffer_in, BUFFER_SIZE);
 	logf(LOG_DEBUG, "received %d bytes", received);
 
 	/* read() should return the number of bytes received. If the number is
@@ -168,6 +235,7 @@ void Server::handleData(int id) {
 		/* TODO
 		data_guard->disconnect(clients[id]->getSocket());
 		*/
+		close(clients[id]->getSocket());
 		clients.erase(clients.begin()+id);
 	}
 
@@ -192,17 +260,14 @@ void Server::handleData(int id) {
 		 */
 		if(sent != 1) {
 			logf(LOG_WARNING, "%s: connection lost", clients[id]->getIP());
-			/* TODO
-			data_guard->disconnect(clients[id]->getSocket());
-			*/
-			clients.erase(clients.begin()+id);
+			removeClient(id);
 		}
 
 		/* Otherwise, we can let the data guard take over:
 		 */
 		else {
 			char debug_msg[BUFFER_SIZE];
-			copyFirstLine(debug_msg, input_buffer);
+			copyFirstLine(debug_msg, buffer_in);
 			logf(LOG_DEBUG, "%s: received '%s'", clients[id]->getIP(),
 					debug_msg);
 
@@ -210,19 +275,18 @@ void Server::handleData(int id) {
 			 * tells the connection handler what to do (that will take a lot of
 			 * time). The response will be stored in the output_buffer.
 			 */
-			data_guard->process(output_buffer, input_buffer);
-
-			/* Handle the response generated by the connection handler:
-			 */
-			handleResponse();
+			data_handler->setGameTask(buffer_in, received);
 		}
 	}
 }
 
-/* This method handles the user input (server side command line interface):
+/**
+ * TODO deprecated
+ * This method handles the user input (server side command line interface).
  */
-void Server::handleStdInput(void) {
-	int received = read(STDIN_FILENO, input_buffer, BUFFER_SIZE);
+void
+Network::handleStdInput(void) {
+	int received = read(STDIN_FILENO, buffer_in, BUFFER_SIZE);
 
 	/* read() should return the number of bytes read. If something went wrong
 	 * there, we don't want to handle the error, so let's crash:
@@ -233,13 +297,13 @@ void Server::handleStdInput(void) {
 	/* Copy the first line (it's all that's interesting):
 	 */
 	char command[BUFFER_SIZE];
-	copyFirstLine(command, input_buffer);
+	copyFirstLine(command, buffer_in);
 
 	/* Check what command was entered:
 	 */
 	if(strstr(command,"shutdown")==command || strstr(command,"exit")==command
 			|| strstr(command,"quit")==command || strstr(command,"sd")==command)
-		term_signal = true;
+		data_handler->setTermSignal();
 
 	if(strstr(command, "help") == command) {
 		printf("\e[1mAvailable commands\e[0m\n");
@@ -247,65 +311,30 @@ void Server::handleStdInput(void) {
 	}
 }
 
-/* This method copies everything from `src' to `dest' until a newline or the
- * terminating \0 (= strlen) appears:
+/**
+ * This method copies the first line of a string. It checks the string for the
+ * first appearance of a terminating zero character or a newline (\n).
+ * @param dest The string where the first line shall be copied to.
+ * @param src The string from where the first line is read.
  */
-void Server::copyFirstLine(char* dest, char const* src) {
+void
+Network::copyFirstLine(char* dest, char const* src) {
 	int pos;
-	strncpy(dest, src, pos = ((unsigned int)(strstr(src,"\n")-src)<strlen(src))
+	strncpy(dest, src, pos = ((size_t)(strstr(src,"\n")-src) < strlen(src))
 			? strstr(src,"\n")-src : strlen(src));
-	dest[pos] = 0;                      // replace character after string by \0
+	dest[pos] = 0; // terminate
 }
 
-/* This method handles the response generated by the connection handler:
+/**
+ * This method correctly (logout, savegame) removes a client.
  */
-void Server::handleResponse(void) {
-	int sent;
-
-	/* In case that the first byte is set to zero, it's a broadcast message and
-	 * shall be sent to all clients:
-	 */
-	if(output_buffer[0] == 0) {
-		/* We set the first byte to a value other than 0, since strlen() would
-		 * otherwise already stop at the first byte:
-		 */
-		output_buffer[0] = 32;
-		logf(LOG_DEBUG, "broadcast message: '%s'", output_buffer);
-		for(unsigned int i = 0; i < clients.size(); i++) {
-			sent = send(clients[i]->getSocket(), output_buffer,
-					strlen(output_buffer), MSG_NOSIGNAL);
-
-			/* Check connection and disconnect in case of error:
-			 */
-			if(sent < 0) {
-				logf(LOG_WARNING, "%s: connection lost", clients[i]->getIP());
-				/* TODO
-				data_guard->disconnect(clients[j]->getSocket());
-				*/
-				clients.erase(clients.begin()+i);
-			}
-		}
-	}
-	
-	/* In case the first byte is NOT set to zero, it shall be interpreted as the
-	 * client file descriptor:
-	 */
-	else {
-		logf(LOG_DEBUG, "message to: %s on %s",
-				clients[output_buffer[0]]->getIP(),
-				clients[output_buffer[0]]->getSocket());
-		sent = send(clients[output_buffer[0]]->getSocket(), output_buffer,
-				strlen(output_buffer), MSG_NOSIGNAL);
-		/* Check connection and disconnect in case of error:
-		 */
-		if(sent < 0) {
-			logf(LOG_WARNING, "%s: connection lost",
-					clients[output_buffer[0]]->getIP());
-			/* TODO
-			data_guard->disconnect(clients[output_buffer[0]]->getSocket());
-			*/
-			clients.erase(clients.begin()+output_buffer[0]);
-		}
-	}
+void
+Network::removeClient(int id) {
+	send(clients[id]->getSocket(), &confirmation_byte, 0, MSG_NOSIGNAL);
+	/* TODO
+	data_handler->disconnect(client[id]->getSocket());
+	*/
+	close(clients[id]->getSocket());
+	clients.erase(clients.begin()+id);
 }
 

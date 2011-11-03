@@ -1,16 +1,17 @@
 #ifndef _USER_H_
 #define _USER_H_
 
-#include <cstring>   // for strcpy name
+#include <cstring>  // for name handling
 
 class User {
 	public:
 		User(char const* name);
 		~User(void);
-		char const* getName();
+		size_t getName(char* name);
 	
 	private:
 		char* name;
 };
 
 #endif
+

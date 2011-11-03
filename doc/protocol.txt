@@ -8,16 +8,23 @@ Structure:
    The structure of a package following the `eyva' protocol looks like this:
 
    byte   meaning
-      0   Client ID (or broadcast if zero, doesn't matter for client).
-      1   Command.
-    2-3   Message length (little endian).
-    4-*   Message data. The length is defined by the bytes 2 and 3, thus the
+      0   Command.
+    1-2   Message length (little endian).
+    3-*   Message data. The length is defined by the bytes 2 and 3, thus the
           length can vary between 0 and 2^16-1 (65535).
 
    This means, an `eyva' conform package has a total length of 4 at least and
-   65539 at most.
+   65538 at most.
 
-   Commands (structure byte 1) are defined as follows:
+   Commands (structure byte 0) are defined as follows:
+
+
+Connection level:
+
+   00  NULL - [client] [server] (internal)
+       This command is not sent over the network, but serves as a kind of
+       "no data available" for internal network stuff, whenever a command is
+       polled that does not exist.
 
 
 Session level:

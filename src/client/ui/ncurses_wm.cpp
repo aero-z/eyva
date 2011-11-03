@@ -1,14 +1,31 @@
 #include "ncurses_wm.h"
 
-NCursesWM::NCursesWM(void) {}
+/**
+ * Constructor.
+ */
+NCursesWM::NCursesWM(void) {
+	// TODO create windows
+}
 
-NCursesWM::~NCursesWM(void) {}
+/**
+ * Destructor.
+ */
+NCursesWM::~NCursesWM(void) {
+	for(size_t i = 0; i < windows.size(); i++) {
+		delete windows[i];
+	}
+}
+
 
 /* PUBLIC METHODS */
 
-void NCursesWM::process(char input) {
+/**
+ * This method processes a user input (button click) by sending it to the right
+ * window to react accordingly.
+ * @param input The key pressed by the user.
+ */
+void
+NCursesWM::process(char input) {
 	// TODO
 }
-
-/* PRIVATE METHODS */
 

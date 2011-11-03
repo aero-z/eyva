@@ -4,7 +4,7 @@
 /* This is the size of the network buffer. See /doc/protocol.txt for further
  * information.
  */
-#define BUFFER_SIZE 65339
+#define BUFFER_SIZE 65338
 
 /* This is the maximum size of the exception message:
  */

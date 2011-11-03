@@ -8,28 +8,25 @@
 
 #include <eyva.h>
 
-enum EyvaCommand {
-	NULL_COMMAND,
-	MOVE_UP,
-	MOVE_DOWN,
-	MOVE_LEFT,
-	MOVE_RIGHT,
-	ACTION
-};
+#include <cstring>
 
 class DataHandler {
 	public:
 		DataHandler(void);
 		~DataHandler(void);
-		void alertUI(char const* command_raw);
-		void alertNetwork(EyvaCommand command);
-		EyvaCommand getUITask(void);
-		void getNetworkTask(char* command_raw, int* command_len);
-		bool checkTermSignal(void);
+		void setUITask(char const* command, size_t command_len);
+		void setNetworkTask(char const* command, size_t command_len);
+		size_t getUITask(char* command);
+		size_t getNetworkTask(char* command);
+		bool getTermSignal(void);
+		void setTermSignal(void);
 	
 	private:
-		EyvaCommand ui_task;
-		EyvaCommand network_task;
+		char ui_task[BUFFER_SIZE];
+		char network_task[BUFFER_SIZE];
+		size_t ui_task_len;
+		size_t network_task_len;
+		bool term_signal;
 };
 
 #endif

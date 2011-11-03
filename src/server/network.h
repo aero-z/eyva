@@ -1,8 +1,8 @@
-#ifndef _SERVER_H_
-#define _SERVER_H_
+#ifndef _NETWORK_H_
+#define _NETWORK_H_
 
 #include "client.h"
-#include "data_guard.h"
+#include "data_handler.h"
 #include <ayelog.h>
 #include <exception.h>
 #include <eyva.h>     // various values that are used again and again
@@ -17,31 +17,36 @@
 #include <cerrno>       // for the "errno" macro
 #include <cstdio>       // for user IO
 
-/* Number of clients that we can handle on this server. */ 
+/* Number of clients that we can handle on this server.
+ */ 
 #define CLIENTS_MAX 3
 
-class Server {
+class Network {
 	public:
-		Server(int);
-		void run(void);
+		Network(DataHandler* data_handler, int port);
+		~Network(void);
+		void poll(void);
+
 	private:
-		void copyFirstLine(char* dest, char const* src);
-		void prepareFDSet(void);
+		void pollIn(void);
+		void pollOut(void);
 		void handleConnection(void);
-		void handleData(int ip);
+		void handleData(int id);
 		void handleStdInput(void);
-		void handleResponse(void);
-		DataGuard* data_guard;
+		void copyFirstLine(char* dest, char const* src);
+		void removeClient(int id);
+
+		DataHandler* data_handler;
+		std::vector<Client*> clients;
+		std::vector<Client*> targets;    // temporal client list
+		fd_set socket_set;               // set of socket that select() handles
 		int sockl;
 		struct sockaddr_in server_addr;  // our server's network properties
 		struct sockaddr_in client_addr;  // temporal struct to store client info
 		socklen_t client_addr_len;       // ... and it's size
-		char input_buffer[BUFFER_SIZE];
-		char output_buffer[BUFFER_SIZE];
+		char buffer_in[BUFFER_SIZE];
+		char buffer_out[BUFFER_SIZE];
 		char confirmation_byte;
-		std::vector<Client*> clients;
-		fd_set socket_set;               // set of socket that select() handles
-		bool term_signal;                // will be set to true for shutdown
 };
 
 #endif
