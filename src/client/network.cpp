@@ -14,10 +14,10 @@ Network::Network(DataHandler* data_handler, char const* ip, int port) {
 
 	/* Create socket:
 	 * AF_INET:     domain (ARPA, IPv4)
-	 * SOCK_STREAM: type (stream socket: TCP)
-	 * 0:           protocol (standard protocol)
+	 * SOCK_STREAM: type (stream socket)
+	 * IPPROTO_TCP: protocol (TCP)
 	 */
-	sockc = socket(AF_INET, SOCK_STREAM, 0);
+	sockc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if(sockc < 0)
 		throw new Exception("socket() failed");
 	
@@ -121,31 +121,31 @@ Network::pollIn(void) {
  */
 void
 Network::pollOut(void) {
-	/* Check if there's data to send. The packet will be stored to buffer_out
-	 * and the packet's length to to_send:
+	/* Check if there's data to send. The packet will be stored to buffer_out,
+	 * the length of the data will be returned:
 	 */
 	size_t command_len = data_handler->getNetworkTask(buffer_out);
 
-	/* 00_NULL means: data should not be sent:
+	/* Command [00 NULL] means: data should not be sent:
 	 */
 	if(buffer_out[0] == 0)
 		return;
 
-   	/* MSG_NOSIGNAL avoids a program crash by a SIGPIPE that would normally be
-   	 * raised if there's a sending error. That's the default behaviour, FSM
-   	 * knows why:
-   	 */
-   	int sent = send(sockc, buffer_out, command_len, MSG_NOSIGNAL);
+	/* MSG_NOSIGNAL avoids a program crash by a SIGPIPE that would normally be
+	 * raised if there's a sending error. That's the default behaviour, FSM
+	 * knows why:
+	 */
+	int sent = send(sockc, buffer_out, command_len, MSG_NOSIGNAL);
 
-   	/* send() should return the number of bytes sent. If the number is
-   	 * negative, there was an error, so we'll crash:
-   	 */
-   	if(sent < 0)
-   		throw new Exception("send() failed");
+	/* send() should return the number of bytes sent. If the number is
+	 * negative, there was an error, so we'll crash:
+	 */
+	if(sent < 0)
+		throw new Exception("send() failed");
 
-   	/* If the number of bytes sent is equal to zero, there was an error,
-   	 * too, so we crash:
-   	 */
-   	if(sent == 0)
-   		throw new Exception("no bytes sent");
+	/* If the number of bytes sent is equal to zero, there was an error,
+	 * too, so we crash:
+	 */
+	if(sent == 0)
+		throw new Exception("no bytes sent");
 }

@@ -16,10 +16,10 @@ Network::Network(DataHandler* data_handler, int port) {
 
 	/* Create socket:
 	 * AF_INET:     domain (ARPA, IPv4)
-	 * SOCK_STREAM: type (stream socket: TCP)
-	 * 0:           protocol (standard protocol)
+	 * SOCK_STREAM: type (stream socket)
+	 * IPPROTO_TCP: protocol (TCP)
 	 */
-	sockl = socket(AF_INET, SOCK_STREAM, 0);
+	sockl = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if(sockl < 0)
 		throw new Exception("socket() failed");
 
@@ -31,8 +31,8 @@ Network::Network(DataHandler* data_handler, int port) {
 	server_addr.sin_port = htons(port);                // port to listen to
 
 	/* Bind socket to information contained by the struct that was just defined:
-	 * sockfd:      socket that should bind to the address
-	 * my_addr:     the address (IP and port, declared above) as type "sockaddr"
+	 * sockl:       socket that should bind to the address
+	 * server_addr: the address (IP and port, declared above) as type "sockaddr"
 	 * addrlen:     size of the address struct
 	 */
 	if(bind(sockl, (sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
@@ -147,7 +147,7 @@ void
 Network::pollOut(void) {
 	int command_len = data_handler->getNetworkTask(buffer_out, &targets);
 
-	/* 00_NULL means a command should not be sent over the network:
+	/* Command [00 NULL] means: no data should be sent over the network:
 	 */
 	if(buffer_out[0] == 0)
 		return;

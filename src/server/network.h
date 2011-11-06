@@ -11,7 +11,6 @@
 #include <sys/types.h>  // socket types
 #include <sys/socket.h> // sockets
 #include <arpa/inet.h>  // inet (3) functions
-#include <fcntl.h>      // for O_NONBLOCK
 #include <unistd.h>     // for write, read
 #include <cstring>      // memset()
 #include <cerrno>       // for the "errno" macro
