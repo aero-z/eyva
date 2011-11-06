@@ -2,15 +2,19 @@
 
 /**
  * Constructor.
+ * @param data_handler A pointer to the data handler that is needed to
+ *                     communicate with the network object.
  */
-Game::Game(DataHandler* data_handler) {
+Game::Game(DataHandler* data_handler)
+{
 	this->data_handler = data_handler;
 }
 
 /**
  * Destructor.
  */
-Game::~Game(void) {
+Game::~Game(void)
+{
 	// VOID
 }
 
@@ -22,8 +26,9 @@ Game::~Game(void) {
  * reacts accordingly.
  */
 void
-Game::poll(void) {
-	command_len = data_handler->getGameTask(command);
+Game::poll(void)
+{
+	effect_len = data_handler->getGameTask(effect);
 	// TODO
 }
 

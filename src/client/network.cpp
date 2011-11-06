@@ -9,7 +9,8 @@ using namespace AyeLog;
  * @param ip The server's IP address.
  * @param port The port on which the server is running on.
  */
-Network::Network(DataHandler* data_handler, char const* ip, int port) {
+Network::Network(DataHandler* data_handler, char const* ip, int port)
+{
 	this->data_handler = data_handler;
 
 	/* Create socket:
@@ -41,7 +42,8 @@ Network::Network(DataHandler* data_handler, char const* ip, int port) {
 /**
  * Destructor.
  */
-Network::~Network(void) {
+Network::~Network(void)
+{
 	// VOID
 }
 
@@ -54,7 +56,8 @@ Network::~Network(void) {
  * to be sent to the server.
  */
 void
-Network::poll(void) {
+Network::poll(void)
+{
 	pollIn();
 	pollOut();
 }
@@ -67,7 +70,8 @@ Network::poll(void) {
  * handler to alert the UI.
  */
 void
-Network::pollIn(void) {
+Network::pollIn(void)
+{
 	/* We'll add the connection socket to the fd_set that is checked by select()
 	 * for available data on it (see below):
 	 */
@@ -120,7 +124,8 @@ Network::pollIn(void) {
  * accordingly.
  */
 void
-Network::pollOut(void) {
+Network::pollOut(void)
+{
 	/* Check if there's data to send. The packet will be stored to buffer_out,
 	 * the length of the data will be returned:
 	 */
@@ -149,3 +154,4 @@ Network::pollOut(void) {
 	if(sent == 0)
 		throw new Exception("no bytes sent");
 }
+

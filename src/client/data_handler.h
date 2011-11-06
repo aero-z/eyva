@@ -10,7 +10,9 @@
 
 #include <cstring>
 
-class DataHandler {
+class
+DataHandler
+{
 	public:
 		DataHandler(void);
 		~DataHandler(void);

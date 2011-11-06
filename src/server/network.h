@@ -17,10 +17,13 @@
 #include <cstdio>       // for user IO
 
 /* Number of clients that we can handle on this server.
+ * TODO make this dynamic
  */ 
 #define CLIENTS_MAX 3
 
-class Network {
+class
+Network
+{
 	public:
 		Network(DataHandler* data_handler, int port);
 		~Network(void);

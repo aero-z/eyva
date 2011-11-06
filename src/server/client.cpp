@@ -1,28 +1,43 @@
 #include "client.h"
 
-Client::Client(int socket, char const *ip) {
+/**
+ * Constructor.
+ */
+Client::Client(int socket, char const *ip)
+{
 	this->socket = socket;
-	int string_length = strlen(ip);
-	this->ip = new char[string_length+1];// +1 because we also need to store \0
-	for(unsigned int i = 0; i < strlen(ip); i++) {
-		this->ip[i] = ip[i];
-	}
-	this->ip[string_length] = 0;    // terminate string
+	this->ip = new char[strlen(ip)+1]; // +1 for \0
+	strcpy(this->ip, ip);
 }
 
-Client::~Client(void) {
-	// empty
+/**
+ * Destructor.
+ */
+Client::~Client(void)
+{
+	/* Against memory leaks:
+	 */
+	delete[] ip;
+	ip = NULL;
 }
 
 /* PUBLIC METHODS */
 
-int Client::getSocket(void) {
+/**
+ * @return The client's socket file descriptor.
+ */
+int
+Client::getSocket(void)
+{
 	return socket;
 }
 
-char const *Client::getIP(void) {
+/**
+ * @return The decimal/dot string representation of the client's IP.
+ */
+char const *
+Client::getIP(void)
+{
 	return ip;
 }
-
-/* PRIVATE METHODS */
 

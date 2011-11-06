@@ -6,7 +6,9 @@
 #include <cstdio>   // (v)(s)(f)(n)printf
 #include <cstdarg>  // va_list
 
-class Exception {
+class
+Exception
+{
 	public:
 		Exception(char const* format, ...);
 		char const* str(void);

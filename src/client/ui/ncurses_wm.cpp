@@ -3,14 +3,16 @@
 /**
  * Constructor.
  */
-NCursesWM::NCursesWM(void) {
+NCursesWM::NCursesWM(void)
+{
 	// TODO create windows
 }
 
 /**
  * Destructor.
  */
-NCursesWM::~NCursesWM(void) {
+NCursesWM::~NCursesWM(void)
+{
 	for(size_t i = 0; i < windows.size(); i++) {
 		delete windows[i];
 	}
@@ -25,7 +27,8 @@ NCursesWM::~NCursesWM(void) {
  * @param input The key pressed by the user.
  */
 void
-NCursesWM::process(char input) {
+NCursesWM::process(char input)
+{
 	// TODO
 }
 

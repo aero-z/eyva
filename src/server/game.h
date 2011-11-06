@@ -3,7 +3,9 @@
 
 #include "data_handler.h"
 
-class Game {
+class
+Game
+{
 	public:
 		Game(DataHandler* data_handler);
 		~Game(void);
@@ -11,8 +13,8 @@ class Game {
 	
 	private:
 		DataHandler* data_handler;
-		char command[BUFFER_SIZE];
-		size_t command_len;
+		char effect[BUFFER_SIZE];
+		size_t effect_len;
 };
 
 #endif

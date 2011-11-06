@@ -1,12 +1,27 @@
 #include "main.h"
 
-void cleanUp(void) {
+/**
+ * This function makes the program ready to stop.
+ */
+void
+cleanUp(void)
+{
 	delete network;
 	delete game;
 	delete data_handler;
 }
 
-int main(int argc, char** argv) {
+/**
+ * The main function.
+ * @param argc The number of arguments given.
+ * @param argv A list of arguments given.
+ * @return Error code:
+ *          0: SUCCESS
+ *         -1: FAIL
+ */
+int
+main(int argc, char** argv)
+{
 	/* TODO parse user input
 	 */
 	int port = 1251;

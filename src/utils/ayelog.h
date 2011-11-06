@@ -7,14 +7,21 @@
 
 #define LOG_BUF 120  // 80 is recommended, since it's the default termial width
 
-enum log_type {
+/**
+ * These enums will be used to define the type of the log message.
+ */
+enum
+log_type
+{
 	LOG_NORMAL,
 	LOG_DEBUG,
 	LOG_WARNING,
 	LOG_ERROR
 };
 
-namespace AyeLog {
+namespace
+AyeLog
+{
 	extern void logf(log_type type, char const* format, ...);
 	extern int log_verbosity;
 };

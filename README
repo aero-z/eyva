@@ -6,7 +6,7 @@ Readme file
 Introduction:
 
    `eyva' is an attempt to create a `Rogue'-like game for the CLI.
-   It's basically a proof-of-concept, playground and still in development, so
+   It's basically a proof-of-concept, playground, and still in development, so
    don't expect it to do a lot.
 
    `eyva' consists of a server component and a client component.
@@ -18,13 +18,21 @@ Introduction:
    connecting to a remote (or local) shared server).
 
 
+Requirements:
+
+   * ncurses
+   * OS:
+     - GNU/Linux (tested on Arch Linux)
+     - Mac OS X (see issue #4 for troubleshooting)
+
+
 Compile:
 
    Run `make' in the project's root directory. This will create server and
    client binaries.
    
 
-Run:
+Execute:
    
    Currently, the components have no real functionality:
    

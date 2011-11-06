@@ -1,19 +1,28 @@
 #ifndef _CHARACTER_H_
-#ifndef _CHARACTER_H_
+#define _CHARACTER_H_
 
-#include "property.h"
+#include "object.h"
  
-#include <vector.h>
+#include <vector>
+#include <cstring>
 
-class Character {
+class
+Character
+{
 	public:
 		Character(char const* name);
 		~Character(void);
 		size_t getName(char* name);
+		int getXPos(void);
+		int getYPos(void);
+		void setXPos(int xpos);
+		void setYPos(int ypos);
 
 	private:
-		std::vector<Property*> properties;
+		std::vector<Object*> objects;
 		char* name;
+		int xpos;
+		int ypos;
 };
 
 #endif

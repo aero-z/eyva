@@ -7,7 +7,8 @@
  *                     network object, and that handles all information related
  *                     stuff.
  */
-NCursesUI::NCursesUI(DataHandler* data_handler) {
+NCursesUI::NCursesUI(DataHandler* data_handler)
+{
 	this->data_handler = data_handler;
 
 	initscr();             // start ncurses mode
@@ -36,7 +37,8 @@ NCursesUI::NCursesUI(DataHandler* data_handler) {
  * The ncurses session is stopped here in order to be able to normally go on
  * with terminal work.
  */
-NCursesUI::~NCursesUI(void) {
+NCursesUI::~NCursesUI(void)
+{
 	delete wm;
 	endwin();   // end ncurses mode
 }
@@ -52,7 +54,8 @@ NCursesUI::~NCursesUI(void) {
  *                in seconds.
  */
 void
-NCursesUI::poll(double timeout) {
+NCursesUI::poll(double timeout)
+{
 	halfdelay((int)(timeout*10));
 	printw("hello!\n");
 	refresh();

@@ -7,7 +7,9 @@
 
 #include <vector>     // for the list of users, and for manipulating the clients
 
-class DataHandler {
+class
+DataHandler
+{
 	public:
 		DataHandler(void);
 		~DataHandler(void);
@@ -29,3 +31,4 @@ class DataHandler {
 };
 
 #endif
+

@@ -1,6 +1,10 @@
 #include "data_handler.h"
 
-DataHandler::DataHandler(void) {
+/**
+ * Constructor.
+ */
+DataHandler::DataHandler(void)
+{
 	ui_task[0] = 0;
 	network_task[0] = 0;
 	ui_task_len = 0;
@@ -8,6 +12,9 @@ DataHandler::DataHandler(void) {
 	term_signal = false;
 };
 
+/**
+ * Destructor.
+ */
 DataHandler::~DataHandler(void) {
 	// VOID
 }
@@ -22,7 +29,8 @@ DataHandler::~DataHandler(void) {
  * @param command_len The length of the command.
  */
 void
-DataHandler::setUITask(char const* command, size_t command_len) {
+DataHandler::setUITask(char const* command, size_t command_len)
+{
 	strncpy(ui_task, command, command_len);
 	ui_task_len = command_len;
 }
@@ -34,7 +42,8 @@ DataHandler::setUITask(char const* command, size_t command_len) {
  * @param command_len The length of the command.
  */
 void
-DataHandler::setNetworkTask(char const* command, size_t command_len) {
+DataHandler::setNetworkTask(char const* command, size_t command_len)
+{
 	strncpy(network_task, command, command_len);
 	network_task_len = command_len;
 }
@@ -45,7 +54,8 @@ DataHandler::setNetworkTask(char const* command, size_t command_len) {
  * @return The length of the command.
  */
 size_t
-DataHandler::getUITask(char* command) {
+DataHandler::getUITask(char* command)
+{
 	// TODO
 	command[0] = 0;
 	return ui_task_len;
@@ -60,7 +70,8 @@ DataHandler::getUITask(char* command) {
  * @return The length of the command.
  */
 size_t
-DataHandler::getNetworkTask(char* command) {
+DataHandler::getNetworkTask(char* command)
+{
 	// TODO
 	command[0] = 0;
 	return network_task_len;
@@ -71,7 +82,8 @@ DataHandler::getNetworkTask(char* command) {
  * @return TRUE if the term signal was set, otherwise FALSE.
  */
 bool
-DataHandler::getTermSignal(void) {
+DataHandler::getTermSignal(void)
+{
 	return term_signal;
 }
 
@@ -80,7 +92,8 @@ DataHandler::getTermSignal(void) {
  * (see above).
  */
 void
-DataHandler::setTermSignal(void) {
+DataHandler::setTermSignal(void)
+{
 	term_signal = true;
 }
 

@@ -6,7 +6,8 @@
 
 #include <eyva.h>
 
-class UI {
+class UI
+{
 	public:
 		UI(void) {};
 		virtual void poll(double timeout) = 0;

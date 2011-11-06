@@ -17,7 +17,9 @@ int AyeLog::log_verbosity = 1;    // default value
  * NOTE: The length of the message should not exceed 80, since every string
  * larger than 80 characters will be trimmed to 80 characters.
  */
-void AyeLog::logf(log_type type, char const* format, ...) {
+void
+AyeLog::logf(log_type type, char const* format, ...)
+{
 	/* Handle the format string and its arguments.
 	 * Credits: "spork" from the Ozzu webmaster forum:
 	 * http://www.ozzu.com/cpp-tutorials/tutorial-writing-custom-printf-wrapper-function-t89166.html
@@ -65,6 +67,7 @@ void AyeLog::logf(log_type type, char const* format, ...) {
 	 */
 	if((type == LOG_DEBUG && log_verbosity >= 3)
 			|| (type == LOG_NORMAL && log_verbosity >= 2)
-			|| (type == LOG_WARNING && log_verbosity >= 1))
+			|| (type == LOG_WARNING && log_verbosity >= 1)
+			|| (type == LOG_ERROR))
 		printf("%s\n", b3);
 }

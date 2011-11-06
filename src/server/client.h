@@ -1,9 +1,11 @@
 #ifndef _CLIENT_H_
 #define _CLIENT_H_
 
-#include <cstring>   // for strlen()
+#include <cstring>
 
-class Client {
+class
+Client
+{
 	public:
 		Client(int socket, char const* ip);
 		~Client(void);

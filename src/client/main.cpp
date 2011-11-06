@@ -5,7 +5,8 @@
  * does not leave any memory leaks.
  */
 void
-cleanUp(void) {
+cleanUp(void)
+{
 	delete ui;
 	delete network;
 	delete data_handler;
@@ -18,7 +19,8 @@ cleanUp(void) {
  * @param argv String array containing the arguments.
  */
 int
-main(int argc, char** argv) {
+main(int argc, char** argv)
+{
 	/* TODO write argument parser
 	 */
 	char const* ip = "127.0.0.1";

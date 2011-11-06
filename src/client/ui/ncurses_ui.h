@@ -8,7 +8,9 @@
 
 #include <ncurses.h>
 
-class NCursesUI : public UI {
+class
+NCursesUI : public UI
+{
 	public:
 		NCursesUI(DataHandler* data_handler);
 		~NCursesUI(void);

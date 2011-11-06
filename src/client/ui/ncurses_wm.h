@@ -5,9 +5,11 @@
 #define _NCURSES_WM_H_
 
 #include <ncurses.h>
-#include <vector>    // for the list of WINDOWs
+#include <vector>
 
-class NCursesWM {
+class
+NCursesWM
+{
 	public:
 		NCursesWM(void);
 		~NCursesWM(void);

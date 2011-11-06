@@ -11,11 +11,15 @@
 #include <arpa/inet.h>   // inet (3) functions
 #include <unistd.h>      // for write, read
 #include <cerrno>        // provides errno makro
-#include <cstring>       // memset()
+#include <cstring>
 
-#include <cstdio>        // TODO debug
+/* TODO obsolete:
+ */
+#include <cstdio>
 
-class Network {
+class
+Network
+{
 	public:
 		Network(DataHandler* data_handler, char const* ip, int port);
 		~Network(void);

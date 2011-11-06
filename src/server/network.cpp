@@ -7,10 +7,9 @@ using namespace AyeLog;
  * @param data_handler The data handler that is needed to communicate to the
  *                     game object.
  * @param port The TCP port to listen to.
- * @throws Exception If there was an error while setting up the network
- *                   connection.
  */
-Network::Network(DataHandler* data_handler, int port) {
+Network::Network(DataHandler* data_handler, int port)
+{
 	this->data_handler = data_handler;
 	confirmation_byte = 0;
 
@@ -55,7 +54,8 @@ Network::Network(DataHandler* data_handler, int port) {
  * All clients are correctly (savegame, logout) disconected and the network
  * connection is shut down.
  */
-Network::~Network(void) {
+Network::~Network(void)
+{
 	/* Close all sockets and quit:
 	 */
 	logf(LOG_NORMAL, "received shutdown signal, closing sockets ...");
@@ -74,7 +74,8 @@ Network::~Network(void) {
  * (deprecated)) and sends data to clients if required by the data handler.
  */
 void
-Network::poll(void) {
+Network::poll(void)
+{
 	pollIn();
 	pollOut();
 }
@@ -88,7 +89,8 @@ Network::poll(void) {
  * here.
  */
 void
-Network::pollIn(void) {
+Network::pollIn(void)
+{
 	/* Before adding all used sockets to the fd_set, clear it:
 	 */
 	FD_ZERO(&socket_set);
@@ -144,7 +146,8 @@ Network::pollIn(void) {
  * and sends it if required.
  */
 void
-Network::pollOut(void) {
+Network::pollOut(void)
+{
 	int command_len = data_handler->getNetworkTask(buffer_out, &targets);
 
 	/* Command [00 NULL] means: no data should be sent over the network:
@@ -179,7 +182,8 @@ Network::pollOut(void) {
  * creates a Client object and stores it to the std::vector.
  */
 void
-Network::handleConnection(void) {
+Network::handleConnection(void)
+{
 	/* Accept the connection:
 	 * sockl:       listening socket for establishing a connection
 	 * client_addr: struct to store client information
@@ -214,7 +218,8 @@ Network::handleConnection(void) {
  *           client is stored in).
  */
 void
-Network::handleData(int id) {
+Network::handleData(int id)
+{
 	/* Read data to buffer:
 	 */
 	int received = read(clients[id]->getSocket(), buffer_in, BUFFER_SIZE);
@@ -285,7 +290,8 @@ Network::handleData(int id) {
  * This method handles the user input (server side command line interface).
  */
 void
-Network::handleStdInput(void) {
+Network::handleStdInput(void)
+{
 	int received = read(STDIN_FILENO, buffer_in, BUFFER_SIZE);
 
 	/* read() should return the number of bytes read. If something went wrong
@@ -318,7 +324,8 @@ Network::handleStdInput(void) {
  * @param src The string from where the first line is read.
  */
 void
-Network::copyFirstLine(char* dest, char const* src) {
+Network::copyFirstLine(char* dest, char const* src)
+{
 	int pos;
 	strncpy(dest, src, pos = ((size_t)(strstr(src,"\n")-src) < strlen(src))
 			? strstr(src,"\n")-src : strlen(src));
@@ -329,7 +336,8 @@ Network::copyFirstLine(char* dest, char const* src) {
  * This method correctly (logout, savegame) removes a client.
  */
 void
-Network::removeClient(int id) {
+Network::removeClient(int id)
+{
 	send(clients[id]->getSocket(), &confirmation_byte, 0, MSG_NOSIGNAL);
 	/* TODO
 	data_handler->disconnect(client[id]->getSocket());

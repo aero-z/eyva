@@ -35,7 +35,7 @@ Session level:
        server is supposed to send a [12 REQUEST_LOGIN], otherwise the server
        will send a [11 REQUEST_CLIENT_UPDATE].
        Message:
-        - version (3 bytes) (version, subversion, update)
+        - version (3 bytes) (major release, minor release, patch)
 
    11  REQUEST_CLIENT_UPDATE - [server]
        The client must be updated, no further login is possible.
@@ -78,7 +78,7 @@ Ingame level:
        but also possible otherwise.
 
    26  MOVE [server]
-       Broadcasts that something has been moved.
+       Broadcasts in the same region that something has been moved.
        Message:
         - type (1 byte) (character, property, object, etc.)
         - id (1 byte)
@@ -90,26 +90,29 @@ Ingame level:
 
 Interaction level:
 
-   30  REQUEST_PROPERTY_LIST - [client]
-       The server is supposed to answer with [31 PROPERTY_LIST].
+   30  REQUEST_OBJECT_LIST - [client]
+       The server is supposed to answer with [31 OBJECT_LIST].
       
-   31  PROPERTY_LIST - [server]
+   31  OBJECT_LIST - [server]
        Message:
-        - number of properties (2 bytes)
+        - number of objects (2 bytes)
         - repeating * times:
-           - property ID (2 bytes)
-           - property type (1 byte)
+           - object ID (2 bytes)
+           - object type (1 byte)
 
-   32  USE_PROPERTY - [client]
+   32  USE_OBJECT - [client]
        This will result in the server executing the command linked to that
-       property (see property definition for further information).
+       object.
        Message:
-        - property ID (2 bytes)
+        - object ID (2 bytes)
 
-   33  SEND_CHAT - [client]
-       Asks the server to broadcast a chat message.
+
+Social level:
+
+   40  SEND_CHAT - [client]
+       Asks the server to send a chat message:
        Message:
-        - region (1 byte)
+        - type (1 byte) (local or global)
         - chat message length (2 bytes)
         - chat message
 

@@ -1,12 +1,20 @@
 #include "data_handler.h"
 
-DataHandler::DataHandler(void) {
+/**
+ * Constructor.
+ */
+DataHandler::DataHandler(void)
+{
 	game_task[0] = 0;
 	network_task[0] = 0;
 	term_signal = false;
 };
 
-DataHandler::~DataHandler(void) {
+/**
+ * Destructor.
+ */
+DataHandler::~DataHandler(void)
+{
 	// VOID
 }
 
@@ -20,7 +28,8 @@ DataHandler::~DataHandler(void) {
  * @param command_len The length of the command.
  */
 void
-DataHandler::setGameTask(char const* command, size_t command_len) {
+DataHandler::setGameTask(char const* command, size_t command_len)
+{
 	strncpy(game_task, command, command_len);
 	game_task_len = command_len;
 }
@@ -32,7 +41,8 @@ DataHandler::setGameTask(char const* command, size_t command_len) {
  * @param command_len The length of the command.
  */
 void
-DataHandler::setNetworkTask(char const* command, size_t command_len) {
+DataHandler::setNetworkTask(char const* command, size_t command_len)
+{
 	strncpy(network_task, command, command_len);
 	network_task_len = command_len;
 }
@@ -43,7 +53,8 @@ DataHandler::setNetworkTask(char const* command, size_t command_len) {
  * @return The length of the command.
  */
 size_t
-DataHandler::getGameTask(char* command) {
+DataHandler::getGameTask(char* command)
+{
 	// TODO
 	command[0] = 0;
 	return game_task_len;
@@ -58,7 +69,8 @@ DataHandler::getGameTask(char* command) {
  * @return The length of the command.
  */
 size_t
-DataHandler::getNetworkTask(char* command, std::vector<Client*>* targets) {
+DataHandler::getNetworkTask(char* command, std::vector<Client*>* targets)
+{
 	// TODO
 	command[0] = 0;
 	return network_task_len;
@@ -69,7 +81,8 @@ DataHandler::getNetworkTask(char* command, std::vector<Client*>* targets) {
  * @return TRUE if the term signal was set, otherwise FALSE.
  */
 bool
-DataHandler::getTermSignal(void) {
+DataHandler::getTermSignal(void)
+{
 	return term_signal;
 }
 
@@ -78,7 +91,8 @@ DataHandler::getTermSignal(void) {
  * (see above).
  */
 void
-DataHandler::setTermSignal(void) {
+DataHandler::setTermSignal(void)
+{
 	term_signal = true;
 }
 
