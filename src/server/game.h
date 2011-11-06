@@ -2,6 +2,8 @@
 #define _GAME_H_
 
 #include "data_handler.h"
+#include "client.h"
+#include <vector>
 
 class
 Game

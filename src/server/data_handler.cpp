@@ -26,9 +26,11 @@ DataHandler::~DataHandler(void)
  * to do something.
  * @param command The command that was received by the server.
  * @param command_len The length of the command.
+ * @param source The source client where the command was received from.
  */
 void
-DataHandler::setGameTask(char const* command, size_t command_len)
+DataHandler::setGameTask(char const* command, size_t command_len,
+		Client* source)
 {
 	strncpy(game_task, command, command_len);
 	game_task_len = command_len;
@@ -39,9 +41,11 @@ DataHandler::setGameTask(char const* command, size_t command_len)
  * to send a command to the appropriate clients.
  * @param command The command to be sent to the server.
  * @param command_len The length of the command.
+ * @param targets A list of clients where the command shall be sent to.
  */
 void
-DataHandler::setNetworkTask(char const* command, size_t command_len)
+DataHandler::setNetworkTask(char const* command, size_t command_len,
+		std::vector<Client*>* targets)
 {
 	strncpy(network_task, command, command_len);
 	network_task_len = command_len;
@@ -50,13 +54,16 @@ DataHandler::setNetworkTask(char const* command, size_t command_len)
 /**
  * This method should be called by the game object to know what to do next.
  * @param command A pointer to where the command shall be written to.
+ * @param source A pointer to the Client where the souce client (the client
+ *               where the command was received from) shall be defined.
  * @return The length of the command.
  */
 size_t
-DataHandler::getGameTask(char* command)
+DataHandler::getGameTask(char* command, Client* source)
 {
 	// TODO
 	command[0] = 0;
+
 	return game_task_len;
 }
 
@@ -64,8 +71,8 @@ DataHandler::getGameTask(char* command)
  * This method should be called by the network object to know what to send to
  * the appropriate clients.
  * @param command A pointer to where the command shall be written to.
- * @param targets A pointer to a list where the clients will be stored in that
- *                shall receive the command.
+ * @param targets A pointer to a list where the target clients (the clients that
+ *                shall receive the command) shall be defined.
  * @return The length of the command.
  */
 size_t
@@ -94,5 +101,18 @@ void
 DataHandler::setTermSignal(void)
 {
 	term_signal = true;
+}
+
+/**
+ * This method correctly (savegame, logout) disconnects a user from the game.
+ * @param id The users's session ID.
+ * @return Success (true if success, false if fail).
+ * TODO deprecated, a session handler should do this
+ */
+bool
+DataHandler::disconnect(int session)
+{
+	// TODO
+	return false;
 }
 

@@ -28,7 +28,8 @@ Game::~Game(void)
 void
 Game::poll(void)
 {
-	effect_len = data_handler->getGameTask(effect);
+	Client* src = NULL;
+	effect_len = data_handler->getGameTask(effect, src);
 	// TODO
 }
 

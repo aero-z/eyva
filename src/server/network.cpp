@@ -237,11 +237,7 @@ Network::handleData(int id)
 	if(received == 0) {
 		logf(LOG_NORMAL, "> %s: connection closed by peer",
 				clients[id]->getIP());
-		/* TODO
-		data_guard->disconnect(clients[id]->getSocket());
-		*/
-		close(clients[id]->getSocket());
-		clients.erase(clients.begin()+id);
+		removeClient(id);
 	}
 
 	/* If the number is positive, we have successfully received data:
@@ -280,7 +276,7 @@ Network::handleData(int id)
 			 * tells the connection handler what to do (that will take a lot of
 			 * time). The response will be stored in the output_buffer.
 			 */
-			data_handler->setGameTask(buffer_in, received);
+			data_handler->setGameTask(buffer_in, received, clients[id]);
 		}
 	}
 }
@@ -334,14 +330,15 @@ Network::copyFirstLine(char* dest, char const* src)
 
 /**
  * This method correctly (logout, savegame) removes a client.
+ * TODO deprecated, create and use session handler for this (via data handler)
  */
 void
 Network::removeClient(int id)
 {
 	send(clients[id]->getSocket(), &confirmation_byte, 0, MSG_NOSIGNAL);
-	/* TODO
-	data_handler->disconnect(client[id]->getSocket());
-	*/
+	if(!data_handler->disconnect(id))
+		logf(LOG_WARNING, "%s: disconnected client was not logged in",
+				clients[id]->getIP());
 	close(clients[id]->getSocket());
 	clients.erase(clients.begin()+id);
 }

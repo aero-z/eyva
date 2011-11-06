@@ -3,14 +3,18 @@
 
 #include <cstring>  // for name handling
 
-class User {
+class
+User
+{
 	public:
-		User(char const* name);
+		User(int id);
 		~User(void);
 		size_t getName(char* name);
+		int getID(void);
 	
 	private:
 		char* name;
+		int id;
 };
 
 #endif
