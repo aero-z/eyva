@@ -9,28 +9,34 @@ using namespace AyeLog;
  *  The postmaster object, that is used to communicate with other parts of the
  *  program.
  *
- * @param session
+ * @param session (server only)
  *  The session handler that holds information about all connections and users.
  */
-Network::Network(Postmaster* pm, Session* session)
+#ifdef __ESERVER
+	Network::Network(Postmaster* pm, Session* session)
+#else
+	Network::Network(Postmaster* pm);
+#endif
 {
+	#ifdef __ESERVER
+		this->session = session;
+	#endif
 	this->pm = pm;
-	this->session = session;
 	confirmation_byte = 0;
 }
 
 /**
  * Destructor.
- * All clients are correctly (savegame, logout) disconected and the network
- * connection is shut down.
+ * In server mode, all clients are correctly (savegame, logout) disconnected,
+ * and the network connection is shut down.
  */
 Network::~Network(void)
 {
-	logf(LOG_NORMAL, "received shutdown signal");
+	logf(LOG_NORMAL, "network: received shutdown signal");
 
-	/* TODO
-	session->disconnectAll();
-	*/
+	#ifdef __ESERVER
+		session->disconnectAll();
+	#endif
 }
 
 
@@ -145,7 +151,9 @@ Network::pollIn(void)
 	 * on:
 	 */
 	#ifdef __ESERVER
-		// TODO
+		for(size_t i = 0; i < session->countUsers(); i++) {
+			FD_SET(session->getUser(i)->getSocket(), &socket_set);
+		}
 	#endif
 
 	/* select() checks every socket in the socket_set, if there's some data on
@@ -167,20 +175,33 @@ Network::pollIn(void)
 	/* select() should return -1 if something went wrong. If we're in server
 	 * mode, this is not supposed to happen, so crash:
 	 */
-	if(selected < 0 && server_mode)
-		throw new Exception("select() failed");
+	#ifdef __ESERVER
+		if(selected < 0)
+			throw new Exception("select() failed");
+	#endif
 
-	/* If we haven't crashed yet, check if there is a connection request, and
-	 * react accordingly:
-	 */
 	if(selected >= 0) {
-		if(FD_ISSET(sockc, &socket_set))
-			handleConnection();
-
-		/* If in server mode, cycle through all client sockets to check if there
-		 * is data:
+		/* If we haven't crashed yet, check the connection socket. In server
+		 * mode, new connections are handled there; in client mode, data is
+		 * handled there.
 		 */
-		// TODO
+		if(FD_ISSET(sockc, &socket_set)) {
+			#ifdef __ESERVER
+				handleConnection();
+			#else
+				handleData(sockc);
+			#endif
+		}
+
+		/* If in server mode, cycle through all user's client sockets to check
+		 * if there is data:
+		 */
+		#ifdef __ESERVER
+			int s;
+			for(size_t i = 0; i < session->countUsers(); i++)
+				if(FD_ISSET(s = session->getUser(i)->getSocket(), &socket_set))
+					handleData(s);
+		#endif
 	}
 }
 
@@ -193,49 +214,43 @@ Network::pollOut(void)
 	/* While the box contains messages (return value > 0), handle the messages:
 	 */
 	int sent;
-	for(size_t message_len = postbox->getMessage(buffer_out, BOX_NETWORK);
+	for(size_t message_len = pm->getMessage(buffer_out, BOX_NETWORK);
 			message_len > 0; ) {
 		/* If we're in client mode, just send the message through the connection
-		 * socket:
-		  */
-		if(client_mode) {
-			sent = send(sockc, buffer_out, message_len, MSG_NOSIGNAL);
-		}
-
-		/* If we're in server mode, send the message to the socket according to
-		 * byte zero in the message:
+		 * socket, otherwise use the byte zero to determine which client shall
+		 * receive the message:
 		 */
-		else {
-			sent = send(buffer_out[0], message_len, MSG_NOSIGNAL);
-		}
+		#ifdef __ECLIENT
+			sent = send(sockc, buffer_out, message_len, MSG_NOSIGNAL);
+		#else
+			sent = send(buffer_out[0], buffer_out, message_len, MSG_NOSIGNAL);
+		#endif
 
 		/* If something went wrong, we'll crash if in client mode, or disconnect
 		 * the client if in server mode:
 		 */
-		if(sent <= 0 && server_mode) {
-			/* TODO
-			session->disconnect(buffer_out[0]);
-			*/
-		} else if(sent <= 0 && client_mode) {
-			throw new Exception("send() failed");
+		if(sent <= 0) {
+			#ifndef __ESERVER
+				/* TODO
+				session->disconnect(buffer_out[0]);
+				*/
+			#else
+				throw new Exception("send() failed");
+			#endif
 		}
 	}
 }
 
 /**
- * This method handles incoming connections. For each connection accepted, it
- * creates a Client object and stores it to the std::vector.
+ * This method is only used by server mode and handles incoming connections.
  */
+#ifdef __ESERVER
 void
 Network::handleConnection(void)
 {
 	/* Accept the connection:
-	 * sockl:       listening socket for establishing a connection
-	 * client_addr: struct to store client information
-	 * client_addr: (size) of struct
 	 */
-	int sock_new = accept(sockl, (sockaddr *)&client_addr,
-			&client_addr_len);
+	int sock_new = accept(sockc, NULL, NULL);
 
 	/* accept() should return -1 if something went wrong. Again, as we don't
 	 * want to handle the error yet, crash!
@@ -243,19 +258,15 @@ Network::handleConnection(void)
 	if(sock_new < 0)
 		throw new Exception("accept() failed");
 
-	/* Add the new client to the list of clients, if there's still space for.
-	 * Otherwise reject the client (close the socket):
+	/* Add the new user to the session handler. If the session handler is full,
+	 * it will return false, and the socket is thus closed:
 	 */
-	if(clients.size() < CLIENTS_MAX) {
-		clients.push_back(new Client(sock_new,inet_ntoa(client_addr.sin_addr)));
-		logf(LOG_NORMAL, "\e[32m%s\e[0m: new connection",
-				clients[clients.size()-1]->getIP());
-		logf(LOG_DEBUG, "new connection established on socket %d",
-				clients[clients.size()-1]->getSocket());
-	} else {
+	if(!session->addUser(sock_new)) {
+		logf(LOG_WARNING, "rejected connection: session handler full");
 		close(sock_new);
 	}
 }
+#endif
 
 /**
  * This method handles incoming data from a client.
@@ -263,7 +274,7 @@ Network::handleConnection(void)
  *           client is stored in).
  */
 void
-Network::handleData(int id)
+Network::handleData(int socket)
 {
 	/* Read data to buffer:
 	 */

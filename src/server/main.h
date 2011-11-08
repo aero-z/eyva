@@ -1,5 +1,5 @@
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef __ESERVER
+#define __ESERVER
 
 #include "data_handler.h"
 #include "game.h"

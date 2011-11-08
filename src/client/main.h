@@ -1,5 +1,5 @@
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef __ECLIENT
+#define __ECLIENT
 
 #include "data_handler.h"
 #include "network.h"
