@@ -1,7 +1,7 @@
 #ifndef _EXCEPTION_H_
 #define _EXCEPTION_H_
 
-#include <eyva.h>
+#include <hybrid/eyva.h>
 
 #include <cstdio>   // (v)(s)(f)(n)printf
 #include <cstdarg>  // va_list

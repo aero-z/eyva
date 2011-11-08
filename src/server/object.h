@@ -1,7 +1,7 @@
 #ifndef _OBJECT_H_
 #define _OBJECT_H_
 
-#include <eyva.h>
+#include <hybrid/eyva.h>
 
 #include <vector>
 #include <cstring>

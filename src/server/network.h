@@ -1,25 +1,39 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
-#include "client.h"
-#include "data_handler.h"
-#include <ayelog.h>
-#include <exception.h>
-#include <eyva.h>     // various values that are used again and again
+// Server side headers:
+#include "session.h"
+#include "game.h"
+#include "pipe.h"
 
-#include <vector>       // for the list of clients
+// Non-specific headers:
+#include <hybrid/eyva.h>
+
+// Utilities:
+#include <utils/ayelog.h>
+#include <utils/exception.h>
+#include <utils/ayestring.h>
+
+// Network headers:
 #include <sys/types.h>  // socket types
 #include <sys/socket.h> // sockets
 #include <arpa/inet.h>  // inet (3) functions
 #include <unistd.h>     // for write, read
-#include <cstring>      // memset()
 #include <cerrno>       // for the "errno" macro
-#include <cstdio>       // for user IO
 
-/* Number of clients that we can handle on this server.
- * TODO make this dynamic
+// Others:
+#include <cstring>
+#include <vector>
+#include <map>
+#include <utility>
+
+/* Number of sessions that this server can handle:
  */ 
-#define CLIENTS_MAX 3
+#define SESSIONS_MAX 10
+
+/* Number of connection requests this server can keep in a queue:
+ */
+#define QUEUE_SIZE 3
 
 class
 Network
@@ -31,24 +45,18 @@ Network
 
 	private:
 		void pollIn(void);
-		void pollOut(void);
 		void handleConnection(void);
 		void handleData(int id);
-		void handleStdInput(void);
-		void copyFirstLine(char* dest, char const* src);
-		void removeClient(int id);
+		void pollOut(void);
 
-		DataHandler* data_handler;
-		std::vector<Client*> clients;
-		std::vector<Client*> targets;    // temporal client list
-		fd_set socket_set;               // set of socket that select() handles
-		int sockl;
-		struct sockaddr_in server_addr;  // our server's network properties
-		struct sockaddr_in client_addr;  // temporal struct to store client info
-		socklen_t client_addr_len;       // ... and it's size
+		Game* game;
+		Pipe* pipe;
+		std::map<int, Session*> sessions;
+		std::map<int, Session*>::iterator it; // iterator for the sessions map
+		fd_set socket_set;                    // socket set for select() 
+		int sockc;                            // connection socket
 		char buffer_in[BUFFER_SIZE];
 		char buffer_out[BUFFER_SIZE];
-		char confirmation_byte;
 };
 
 #endif

@@ -4,45 +4,46 @@ using namespace AyeLog;
 
 /**
  * Constructor.
- * @param data_handler The data handler that is needed to communicate to the
- *                     game object.
- * @param port The TCP port to listen to.
+ * The network handler starts listening to a network socket for incoming
+ * connections.
+ *
+ * @param port
+ *  The TCP port to listen to.
  */
-Network::Network(DataHandler* data_handler, int port)
+Network::Network(int port)
 {
-	this->data_handler = data_handler;
-	confirmation_byte = 0;
+	game = new Game();
+	pipe = new Pipe();
+	term_signal = false;
 
 	/* Create socket:
 	 * AF_INET:     domain (ARPA, IPv4)
 	 * SOCK_STREAM: type (stream socket)
 	 * IPPROTO_TCP: protocol (TCP)
 	 */
-	sockl = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if(sockl < 0)
+	sockc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if(sockc < 0)
 		throw new Exception("socket() failed");
 
-	/* Clear the server_addr struct, then fill with appropriate data:
+	/* Prepare information for binding socket to:
 	 */
-	memset(&server_addr, 0, sizeof(server_addr));
-	server_addr.sin_family = AF_INET;                  // use IPv4
-	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);   // allow all connections
-	server_addr.sin_port = htons(port);                // port to listen to
+	struct sockaddr_in server_addr;
+	memset(&server_addr, 0, sizeof(server_addr));    // fill with zero, then:
+	server_addr.sin_family = AF_INET;                // - use IPv4
+	server_addr.sin_addr.s_addr = htonl(INADDR_ANY); // - allow all connections
+	server_addr.sin_port = htons(port);              // - port to listen to
 
 	/* Bind socket to information contained by the struct that was just defined:
-	 * sockl:       socket that should bind to the address
-	 * server_addr: the address (IP and port, declared above) as type "sockaddr"
-	 * addrlen:     size of the address struct
 	 */
-	if(bind(sockl, (sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+	if(bind(sockc, (sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
 		throw new Exception("bind() failed: %s", strerror(errno));
 	}
 
-	/* Start socket (we will use it to listen, since this is a server):
-	 * sockl:         socket that should start listening
-	 * CLIENTS_MAX:   #connections to keep in queue and to listen to
+	/* Start socket as listener:
+	 * sockc:         socket that should start listening
+	 * SESSIONS_MAX:  number of connections to keep in queue and to listen to
 	 */
-	if(listen(sockl, CLIENTS_MAX) < 0) {
+	if(listen(sockc, QUEUE_SIZE) < 0) {
 		throw new Exception("listen() failed: %s", strerror(errno));
 	}
 
@@ -51,37 +52,49 @@ Network::Network(DataHandler* data_handler, int port)
 
 /**
  * Destructor.
- * All clients are correctly (savegame, logout) disconected and the network
- * connection is shut down.
+ * All session are correctly closed (savegame, logout) and the server side
+ * network is shut down.
  */
 Network::~Network(void)
 {
-	/* Close all sockets and quit:
-	 */
 	logf(LOG_NORMAL, "received shutdown signal, closing sockets ...");
 
-	close(sockl);
-	for(size_t i = 0; i < clients.size(); i++) {
-		removeClient(i);
+	/* Close the connection socket:
+	 */
+	close(sockc);
+
+	/* Close all session sockets:
+	 */
+	for(it = sessions.begin(); it < sessions.end(); it++) {
+		close(it->first);
 	}
+
+	/* This will remove all elements from the map and call their destructors:
+	 */
+	sessions.clear();
+
+	delete game;
+	delete pipe;
 }
 
 
 /* PUBLIC METHODS */
 
+
 /**
- * This method polls incoming data (new connections, data, user input
- * (deprecated)) and sends data to clients if required by the data handler.
+ * This method checks the open sockets for data and sends back data.
  */
 void
 Network::poll(void)
 {
+	logf(DEBUG_LOG, "handling %d sessions ...", sessions.size());
 	pollIn();
 	pollOut();
 }
 
 
 /* PRIVATE METHODS */
+
 
 /**
  * This method checks the sockets for data. select() is used, that will block
@@ -96,15 +109,11 @@ Network::pollIn(void)
 	FD_ZERO(&socket_set);
 
 	/* First, add the listening socket (for incoming connections), then cycle
-	 * through the list of clients:
+	 * through the sessions:
 	 */
 	FD_SET(sockl, &socket_set);
-	for(size_t i = 0; i < clients.size(); i++)
-		FD_SET(clients[i]->getSocket(), &socket_set);
-
-	/* To control the server, we also listen to STDIN:
-	 */
-	FD_SET(STDIN_FILENO, &socket_set);
+	for(it = sessions.begin(); it < sessions.end(); it++)
+		FD_SET(it->first, &socket_set);
 
 	/* select() checks every socket in the socket_set, if there's some data on
 	 * it (e.g. data received, connection requested, ...)
@@ -119,62 +128,16 @@ Network::pollIn(void)
 	if(selected < 0)
 		throw new Exception("select() failed");
 
-	/* If we haven't crashed yet, check if there is a connection request, and
-	 * react accordingly:
+	/* Check for connection request:
 	 */
 	if(FD_ISSET(sockl, &socket_set))
 		handleConnection();
 
-	/* Cycle through all connections to check if there is data and react
-	 * accordingly:
+	/* Check for data on a session's socket:
 	 */
-	for(size_t i = 0; i < clients.size(); i++) {
-		if(FD_ISSET(clients[i]->getSocket(), &socket_set)) {
-			handleData(i);
-		}
-	}
-
-	/* TODO deprecated
-	 * Check if there is standard input:
-	 */
-	if(FD_ISSET(STDIN_FILENO, &socket_set))
-		handleStdInput();
-}
-
-/**
- * This method checks the data handler for a command to be sent to the client
- * and sends it if required.
- */
-void
-Network::pollOut(void)
-{
-	int command_len = data_handler->getNetworkTask(buffer_out, &targets);
-
-	/* Command [00 NULL] means: no data should be sent over the network:
-	 */
-	if(buffer_out[0] == 0)
-		return;
-
-	/* Otherwise, we're going to cycle through all the clients that have been
-	 * put into the `targets' vector:
-	 */
-	int sent;
-	for(size_t i = 0; i < targets.size(); i++) {
-		logf(LOG_DEBUG, "message to: %s on %s",
-				targets[i]->getIP(),
-				targets[i]->getSocket());
-
-		sent = send(targets[i]->getSocket(), buffer_out, command_len,
-				MSG_NOSIGNAL);
-
-		/* Check connection and disconnect in case of error:
-		 */
-		if(sent < 0) {
-			logf(LOG_WARNING, "%s: connection lost",
-					targets[i]->getIP());
-			removeClient(i);
-		}
-	}
+	for(it = sessions.begin(); it < sessions.end(); it++)
+		if(FD_ISSET(it->first, &socket_set))
+			handleData(it->first);
 }
 
 /**
@@ -184,50 +147,50 @@ Network::pollOut(void)
 void
 Network::handleConnection(void)
 {
-	/* Accept the connection:
-	 * sockl:       listening socket for establishing a connection
-	 * client_addr: struct to store client information
-	 * client_addr: (size) of struct
-	 */
-	int sock_new = accept(sockl, (sockaddr *)&client_addr,
-			&client_addr_len);
+	struct sockaddr client_addr;
+	socklent_t client_addr_len = sizeof(client_addr);
 
-	/* accept() should return -1 if something went wrong. Again, as we don't
-	 * want to handle the error yet, crash!
+	/* Accept the connection, storing client information to the struct that was
+	 * just defined:
+	 */
+	int sock_new = accept(sockc, &client_addr, &client_addr_len);
+
+	/* accept() should return -1 if something went wrong. As we don't want to
+	 * handle the error yet, crash:
 	 */
 	if(sock_new < 0)
 		throw new Exception("accept() failed");
 
-	/* Add the new client to the list of clients, if there's still space for.
-	 * Otherwise reject the client (close the socket):
+	/* Create a new session, if there's still space for it; otherwise reject the
+	 * client (close the socket):
 	 */
-	if(clients.size() < CLIENTS_MAX) {
-		clients.push_back(new Client(sock_new,inet_ntoa(client_addr.sin_addr)));
-		logf(LOG_NORMAL, "\e[32m%s\e[0m: new connection",
-				clients[clients.size()-1]->getIP());
-		logf(LOG_DEBUG, "new connection established on socket %d",
-				clients[clients.size()-1]->getSocket());
+	if(sessions.size() < QUEUE_SIZE) {
+		sessions.insert(pair<int, Session*>(sock_new,
+				new Session(sock_new, inet_ntoa(client_addr.sin_addr), pipe)));
+		logf(LOG_NORMAL, "\e[32m%s\e[0m: new connection on socket %d",
+				sessions[sock_new]->getIP(), sock_new);
 	} else {
 		close(sock_new);
 	}
 }
 
 /**
- * This method handles incoming data from a client.
- * @param id The client's ID (which is also the position in the std::vector the
- *           client is stored in).
+ * This method handles incoming data on a socket.
+ * 
+ * @param socket
+ *  The socket which holds the data.
  */
 void
-Network::handleData(int id)
+Network::handleData(int socket)
 {
 	/* Read data to buffer:
 	 */
-	int received = read(clients[id]->getSocket(), buffer_in, BUFFER_SIZE);
-	logf(LOG_DEBUG, "received %d bytes", received);
+	int received = read(socket, buffer_in, BUFFER_SIZE);
 
 	/* read() should return the number of bytes received. If the number is
-	 * negative, there was an error, and we'll crash:
+	 * negative, there was an error, thus crash:
 	 */
+	logf(LOG_DEBUG, "received %d bytes", received);
 	if(received < 0)
 		throw new Exception("read() failed");
 
@@ -236,110 +199,70 @@ Network::handleData(int id)
 	 */
 	if(received == 0) {
 		logf(LOG_NORMAL, "> %s: connection closed by peer",
-				clients[id]->getIP());
-		removeClient(id);
+				sessions[socket]->getIP());
+		close(socket);
+		sessions.erase(socket);
 	}
 
-	/* If the number is positive, we have successfully received data:
+	/* If the number is positive, there is data to handle:
 	 */
 	else {
-		/* First, we send a confirmation message, the purpose of which being:
-		 * 1) confirmation for server: client is still here!
-		 * 2) confirmation for client: my message was delivered!
-		 * The purpose of MSG_NOSIGNAL is to ignore the SIGPIPE signal that
-		 * would be kill the process if there's a send() error (default
-		 * behaviour, FSM knows why).
+		/* Send confirmation byte, to make sure the client is still there:
 		 */
-		int sent = send(clients[id]->getSocket(), &confirmation_byte, 1,
-				MSG_NOSIGNAL);
-		logf(LOG_DEBUG, "confirmation: sent %d bytes", sent);
+		char confirmation_byte = 10;
+		int sent = send(socket, &confirmation_byte, 1, MSG_NOSIGNAL);
 
-		/* send() should return the number of bytes sent. If there's something
-		 * wrong, we couldn't send the one byte (the value should be different
-		 * from 1).
-		 * We may assume that the client has disconnected.
+		/* Check if successfully confirmation byte was successfully sent;
+		 * otherwise close session:
 		 */
+		logf(LOG_DEBUG, "confirmation: sent %d bytes", sent);
 		if(sent != 1) {
-			logf(LOG_WARNING, "%s: connection lost", clients[id]->getIP());
-			removeClient(id);
+			logf(LOG_WARNING, "%s: connection lost", sessions[socket]->getIP());
+			close(socket);
+			sessions.erase(socket);
 		}
 
-		/* Otherwise, we can let the data guard take over:
+		/* Otherwise, the session may handle the data:
 		 */
 		else {
-			char debug_msg[BUFFER_SIZE];
-			copyFirstLine(debug_msg, buffer_in);
-			logf(LOG_DEBUG, "%s: received '%s'", clients[id]->getIP(),
-					debug_msg);
-
-			/* Here, the data guard takes over. The content of the input_buffer
-			 * tells the connection handler what to do (that will take a lot of
-			 * time). The response will be stored in the output_buffer.
-			 */
-			data_handler->setGameTask(buffer_in, received, clients[id]);
+			sessions[socket]->handle(buffer_in, received);
 		}
 	}
 }
 
 /**
- * TODO deprecated
- * This method handles the user input (server side command line interface).
+ * After having handled all the incoming data, the internal server system has
+ * filled the network handler's pipe with data to be sent to the clients.
+ * Thus, this method will check all the messages in the pipe.
  */
 void
-Network::handleStdInput(void)
+Network::pollOut(void)
 {
-	int received = read(STDIN_FILENO, buffer_in, BUFFER_SIZE);
+	while(!pipe->isEmpty()) {
+		size_t msglen = pipe->fetch(buffer_out);
 
-	/* read() should return the number of bytes read. If something went wrong
-	 * there, we don't want to handle the error, so let's crash:
-	 */
-	if(received < 0)
-		throw new Exception("input failed");
+		/* The byte zero holds the session's socket file descriptor:
+		 */
+		int socks = buffer_out[0];
 
-	/* Copy the first line (it's all that's interesting):
-	 */
-	char command[BUFFER_SIZE];
-	copyFirstLine(command, buffer_in);
+		logf(LOG_DEBUG, "sending data to %s on socket %d",
+				sessions[socks]->getIP(), socks);
+		 
+		/* Default behaviour of send() is to raise a SIGPIPE (and thus to cause
+		 * a program crash) whenever it fails (FSM knows why). To avoid that, we
+		 * set MSG_NOSIGNAL.
+		 * TODO make Mac OS X compatible (MSG_NOSIGNAL is SO_NOSIGPIPE)
+		 */
+		int sent = send(socks, buffer_out, msglen, MSG_NOSIGNAL);
 
-	/* Check what command was entered:
-	 */
-	if(strstr(command,"shutdown")==command || strstr(command,"exit")==command
-			|| strstr(command,"quit")==command || strstr(command,"sd")==command)
-		data_handler->setTermSignal();
-
-	if(strstr(command, "help") == command) {
-		printf("\e[1mAvailable commands\e[0m\n");
-		printf("  \e[32mquit|exit|shutdown|sd\e[0m   shut the server down\n");
+		/* If there was an error sending, the client may be assumed as
+		 * disconnected, and thus the session may be closed:
+		 */
+		if(sent <= 0) {
+			logf(LOG_WARNING, "%s: connection lost", sessions[socks]->getIP());
+			close(socks);
+			sessions.erase(socks)
+		}
 	}
-}
-
-/**
- * This method copies the first line of a string. It checks the string for the
- * first appearance of a terminating zero character or a newline (\n).
- * @param dest The string where the first line shall be copied to.
- * @param src The string from where the first line is read.
- */
-void
-Network::copyFirstLine(char* dest, char const* src)
-{
-	int pos;
-	strncpy(dest, src, pos = ((size_t)(strstr(src,"\n")-src) < strlen(src))
-			? strstr(src,"\n")-src : strlen(src));
-	dest[pos] = 0; // terminate
-}
-
-/**
- * This method correctly (logout, savegame) removes a client.
- * TODO deprecated, create and use session handler for this (via data handler)
- */
-void
-Network::removeClient(int id)
-{
-	send(clients[id]->getSocket(), &confirmation_byte, 0, MSG_NOSIGNAL);
-	if(!data_handler->disconnect(id))
-		logf(LOG_WARNING, "%s: disconnected client was not logged in",
-				clients[id]->getIP());
-	close(clients[id]->getSocket());
-	clients.erase(clients.begin()+id);
 }
 

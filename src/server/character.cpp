@@ -2,11 +2,14 @@
 
 /**
  * Constructor.
+ *
+ * @param id
+ *  The character's ID that is used to determine the rest of the informations.
  */
-Character::Character(char const* name)
+Character::Character(int id)
 {
-	this->name = new char[strlen(name)+1]; // +1 for \0
-	strcpy(this->name, name);
+	this->id = id;
+	// TODO read savefiles for loading informations
 }
 
 /**
@@ -14,11 +17,7 @@ Character::Character(char const* name)
  */
 Character::~Character(void)
 {
-	for(size_t i = 0; i < objects.size(); i++) {
-		// TODO save
-		delete objects[i];
-		objects.erase(objects.begin()+i);
-	}
+	objects.clear();
 
 	/* Against memory leaks:
 	 */
@@ -26,12 +25,15 @@ Character::~Character(void)
 	name = NULL;
 }
 
+
 /* PUBLIC METHODS */
 
+
 /**
- * This method gets the character's name.
- * @param name A pointer to the string where the name shall be written to.
- * @return The size of the string.
+ * @param name
+ *  A pointer to the string where the name shall be written to.
+ * @return
+ * The size of the string.
  */
 size_t
 Character::getName(char* name)

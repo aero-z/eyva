@@ -1,30 +1,37 @@
 # -c means: create object files instead of executables
 # -I means: headers being in that directory can be included with <blabla>
 CC = g++
-CFLAGS = -c -Wall -Isrc/utils
-SERVER_LDFLAGS =
+CFLAGS = -c -Wall -Isrc
+SERVER_LDFLAGS = 
 CLIENT_LDFLAGS = -lncurses
-SERVER_SOURCES = $(wildcard src/server/*.cpp) $(wildcard src/utils/*.cpp)
-CLIENT_SOURCES = $(wildcard src/client/*.cpp) $(wildcard src/client/ui/*.cpp) $(wildcard src/utils/*.cpp)
-SERVER_HEADER = $(wildcard src/server/*.h) $(wildcard src/utils/*.h)
-CLIENT_HEADER = $(wildcard src/client/*.h) $(wildcard src/utils/*.h)
-SERVER_OBJECTS = $(SERVER_SOURCES:.cpp=.o)
-CLIENT_OBJECTS = $(CLIENT_SOURCES:.cpp=.o)
+
+HYBRID_SOURCES = $(wildcard src/utils/*.cpp) $(wildcard src/hybrid/*.cpp)
+SERVER_SOURCES = $(wildcard src/server/*.cpp)
+CLIENT_SOURCES = $(wildcard src/client/*.cpp) $(wildcard src/client/ui/*.cpp)
+
+HYBRID_HEADERS = $(wildcard src/utils/*.h) $(wildcard src/hybrid/*.h)
+SERVER_HEADERS = $(wildcard src/server/*.h)
+CLIENT_HEADERS = $(wildcard src/client/*.h) $(wildcard src/client/ui/*.h)
+
+SERVER_OBJECTS = $(SERVER_SOURCES:.cpp=.o) $(HYBRID_SOURCES:.cpp=.o)
+CLIENT_OBJECTS = $(CLIENT_SOURCES:.cpp=.o) $(HYBRID_SOURCES:.cpp=.o)
+
 SERVER_EXECUTABLE = eserver
 CLIENT_EXECUTABLE = eclient
+
 SHELL = /bin/bash
 
-all: $(SERVER_SOURCES) $(CLIENT_SOURCES) $(SERVER_EXECUTABLE) $(CLIENT_EXECUTABLE)
+all: $(SERVER_SOURCES) $(CLIENT_SOURCES) $(HYBRID_SOURCES) $(SERVER_EXECUTABLE) $(CLIENT_EXECUTABLE)
                 
-$(SERVER_EXECUTABLE): $(SERVER_OBJECTS) $(SERVER_HEADER)
+$(SERVER_EXECUTABLE): $(SERVER_OBJECTS) $(SERVER_HEADERS) $(HYBRID_HEADERS)
 	$(CC) $(SERVER_LDFLAGS) $(SERVER_OBJECTS) -o $@
 
-$(CLIENT_EXECUTABLE): $(CLIENT_OBJECTS) $(CLIENT_HEADER)
+$(CLIENT_EXECUTABLE): $(CLIENT_OBJECTS) $(CLIENT_HEADERS) $(HYBRID_HEADERS)
 	$(CC) $(CLIENT_LDFLAGS) $(CLIENT_OBJECTS) -o $@
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -f $(SERVER_OBJECTS) $(CLIENT_OBJECTS) valgrind.log
+	rm -f $(SERVER_OBJECTS) $(CLIENT_OBJECTS)
 

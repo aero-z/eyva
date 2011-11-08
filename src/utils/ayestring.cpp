@@ -13,10 +13,30 @@
  * @return
  *  The size of the copied string (first line).
  */
-size_t strcpy_fl(char* dest, char const* src) {
-	size_t to_copy = (strstr(src, "\0")-src < strlen(src))
-			? strstr(src, "\0") : strlen(src);
+size_t
+strcpy_fl(char* dest, char const* src)
+{
+	size_t to_copy = ((size_t)(strstr(src, "\0")-src) < strlen(src))
+			? (size_t)(strstr(src, "\0")-src) : strlen(src);
 	strncpy(dest, src, to_copy);
 	return to_copy;
+}
+
+/**
+ * This function determines the length of a message according to the eyva
+ * protocol.
+ *
+ * @param msg
+ *  The message of which the line shall be determined.
+ *
+ * @return
+ *  The size of the message.
+ */
+size_t
+msglen(char const* msg)
+{
+	/* little endian:
+	 */
+	return (msg[MESSAGE_HEAD_SIZE-1]*256 + msg[MESSAGE_HEAD_SIZE-2]);
 }
 
