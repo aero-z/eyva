@@ -22,8 +22,8 @@ Network::Network(int port)
 	if(sockc < 0)
 		throw new Exception("socket() failed");
 	
-	/* Make the socket nonblocking (so, if this program crashes, the socket is
-	 * going to be released immediately):
+	/* Make the socket nonblocking (so if the program crashes the socket will be
+	 * released immediately):
 	 */
 	int option = 1; // TODO find out what this does
 	setsockopt(sockc, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));

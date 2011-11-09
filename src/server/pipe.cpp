@@ -30,13 +30,14 @@ Pipe::fetch(char* msg)
 {
 	if(!box.empty()) {
 		memcpy(msg, box[0], msglen(box[0]));
+		box.erase(box.begin());
 		return msglen(box[0]);
 	}
 	return 0;
 }
 
 /**
- * This method adds a message to the box.
+ * This method adds a message to the box (FIFO).
  * @param msg The message to be added to the box.
  */
 void
