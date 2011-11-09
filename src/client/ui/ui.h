@@ -4,7 +4,7 @@
 #ifndef _UI_H_
 #define _UI_H_
 
-#include <eyva.h>
+#include <hybrid/eyva.h>
 
 class UI
 {

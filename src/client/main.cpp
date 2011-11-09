@@ -1,18 +1,6 @@
 #include "main.h"
 
 /**
- * This function deletes the created objects and should make sure the program
- * does not leave any memory leaks.
- */
-void
-cleanUp(void)
-{
-	delete ui;
-	delete network;
-	delete data_handler;
-}
-
-/**
  * The main function.
  * The program loop is running in here.
  * @param argc Number of arguments passed on program invoke.
@@ -21,56 +9,27 @@ cleanUp(void)
 int
 main(int argc, char** argv)
 {
-	/* TODO write argument parser
+	AyeLog::log_verbosity = 3;   // debug log output
+
+	/* The postmaster object is used by the network handler and the UI to
+	 * communicate with each other:
 	 */
-	char const* ip = "127.0.0.1";
-	int port = 1251;
+	pm = new Postmaster();
+	network = new Network(pm);
+	ui = new NCursesUI(pm);
 
-	AyeLog::log_verbosity = 3;   // no log output
-
-	AyeLog::logf(LOG_DEBUG, "creating DataHandler ...");
-	/* The data handler manages information and translates commands
-	 * appropriately:
-	 */
-	data_handler = new DataHandler();
-
-	/* The network and UI use the data_handler to communicate with each other
-	 * and to let it handle the commands:
-	 */
-	try {
-		AyeLog::logf(LOG_DEBUG, "connecting to %s on port %d", ip, port);
-		network = new Network(data_handler, ip, port);
-	} catch(Exception* e) {
-		AyeLog::logf(LOG_ERROR, "%s", e->str());
-		delete data_handler;
-		return -1;
-	}
-	try {
-		ui = new NCursesUI(data_handler);
-	} catch(Exception* e) {
-		AyeLog::logf(LOG_ERROR, "%s", e->str());
-		delete network;
-		delete data_handler;
-		return -1;
-	}
-
-	/* Loop. We will check for activitiy on the network layer, then for activity
-	 * on userspace level. Finally, we'll see if there was a request to shutdown
-	 * the client and end the program:
+	/* Loop: Check for activitiy on the network layer, then for activity on
+	 * userspace level.
 	 */
 	for(bool term_signal = false; !term_signal; ) {
-		try {
-			network->poll();
-			ui->poll(0.1);
-			term_signal = data_handler->getTermSignal();
-		} catch(Exception* e) {
-			AyeLog::logf(LOG_ERROR, "%s", e->str());
-			cleanUp();
-			return -1;
-		}
+		network->poll();
+		ui->poll(0.1);
+		// TODO quit loop if needed
 	}
 
-	cleanUp();
+	delete ui;
+	delete network;
+	delete pm;
 	return 0;
 }
 

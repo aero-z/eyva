@@ -4,39 +4,14 @@ using namespace AyeLog;
 
 /**
  * Constructor
- * @param data_handler The data handler that is needed to communicate to the UI,
- *                     and that handles all data related stuff.
- * @param ip The server's IP address.
- * @param port The port on which the server is running on.
+ * @param pm The postmaster that is needed to communicate to the UI.
  */
-Network::Network(DataHandler* data_handler, char const* ip, int port)
+Network::Network(Postmaster* pm)
 {
-	this->data_handler = data_handler;
-
-	/* Create socket:
-	 * AF_INET:     domain (ARPA, IPv4)
-	 * SOCK_STREAM: type (stream socket)
-	 * IPPROTO_TCP: protocol (TCP)
-	 */
-	sockc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if(sockc < 0)
-		throw new Exception("socket() failed");
-	
-	/* Clear the server_addr struct, then fill with appropriate data:
-	 */
-	memset(&server_addr, 0, sizeof(server_addr));
-	server_addr.sin_family = AF_INET;            // use IPv4
-	server_addr.sin_addr.s_addr = inet_addr(ip); // connect to given IP
-	server_addr.sin_port = htons(port);          // ... and given port
-
-	/* Connect to the server according to the information contained by the
-	 * struct that was just defined:
-	 */
-	if(connect(sockc, (sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-		throw new Exception("connect() failed: %s", strerror(errno));
-	}
-
-	logf(LOG_NORMAL, "Connection established to %s on port %d", ip, port);
+	this->pm = pm;
+	connected = false;
+	buffer_out = new char[BUFFER_SIZE];
+	buffer_in = new char[BUFFER_SIZE];
 }
 
 /**
@@ -44,11 +19,12 @@ Network::Network(DataHandler* data_handler, char const* ip, int port)
  */
 Network::~Network(void)
 {
-	// VOID
+	// TODO
 }
 
 
 /* PUBLIC METHODS */
+
 
 /**
  * This method checks the network socket if there is data on it, and it checks
@@ -58,100 +34,145 @@ Network::~Network(void)
 void
 Network::poll(void)
 {
-	pollIn();
+	if(connected)
+		pollIn();
 	pollOut();
 }
 
 
 /* PRIVATE METHODS */
 
+
 /**
- * This method checks incoming network data and forwards them to the data
- * handler to alert the UI.
+ * This method connects the client to a server.
+ * @param ip The server's IP address.
+ * @param port The port on which the server is running on.
+ */
+bool
+Network::connect(char const* ip, int port)
+{
+	/* Create socket:
+	 * AF_INET:     domain (ARPA, IPv4)
+	 * SOCK_STREAM: type (stream socket)
+	 * IPPROTO_TCP: protocol (TCP)
+	 */
+	logf(LOG_DEBUG, "creating socket ...");
+	sockc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if(sockc < 0) {
+		logf(LOG_ERROR, "creating socket failed");
+		return false;
+	}
+	
+	/* The socket shall just be polled, so set it to non-blocking mode, which
+	 * allows to go on if there's no data on the socket (remember, there's also
+	 * a UI I/O going on):
+	 */
+	fcntl(sockc, F_SETFL, O_NONBLOCK);
+
+	/* Prepare the server information for use with connect().
+	 */
+	struct sockaddr_in server_addr;
+	memset(&server_addr, 0, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;            // use IPv4
+	server_addr.sin_addr.s_addr = inet_addr(ip); // connect to given IP
+	server_addr.sin_port = htons(port);          // ... and given port
+
+	/* Connect to the server according to the information contained by the
+	 * struct that was just defined:
+	 */
+	logf(LOG_DEBUG, "connecting to %s:%d ...", ip, port);
+	if(::connect(sockc, (sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+		logf(LOG_ERROR, "connect() failed: %s", strerror(errno));
+		return false;
+	}
+
+	logf(LOG_NORMAL, "connection established to %s:%d", ip, port);
+	return true;
+}
+
+/**
+ * This method closes the connection to the server.
+ */
+void
+Network::disconnect(void)
+{
+	/* Send a zero-byte message, which will close the connection.
+	 * The default behaviour of send() is to invoke a sigpipe by the system that
+	 * will immediately kill the program (FSM knows why). To avoid that, send()
+	 * is called with the MSG_NOSIGNAL flag.
+	 * TODO make Mac OS X compatible (MSG_NOSIGNAL is SO_NOSIGPIPE).
+	 */
+	send(sockc, NULL, 0, MSG_NOSIGNAL);
+
+	/* Close the socket:
+	 */
+	close(sockc);
+	connected = false;
+}
+
+/**
+ * This method checks incoming network data and forwards them to the UI.
  */
 void
 Network::pollIn(void)
 {
-	/* We'll add the connection socket to the fd_set that is checked by select()
-	 * for available data on it (see below):
+	/* Read data to buffer:
 	 */
-	FD_SET(sockc, &socket_set);
+	int received = read(sockc, buffer_in, BUFFER_SIZE);
 
-	/* select() checks every socket in the socket_set if there's some data on
-	 * it.
-	 * This method would block until there's anything, but since we just
-	 * want to poll (in order for the data guard to go on), we don't block
-	 * by setting the timeout to 0:
+	/* If the number of bytes received is equal to zero, the connection has been
+	 * closed by the server:
 	 */
-	select_timeout.tv_sec = 0;
-	select_timeout.tv_usec = 0;
-	int selected = select(FD_SETSIZE, &socket_set, NULL, NULL,
-			&select_timeout);
-
-	/* select() should return a -1 if something went wrong. As we have set a
-	 * timeout, the error just indicates that there was no data after the
-	 * timeout (usually we would crash here, but we'll just go on):
+	if(received == 0)
+		disconnect();
+	
+	/* read() should return the number of bytes received. If there was an error,
+	 * -1 is returned.
+	 * Since the socket is in non-blocking mode, this is likely to happen, so
+	 * just ignore it.
+	 * Process the received bytes if the number is positive:
 	 */
-	if(selected >= 0) {
-		if(FD_ISSET(sockc, &socket_set)) {
-			/* Read data to buffer:
-			 */
-			int received = read(sockc, buffer_in, BUFFER_SIZE);
-
-			/* read() should return the number of bytes received. If the number
-			 * is negative, there was an error, and we'll crash:
-			 */
-			if(received < 0)
-				throw new Exception("read() failed");
-			
-			/* If the number of bytes received is equal to zero, the connection
-			 * has been closed by the server.
-			 */
-			if(received == 0)
-				throw new Exception("client disconnect");
-			
-			/* OK, if we haven't crashed yet, the number of received bytes
-			 * should be positive.
-			 * The data handler processes the received bytes and alerts the UI:
-			 */
-			data_handler->setUITask(buffer_in, received);
-		}
-	}
+	if(received > 0)
+		pm->send(BOX_UI, buffer_in);
 }
 
 /**
- * This method checks the data handler if there's data to be sent and reacts
- * accordingly.
+ * This method checks the postmaster for new messages and processes them.
  */
 void
 Network::pollOut(void)
 {
-	/* Check if there's data to send. The packet will be stored to buffer_out,
-	 * the length of the data will be returned:
+	/* Check for new messages in the postbox. The message will be stored to
+	 * buffer_out, the length of the data will be returned:
 	 */
-	size_t command_len = data_handler->getNetworkTask(buffer_out);
+	for(size_t msg_len = pm->fetch(buffer_out, BOX_NETWORK);
+			msg_len > 0; ) {
 
-	/* Command [00 NULL] means: data should not be sent:
-	 */
-	if(buffer_out[0] == 0)
-		return;
+		/* Command [01 CONNECT] requires additional action:
+		 */
+		if(buffer_out[1] == 1) {
+			/* Make sure that there is no connection:
+			 */
+			disconnect();
 
-	/* MSG_NOSIGNAL avoids a program crash by a SIGPIPE that would normally be
-	 * raised if there's a sending error. That's the default behaviour, FSM
-	 * knows why:
-	 */
-	int sent = send(sockc, buffer_out, command_len, MSG_NOSIGNAL);
+			/* Prepare required data and connect:
+			 */
+			// TODO connect according to the message
+		}
+	
+		/* MSG_NOSIGNAL avoids a program crash by a SIGPIPE that would normally
+		 * be invoked if there's a sending error. That's the default behaviour,
+		 * FSM knows why.
+		 * TODO make Mac OS X compatible (MSG_NOSIGNAL is SO_NOSIGPIPE)
+		 */
+		int sent = send(sockc, buffer_out, msg_len, MSG_NOSIGNAL);
 
-	/* send() should return the number of bytes sent. If the number is
-	 * negative, there was an error, so we'll crash:
-	 */
-	if(sent < 0)
-		throw new Exception("send() failed");
-
-	/* If the number of bytes sent is equal to zero, there was an error,
-	 * too, so we crash:
-	 */
-	if(sent == 0)
-		throw new Exception("no bytes sent");
+		/* send() should return the number of bytes sent. If the number is
+		 * negative or equal to zero, there must have been an error, so close
+		 * the connection:
+		 */
+		if(sent <= 0)
+			disconnect();
+	}
 }
 

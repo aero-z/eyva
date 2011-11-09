@@ -21,9 +21,10 @@ NCursesWM::~NCursesWM(void)
 
 /* PUBLIC METHODS */
 
+
 /**
- * This method processes a user input (button click) by sending it to the right
- * window to react accordingly.
+ * This method processes a user input (button) by sending it to the right window
+ * to react accordingly.
  * @param input The key pressed by the user.
  */
 void

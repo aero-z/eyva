@@ -107,6 +107,8 @@ Network::poll(void)
 void
 Network::pollIn(void)
 {
+	fd_set socket_set;
+
 	/* Before adding all used sockets to the fd_set, clear it:
 	 */
 	FD_ZERO(&socket_set);
@@ -244,7 +246,7 @@ void
 Network::pollOut(void)
 {
 	while(pipe->check()) {
-		size_t msglen = pipe->fetch(buffer_out);
+		size_t message_len = pipe->fetch(buffer_out);
 
 		/* The byte zero holds the session's socket file descriptor:
 		 */
@@ -258,7 +260,7 @@ Network::pollOut(void)
 		 * set MSG_NOSIGNAL.
 		 * TODO make Mac OS X compatible (MSG_NOSIGNAL is SO_NOSIGPIPE)
 		 */
-		int sent = send(socks, buffer_out, msglen, MSG_NOSIGNAL);
+		int sent = send(socks, buffer_out, message_len, MSG_NOSIGNAL);
 
 		/* If there was an error sending, the client may be assumed as
 		 * disconnected, and thus the session may be closed:

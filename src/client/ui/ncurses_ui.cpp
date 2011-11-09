@@ -1,5 +1,7 @@
 #include "ncurses_ui.h"
 
+using namespace AyeLog;
+
 /**
  * Constructor.
  * The ncurses session is started here.
@@ -7,29 +9,39 @@
  *                     network object, and that handles all information related
  *                     stuff.
  */
-NCursesUI::NCursesUI(DataHandler* data_handler)
+NCursesUI::NCursesUI(Postmaster* pm)
 {
-	this->data_handler = data_handler;
+	logf(LOG_DEBUG, "constructor %d", 1);
+	this->pm = pm;
 
+	logf(LOG_DEBUG, "constructor 2");
 	initscr();             // start ncurses mode
+	logf(LOG_DEBUG, "constructor 3");
 	wm = new NCursesWM();  // our window manager
 
 	/* Check for colors and active if available:
 	 */
+	logf(LOG_DEBUG, "constructor 4");
 	if(!has_colors())
 		throw new Exception("colors not supported");
+	logf(LOG_DEBUG, "constructor 5");
 	start_color();
 
 	/* This is used to enable transparent background, but we use it to let some
 	 * terminal applications (like gnome-terminal) display colors correctly:
 	 */
+	logf(LOG_DEBUG, "constructor 6");
 	use_default_colors();
 
 	/* Set the behaviour of ncurses:
 	 */
+	logf(LOG_DEBUG, "constructor 7");
 	cbreak();              // for user input, don't wait for the return
+	logf(LOG_DEBUG, "constructor 8");
 	noecho();              // don't display user input
+	logf(LOG_DEBUG, "constructor 10");
 	curs_set(0);           // by default, don't display the cursor
+	logf(LOG_DEBUG, "constructor 9");
 }
 
 /**
@@ -47,8 +59,8 @@ NCursesUI::~NCursesUI(void)
 /* PUBLIC METHODS */
 
 /**
- * This is a method required by the UI superclass.
- * It checks for user input and alerts the network object via data handler, if
+ * This is a method defined [virtual] by the UI superclass.
+ * It checks for user input and alerts the network handler via postmaster if
  * necessary.
  * @param timeout The delay (or time to wait) for a user input before going on
  *                in seconds.
@@ -57,10 +69,10 @@ void
 NCursesUI::poll(double timeout)
 {
 	halfdelay((int)(timeout*10));
-	printw("hello!\n");
+	printw("hello!");
 	refresh();
 	getch();
 
-	// TODO
+	// TODO alert network handler
 }
 

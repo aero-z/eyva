@@ -1,24 +1,29 @@
 #ifndef _NCURSES_UI_
 #define _NCURSES_UI_
 
+// Client:
 #include "ui.h"
 #include "ncurses_wm.h"
-#include "../data_handler.h"
-#include <exception.h>
+#include "../postmaster.h"
 
+// Utils:
+#include <utils/exception.h>
+#include <utils/ayelog.h>
+
+// Others:
 #include <ncurses.h>
 
 class
 NCursesUI : public UI
 {
 	public:
-		NCursesUI(DataHandler* data_handler);
+		NCursesUI(Postmaster* pm);
 		~NCursesUI(void);
 		void poll(double timeout); // virtual
 
 	private:
 		NCursesWM* wm;
-		DataHandler* data_handler;
+		Postmaster* pm;
 		char buffer_text[BUFFER_SIZE];
 };
 

@@ -7,8 +7,7 @@
 #include "pipe.h"
 
 // Non-specific headers:
-#include <hybrid/eyva.h>
-
+#include <hybrid/eyva.h> 
 // Utilities:
 #include <utils/ayelog.h>
 #include <utils/exception.h>
@@ -53,7 +52,6 @@ Network
 		Pipe* pipe;
 		std::map<int, Session*> sessions;
 		std::map<int, Session*>::iterator it; // iterator for the sessions map
-		fd_set socket_set;                    // socket set for select() 
 		int sockc;                            // connection socket
 		char buffer_in[BUFFER_SIZE];
 		char buffer_out[BUFFER_SIZE];
