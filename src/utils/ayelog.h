@@ -5,7 +5,7 @@
 #include <cstdarg>  // va_list
 #include <ctime>    // struct tm
 
-#define LOG_BUF 120  // 80 is recommended, since it's the default termial width
+#define LOG_BUF 80  // 80 is recommended, since it's the default termial width
 
 /**
  * These enums will be used to define the type of the log message.

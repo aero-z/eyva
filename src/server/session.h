@@ -4,6 +4,8 @@
 #include "user.h"
 #include "pipe.h"
 
+#include <utils/ayelog.h>
+
 #include <cstring>
 
 class
@@ -14,11 +16,11 @@ Session
 		~Session(void);
 		void handle(char const* message, int message_len);
 		char const* getIP(void);
-		int getSocket(void);
+		int getID(void);
 	
 	private:
 		Pipe* pipe;
-		int socket;
+		int id;
 		char* ip;
 };
 

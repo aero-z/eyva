@@ -6,9 +6,7 @@ using namespace AyeLog;
  * Constructor.
  * The network handler starts listening to a network socket for incoming
  * connections.
- *
- * @param port
- *  The TCP port to listen to.
+ * @param port The TCP port to listen to.
  */
 Network::Network(int port)
 {
@@ -23,6 +21,12 @@ Network::Network(int port)
 	sockc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if(sockc < 0)
 		throw new Exception("socket() failed");
+	
+	/* Make the socket nonblocking (so, if this program crashes, the socket is
+	 * going to be released immediately):
+	 */
+	int option = 1; // TODO find out what this does
+	setsockopt(sockc, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
 
 	/* Prepare information for binding socket to:
 	 */
@@ -129,14 +133,18 @@ Network::pollIn(void)
 
 	/* Check for connection request:
 	 */
-	if(FD_ISSET(sockc, &socket_set))
+	if(FD_ISSET(sockc, &socket_set)) {
+		logf(LOG_DEBUG, "incoming connection ...");
 		handleConnection();
+	}
 
 	/* Check for data on a session's socket:
 	 */
 	for(it = sessions.begin(); it != sessions.end(); it++)
-		if(FD_ISSET(it->first, &socket_set))
+		if(FD_ISSET(it->first, &socket_set)) {
+			logf(LOG_DEBUG, "data on socket %d ...", it->first);
 			handleData(it->first);
+		}
 }
 
 /**
@@ -166,7 +174,7 @@ Network::handleConnection(void)
 	if(sessions.size() < QUEUE_SIZE) {
 		sessions.insert(std::pair<int, Session*>(sock_new,
 				new Session(sock_new, inet_ntoa(client_addr.sin_addr), pipe)));
-		logf(LOG_NORMAL, "\e[32m%s\e[0m: new connection on socket %d",
+		logf(LOG_NORMAL, "> \e[32m%s\e[0m: new connection on socket %d",
 				sessions[sock_new]->getIP(), sock_new);
 	} else {
 		close(sock_new);
@@ -175,9 +183,7 @@ Network::handleConnection(void)
 
 /**
  * This method handles incoming data on a socket.
- * 
- * @param socket
- *  The socket which holds the data.
+ * @param socket The socket which holds the data.
  */
 void
 Network::handleData(int socket)
@@ -197,7 +203,7 @@ Network::handleData(int socket)
 	 * closed by the peer:
 	 */
 	if(received == 0) {
-		logf(LOG_NORMAL, "> %s: connection closed by peer",
+		logf(LOG_NORMAL, "\e[33m%s\e[0m: connection closed by peer",
 				sessions[socket]->getIP());
 		close(socket);
 		sessions.erase(socket);

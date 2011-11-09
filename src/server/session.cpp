@@ -1,5 +1,7 @@
 #include "session.h"
 
+using namespace AyeLog;
+
 /**
  * Constructor.
  * @param id   The session ID (= socket file descriptor for this connection).
@@ -9,10 +11,13 @@
 Session::Session(int id, char const* ip, Pipe* pipe)
 {
 	this->pipe = pipe;
-	this->socket = socket;
+	this->id = id;
 
-	ip = new char[strlen(ip)+1]; // +1 for \0
+	this->ip = new char[strlen(ip)+1]; // +1 for \0
 	strncpy(this->ip, ip, strlen(ip));
+	this->ip[strlen(ip)] = 0; // terminate (strncpy doesn't do that...)
+
+	//logf(LOG_DEBUG, "> %s: new session on socket %d", ip, id);
 }
 
 /**
@@ -48,11 +53,11 @@ Session::getIP(void)
 }
 
 /**
- * @return The socket file descriptor of this session's connection.
+ * @return The session ID (and also socket file descriptor).
  */
 int
-Session::getSocket(void)
+Session::getID(void)
 {
-	return socket;
+	return id;
 }
 

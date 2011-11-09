@@ -3,7 +3,7 @@
 /**
  * Constructor.
  * @param format The format string. See docs for `printf()' and the like.
- * @param ... The format string arguments.
+ * @param ...    The format string arguments.
  */
 Exception::Exception(char const* format, ...)
 {

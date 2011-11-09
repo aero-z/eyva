@@ -1,21 +1,24 @@
 #include "ayelog.h"
 
-/* Verbosity level for log printouts.
+/* Verbosity level for log printouts to stdout.
  * 0: no printout (only errors)
  * 1: warnings and errors
  * 2: normal printout
- * 3: debug printout (attention! this produces a lot of output) // TODO
+ * 3: debug printout (attention! development use; produces a lot of output)
  *
- * Log files are always written with log_verbosity level 1.
+ * Log files are always written with log_verbosity level 2.
  */
-int AyeLog::log_verbosity = 1;    // default value
+int AyeLog::log_verbosity = 1; // default value for printout
 
-/* This basically works the same way as printf, but prints the formated string
- * to a file instead of stdout.
- * If verbosity level is >1, however, the string is also printed to stdout.
- *
+/**
+ * This function basically works the same way as printf, but prints the formated
+ * string also to a file.
  * NOTE: The length of the message should not exceed 80, since every string
  * larger than 80 characters will be trimmed to 80 characters.
+ * @param type   The log type; can be LOG_ERROR, LOG_WARNING, LOG_NORMAL or
+ *               LOG_DEBUG.
+ * @param format The format string.
+ * @param ...    The arguments for the format string.
  */
 void
 AyeLog::logf(log_type type, char const* format, ...)
