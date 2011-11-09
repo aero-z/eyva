@@ -1,22 +1,18 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
-#include "data_handler.h"
-#include "client.h"
-#include <vector>
+#include "pipe.h"
 
 class
 Game
 {
 	public:
-		Game(DataHandler* data_handler);
+		Game(Pipe* pipe);
 		~Game(void);
-		void poll(void);
+		void process(char const* msg);
 	
 	private:
-		DataHandler* data_handler;
-		char effect[BUFFER_SIZE];
-		size_t effect_len;
+		Pipe* pipe;
 };
 
 #endif

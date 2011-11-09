@@ -12,9 +12,8 @@ using namespace AyeLog;
  */
 Network::Network(int port)
 {
-	game = new Game();
 	pipe = new Pipe();
-	term_signal = false;
+	game = new Game(pipe);
 
 	/* Create socket:
 	 * AF_INET:     domain (ARPA, IPv4)
@@ -65,7 +64,7 @@ Network::~Network(void)
 
 	/* Close all session sockets:
 	 */
-	for(it = sessions.begin(); it < sessions.end(); it++) {
+	for(it = sessions.begin(); it != sessions.end(); it++) {
 		close(it->first);
 	}
 
@@ -87,7 +86,7 @@ Network::~Network(void)
 void
 Network::poll(void)
 {
-	logf(DEBUG_LOG, "handling %d sessions ...", sessions.size());
+	logf(LOG_DEBUG, "handling %d sessions ...", sessions.size());
 	pollIn();
 	pollOut();
 }
@@ -111,8 +110,8 @@ Network::pollIn(void)
 	/* First, add the listening socket (for incoming connections), then cycle
 	 * through the sessions:
 	 */
-	FD_SET(sockl, &socket_set);
-	for(it = sessions.begin(); it < sessions.end(); it++)
+	FD_SET(sockc, &socket_set);
+	for(it = sessions.begin(); it != sessions.end(); it++)
 		FD_SET(it->first, &socket_set);
 
 	/* select() checks every socket in the socket_set, if there's some data on
@@ -130,12 +129,12 @@ Network::pollIn(void)
 
 	/* Check for connection request:
 	 */
-	if(FD_ISSET(sockl, &socket_set))
+	if(FD_ISSET(sockc, &socket_set))
 		handleConnection();
 
 	/* Check for data on a session's socket:
 	 */
-	for(it = sessions.begin(); it < sessions.end(); it++)
+	for(it = sessions.begin(); it != sessions.end(); it++)
 		if(FD_ISSET(it->first, &socket_set))
 			handleData(it->first);
 }
@@ -147,13 +146,13 @@ Network::pollIn(void)
 void
 Network::handleConnection(void)
 {
-	struct sockaddr client_addr;
-	socklent_t client_addr_len = sizeof(client_addr);
+	struct sockaddr_in client_addr;
+	socklen_t client_addr_len = sizeof(client_addr);
 
 	/* Accept the connection, storing client information to the struct that was
 	 * just defined:
 	 */
-	int sock_new = accept(sockc, &client_addr, &client_addr_len);
+	int sock_new = accept(sockc, (sockaddr*)&client_addr, &client_addr_len);
 
 	/* accept() should return -1 if something went wrong. As we don't want to
 	 * handle the error yet, crash:
@@ -165,7 +164,7 @@ Network::handleConnection(void)
 	 * client (close the socket):
 	 */
 	if(sessions.size() < QUEUE_SIZE) {
-		sessions.insert(pair<int, Session*>(sock_new,
+		sessions.insert(std::pair<int, Session*>(sock_new,
 				new Session(sock_new, inet_ntoa(client_addr.sin_addr), pipe)));
 		logf(LOG_NORMAL, "\e[32m%s\e[0m: new connection on socket %d",
 				sessions[sock_new]->getIP(), sock_new);
@@ -238,7 +237,7 @@ Network::handleData(int socket)
 void
 Network::pollOut(void)
 {
-	while(!pipe->isEmpty()) {
+	while(pipe->check()) {
 		size_t msglen = pipe->fetch(buffer_out);
 
 		/* The byte zero holds the session's socket file descriptor:
@@ -261,7 +260,7 @@ Network::pollOut(void)
 		if(sent <= 0) {
 			logf(LOG_WARNING, "%s: connection lost", sessions[socks]->getIP());
 			close(socks);
-			sessions.erase(socks)
+			sessions.erase(socks);
 		}
 	}
 }

@@ -10,7 +10,7 @@ class
 Character
 {
 	public:
-		Character(char const* name);
+		Character(int id);
 		~Character(void);
 		size_t getName(char* name);
 		int getXPos(void);
@@ -20,6 +20,7 @@ Character
 
 	private:
 		std::vector<Object*> objects;
+		int id;
 		char* name;
 		int xpos;
 		int ypos;

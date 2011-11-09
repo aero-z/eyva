@@ -5,9 +5,9 @@
  * @param data_handler A pointer to the data handler that is needed to
  *                     communicate with the network object.
  */
-Game::Game(DataHandler* data_handler)
+Game::Game(Pipe* pipe)
 {
-	this->data_handler = data_handler;
+	this->pipe = pipe;
 }
 
 /**
@@ -21,15 +21,14 @@ Game::~Game(void)
 
 /* PUBLIC METHODS */
 
+
 /**
- * This method checks if the game object was alerted by the network object, and
- * reacts accordingly.
+ * This method "executes" a message.
+ * @param msg The message to be executed.
  */
 void
-Game::poll(void)
+Game::process(char const* msg)
 {
-	Client* src = NULL;
-	effect_len = data_handler->getGameTask(effect, src);
 	// TODO
 }
 

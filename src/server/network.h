@@ -39,7 +39,7 @@ class
 Network
 {
 	public:
-		Network(DataHandler* data_handler, int port);
+		Network(int port);
 		~Network(void);
 		void poll(void);
 

@@ -37,3 +37,22 @@ Session::handle(char const* message, int message_len)
 {
 	// TODO
 }
+
+/**
+ * @return The IP of this session's client.
+ */
+char const*
+Session::getIP(void)
+{
+	return ip;
+}
+
+/**
+ * @return The socket file descriptor of this session's connection.
+ */
+int
+Session::getSocket(void)
+{
+	return socket;
+}
+

@@ -13,6 +13,8 @@ Session
 		Session(int id, char const* ip, Pipe* pipe);
 		~Session(void);
 		void handle(char const* message, int message_len);
+		char const* getIP(void);
+		int getSocket(void);
 	
 	private:
 		Pipe* pipe;
