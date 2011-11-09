@@ -5,46 +5,46 @@ Readme file
 
 Introduction:
 
-   `eyva' is an attempt to create a `Rogue'-like game for the CLI.
-   It's basically a proof-of-concept, playground, and still in development, so
-   don't expect it to do a lot.
+    `eyva' is an attempt to create a `Rogue'-like game for the CLI.
+    It's basically a proof-of-concept, playground, and still in development, so
+    don't expect it to do a lot.
 
-   `eyva' consists of a server component and a client component.
-   Both components are independent programs.
+    `eyva' consists of a server component and a client component.
+    Both components are independent programs.
 
-   This means you may decide to either play `eyva' as a single-player (by
-   starting both the client and the server on your local machine) or together
-   with other players (by starting the client on your local machine and
-   connecting to a remote (or local) shared server).
+    This means you may decide to either play `eyva' as a single-player (by
+    starting both the client and the server on your local machine) or together
+    with other players (by starting the client on your local machine and
+    connecting to a remote (or local) shared server).
 
 
 Requirements:
 
-   * ncurses
-   * OS:
-     - GNU/Linux (tested on Arch Linux)
-     - Mac OS X (see issue #4 for troubleshooting)
+    * ncurses
+    * OS:
+      - GNU/Linux (tested on Arch Linux)
+      - Mac OS X (see issue #4 for troubleshooting)
 
 
 Compile:
 
-   Run `make' in the project's root directory. This will create server and
-   client binaries.
+    Run `make' in the project's root directory. This will create server and
+    client binaries.
    
 
 Execute:
    
-   Currently, the components have no real functionality:
+    Currently, the components have no real functionality:
    
-   `eserver' will listen to port 1251. You may use `netcat' to send and receive
-   data.
+    `eserver' will listen to port 1251. You may use `netcat' to send and receive
+    data.
 
-   `eclient' will just connect to the default IP and port where the server is
-   supposed to run, send nothing, and display messages until killed.
+    `eclient' will just connect to the default IP and port where the server is
+    supposed to run, send nothing, and display messages until killed.
 
 
 Bugs:
 
-   Please report bugs to the project site:
-   https://github.com/ayekat/eyva
+    Please report bugs to the project site:
+    https://github.com/ayekat/eyva
 
