@@ -5,114 +5,201 @@ protocol
 
 Structure:
 
-   The structure of a package following the `eyva' protocol looks like this:
+    The structure of a package following the `eyva' protocol looks like this:
 
-   byte   meaning
-      0   Command.
-    1-2   Message length (little endian).
-    3-*   Message data. The length is defined by the bytes 2 and 3, thus the
-          length can vary between 0 and 2^16-1 (65535).
+    byte   meaning
+       0   Session ID (doesn't matter for client).
+       1   Message.
+     2-3   Message length (little endian).
+     4-*   Message data. The length is defined by the bytes 2 and 3, thus the
+           length can vary between 0 and 2^16-1 (65535).
 
-   This means, an `eyva' conform package has a total length of 4 at least and
-   65538 at most.
+    This means, an `eyva' conform package has a total length of 4 bytes at least
+    and 65539 bytes at most.
 
-   Commands (structure byte 0) are defined as follows:
-
-
-Connection level:
-
-   00  NULL - [client] [server] (internal)
-       This command is not sent over the network, but serves as a kind of
-       "no data available" for internal network stuff, whenever a command is
-       polled that does not exist.
+    See the sections below for a defintion of all messages.
+    The list is built up as follows:
 
 
-Session level:
+XX  MESSAGE_NAME - [source]
+    This is the message description. XX is the message's code number (in hex), 
+    the source (in brackets) indicates if a message is sent by the server or the
+    client (or both).
+    The part below describes the message body. * bytes for an element's size
+    means that it is a zero-byte terminated string.
 
-   10  CLIENT_VERSION - [client]
-       This is the first command sent in the conversation.
-       Sends the software version to the server. If the version is OK, the
-       server is supposed to send a [12 REQUEST_LOGIN], otherwise the server
-       will send a [11 REQUEST_CLIENT_UPDATE].
-       Message:
-        - version (3 bytes) (major release, minor release, patch)
+    MESSAGE BODY:
+    - element (size)
+    - element (size)
 
-   11  REQUEST_CLIENT_UPDATE - [server]
-       The client must be updated, no further login is possible.
 
-   12  REQUEST_LOGIN - [server]
-       Asks for authentication. Client is supposed to answer with [13 LOGIN].
-       If a login request arrives during the game, the client must consider
-       itself as "kicked out".
-       Message:
-        - reason (or just a welcome message) (* bytes)
+Message definition:
 
-   13  LOGIN - [client]
-       Sends the name and password to log in to the server.
-       Message:
-        - username length (1 byte)
-        - username (* bytes)
-        - password length (1 byte)
-        - password (* bytes)
 
-   14  LOGOUT - [client]
-       Sends a logout message to the server, resulting in saving the user's
-       ingame state. Server is supposed to answer with [12 REQUEST_LOGIN].
+===============================
+00-1F: connection/session level
+===============================
+
+
+01  CONNECT - [client]
+    This is the first message sent to the server. It's a connection
+    request from the client containing all that is needed in a first step.
+
+    BODY:
+    - server's IP address (4 bytes)
+    - server's TCP port (2 bytes, little endian)
+    - version number - major release (1 byte)
+    - version number - minor release (1 byte)
+    - version number - patch (1 byte)
+    - username (* bytes)
+
+
+02  ACCEPT_CONNECTION - [server]
+    After a [01 CONNECT], this is the server's answer to assure the client it
+    has correctly been connected.
+
+    BODY:
+    - message of the day (* bytes)
+
+
+03  REQUEST_CLIENT_UPDATE - [server]
+    This is a possible answer to a client's connection request, if the client's
+    version number does not fulfill the requirements of the server.
+    No further login is possible until the client has been updated.
+
+    BODY:
+    - required version number - major release (1 byte)
+    - required version number - minor release (1 byte)
+    - required version number - patch (1 byte)
+
+
+04  KICK - [server]
+    If a server sends this, the client must consider itself "kicked out".
+
+    BODY:
+    - reason (* bytes)
+
+
+05  DISCONNECT - [client]
+    The client will invoke a disconnection process at the server.
+    This is the `eyva' alternative to the zero-byte message.
+
+
+06  REQUEST_CHARACTER_LIST - [client]
+    A list of characters belonging to the user is requested.
+
+
+07  CHARACTER_LIST - [server]
+    A list of characters belonging to the user who requested it is sent.
+
+    BODY:
+    - number of characters (1 byte)
+    - repeat:
+      + character ID (1 byte)
+      + character name (* bytes)
+      + character class (1 byte)
+      + character level (1 byte)
+
+
+08  LOGIN - [client]
+    Log in as a character.
+
+    BODY:
+    - character id
+
+
+09  LOGOUT - [client]
+    Logout as a character (and thus leave the game).
+
+
+===================
+20-3F: ingame level
+===================
+
+
+20  SEND_MOVE_UP - [client]
+21  SEND_MOVE_DOWN - [client]
+22  SEND_MOVE_LEFT - [client]
+23  SEND_MOVE_RIGHT - [client]
+    Asks the server to move the character one step to north/south/east/west.
+
+
+24  ACTION - [client]
+    Triggers an action on the field the character is placed on.
+
+
+25  REQUEST_MAP_INFORMATION - [client]
+    Asks the server to send all information (map, players, objects, etc.).
+    Usually invoked after logging in or changing region.
+
+
+26  MOVE [server]
+    Broadcasts in the same region that something has been moved.
+
+    BODY:
+    - layer type (1 byte) (character, object, terrain)
+    - id (1 byte)
+    - xstart (1 byte)
+    - ystart (1 byte)
+    - xend (1 byte)
+    - yend (1 byte)
+
+
+27  MAP_INFORMATION - [server]
+    If a character receives this message, it must consider itself as placed into
+    a new region (e.g. after logging in or changing region).
+    The client should erase all information about the region and replace it by
+    the newly received data.
+
+    BODY:
+    - terrain layer (40*20=800 bytes)
+    - object layer (40*20=800 bytes)
+    - number of characters in region (2 bytes)
+    - repeat:
+      + character ID (2 bytes)
+      + character name (* bytes)
+      + character class (1 byte)
+      + character level (1 byte)
+      + character x position (1 byte)
+      + character y position (1 byte)
+
+
+28  REQUEST_OBJECT_LIST - [client]
+    A list of objects belonging to one's character is requested.
+
       
+29  OBJECT_LIST - [server]
 
-Ingame level:
-
-   20  SEND_MOVE_UP - [client]
-   21  SEND_MOVE_DOWN - [client]
-   22  SEND_MOVE_LEFT - [client]
-   23  SEND_MOVE_RIGHT - [client]
-       Asks the server to move the active character one step to
-       north/south/east/west.
-
-   24  ACTION - [client]
-       Triggers an action on the field the character is placed on.
-
-   25  REQUEST_MAP_REFRESH - [client]
-       Asks the server to send all information (map, players, objects, etc.).
-       Usually invoked after logging in with a character and changing region,
-       but also possible otherwise.
-
-   26  MOVE [server]
-       Broadcasts in the same region that something has been moved.
-       Message:
-        - type (1 byte) (character, property, object, etc.)
-        - id (1 byte)
-        - xstart (1 byte)
-        - ystart (1 byte)
-        - xend (1 byte)
-        - yend (1 byte)
+    BODY:
+    - number of objects (2 bytes)
+    - repeat:
+      + object ID (2 bytes)
+      + object type (1 byte)
 
 
-Interaction level:
+2A  USE_OBJECT - [client]
+    This will result in the server executing the message linked to that object.
 
-   30  REQUEST_OBJECT_LIST - [client]
-       The server is supposed to answer with [31 OBJECT_LIST].
-      
-   31  OBJECT_LIST - [server]
-       Message:
-        - number of objects (2 bytes)
-        - repeating * times:
-           - object ID (2 bytes)
-           - object type (1 byte)
-
-   32  USE_OBJECT - [client]
-       This will result in the server executing the command linked to that
-       object.
-       Message:
-        - object ID (2 bytes)
+    BODY:
+    - object ID (2 bytes)
 
 
-Social level:
+===============================
+40-4F: social/interaction level
+===============================
 
-   40  SEND_CHAT - [client]
-       Asks the server to send a chat message:
-       Message:
-        - type (1 byte) (local or global)
-        - chat message length (2 bytes)
-        - chat message
+
+40  SEND_TWITTER - [client]
+    Send a chat message to all characters in the same region.
+
+    BODY:
+    - chat message (* bytes)
+
+
+41  SEND_MESSAGE - [client]
+    Send a chat message to a specific recepient.
+
+    BODY:
+    - character ID (2 bytes)
+    - char message (* bytes)
 

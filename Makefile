@@ -1,7 +1,8 @@
 # -c means: create object files instead of executables
 # -I means: headers being in that directory can be included with <blabla>
+# -g means: binaries are stuffed with additional information, for debugging
 CC = g++
-CFLAGS = -c -Wall -Isrc
+CFLAGS = -c -g -Wall -Isrc
 SERVER_LDFLAGS = 
 CLIENT_LDFLAGS = -lncurses
 
@@ -23,10 +24,10 @@ SHELL = /bin/bash
 
 all: $(SERVER_SOURCES) $(CLIENT_SOURCES) $(HYBRID_SOURCES) $(SERVER_EXECUTABLE) $(CLIENT_EXECUTABLE)
                 
-$(SERVER_EXECUTABLE): $(SERVER_OBJECTS) $(SERVER_HEADERS) $(HYBRID_HEADERS)
+$(SERVER_EXECUTABLE): $(SERVER_HEADERS) $(HYBRID_HEADERS) $(SERVER_OBJECTS)
 	$(CC) $(SERVER_LDFLAGS) $(SERVER_OBJECTS) -o $@
 
-$(CLIENT_EXECUTABLE): $(CLIENT_OBJECTS) $(CLIENT_HEADERS) $(HYBRID_HEADERS)
+$(CLIENT_EXECUTABLE): $(CLIENT_HEADERS) $(HYBRID_HEADERS) $(CLIENT_OBJECTS)
 	$(CC) $(CLIENT_LDFLAGS) $(CLIENT_OBJECTS) -o $@
 
 .cpp.o:
