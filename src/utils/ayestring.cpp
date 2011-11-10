@@ -32,3 +32,34 @@ msglen(char const* msg)
 			+ MESSAGE_HEAD_SIZE);
 }
 
+/**
+ * This function will create a string representation of an IPv4 address.
+ * @param str  The C string where the string representation of the IPv4 address
+ *             will be written to.
+ * @param ipv4 A pointer to the first byte where the IPv4 address is stored.
+ *             This function will take that byte and the three following bytes
+ *             as value.
+ * @return     The size of the IP address' string representation.
+ */
+size_t
+iptoa(char* str, char const* ip)
+{
+	size_t len = 11; // start at "all numbers are <100"
+	for(char* i = (char*)ip; i < ip+4; i++) {
+		len += ((unsigned int)ip[(int)(i-ip)] > 99) ? 1 : 0;
+	}
+	sprintf(str, "%d.%d.%d.%d%c", ip[0], ip[1], ip[2], ip[3], 0);
+	return len;
+}
+
+/**
+ * This function will turn a little endian value into an integer value.
+ * @param port The port (little endian).
+ * @return     The port as integer.
+ */
+int
+porttoi(char* port)
+{
+	return(port[0] + 256*port[1]);
+}
+
