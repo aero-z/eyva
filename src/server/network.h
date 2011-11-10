@@ -53,8 +53,8 @@ Network
 		std::map<int, Session*> sessions;
 		std::map<int, Session*>::iterator it; // iterator for the sessions map
 		int sockc;                            // connection socket
-		char* buffer_in;
-		char* buffer_out;
+		char buffer_in[BUFFER_SIZE];
+		char buffer_out[BUFFER_SIZE];
 };
 
 #endif

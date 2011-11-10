@@ -12,8 +12,6 @@ Network::Network(int port)
 {
 	pipe = new Pipe();
 	game = new Game(pipe);
-	buffer_out = new char[BUFFER_SIZE];
-	buffer_in = new char[BUFFER_SIZE];
 
 	/* Create socket:
 	 * AF_INET:     domain (ARPA, IPv4)
@@ -80,8 +78,6 @@ Network::~Network(void)
 
 	delete game;
 	delete pipe;
-	delete [] buffer_out;
-	delete [] buffer_in;
 }
 
 
