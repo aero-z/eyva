@@ -155,7 +155,9 @@ Network::pollOut(void)
 
 			/* Prepare required data and connect:
 			 */
-			// TODO connect according to the message
+			iptoa(buffer_in, buffer_out+4); // IP
+			int port = porttoi(buffer_out+8);          // TCP port
+			connect(buffer_in, port);
 		}
 	
 		/* MSG_NOSIGNAL avoids a program crash by a SIGPIPE that would normally
