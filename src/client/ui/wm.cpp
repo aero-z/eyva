@@ -5,7 +5,12 @@
  */
 WM::WM(void)
 {
-	// TODO create windows
+	panel = new Panel(0, 20, 80, 4);
+	
+	// TODO
+	focus = panel;
+
+	focus->focusWindow();
 }
 
 /**
@@ -13,7 +18,7 @@ WM::WM(void)
  */
 WM::~WM(void)
 {
-	windows.clear();
+	delete panel;
 }
 
 
@@ -21,13 +26,14 @@ WM::~WM(void)
 
 
 /**
- * This method processes a user input (button) by sending it to the right window
- * to react accordingly.
+ * This method processes a user input (button) by sending it to the currently
+ * focused window.
  * @param input The key pressed by the user.
  */
 void
-WM::process(char input)
+WM::process(int input)
 {
-	// TODO
+	// TODO check return value to update focus
+	focus->process(input);
 }
 

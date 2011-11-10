@@ -4,8 +4,11 @@
 #ifndef _WM_H_
 #define _WM_H_
 
+// UI
+#include "panel.h"
+
+// Others
 #include <ncurses.h>
-#include <vector>
 
 class
 WM
@@ -13,11 +16,16 @@ WM
 	public:
 		WM(void);
 		~WM(void);
-		void process(char input);
+		void process(int input);
 	
 	private:
-		std::vector<WINDOW*> windows;
-		WINDOW* focused;
+		Window* panel;  // bottom panel
+		Window* world;  // "main" window
+		Window* social; // chat etc.
+		Window* map;    // orientation map
+		Window* menu;   // character overview, options, etc.
+		Window* login;  // login dialog
+		Window* focus;
 };
 
 #endif

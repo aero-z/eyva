@@ -27,7 +27,6 @@ UI
 
 		WM* wm;
 		Postmaster* pm;
-		char buffer_text[BUFFER_SIZE];
 };
 
 #endif

@@ -31,9 +31,8 @@ UI::UI(Postmaster* pm)
 	/* Set the behaviour of ncurses:
 	 */
 	cbreak();              // for user input, don't wait for the return
+	keypad(stdscr, TRUE);  // allow arrow and F keys
 	noecho();              // don't display user input
-	curs_set(0);           // by default, don't display the cursor
-	logf(LOG_DEBUG, "UI started");
 }
 
 /**
@@ -89,13 +88,9 @@ UI::pollInput(double timeout)
 	int input = getch();
 	switch(input) {
 		case ERR:
-			printw(". ");
 			break;
 		default:
-			// TODO invoke the WM
-			printw("%d ", input);
-			break;
+			wm->process(input);
 	}
-	refresh();
 }
 

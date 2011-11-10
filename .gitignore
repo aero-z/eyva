@@ -3,4 +3,6 @@
 eserver
 eclient
 hist/eyva_0.1d1
-*valgrind.log
+valgrind.log
+NOTES
+keymap
