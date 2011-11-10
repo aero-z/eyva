@@ -10,8 +10,7 @@ Network::Network(Postmaster* pm)
 {
 	this->pm = pm;
 	connected = false;
-	buffer_out = new char[BUFFER_SIZE];
-	buffer_in = new char[BUFFER_SIZE];
+	logf(LOG_DEBUG, "BUFFER_SIZE = %d", BUFFER_SIZE);
 }
 
 /**
@@ -19,7 +18,6 @@ Network::Network(Postmaster* pm)
  */
 Network::~Network(void)
 {
-	// TODO
 }
 
 
@@ -87,7 +85,7 @@ Network::connect(char const* ip, int port)
 	}
 
 	logf(LOG_NORMAL, "connection established to %s:%d", ip, port);
-	return true;
+	return(connected = true);
 }
 
 /**

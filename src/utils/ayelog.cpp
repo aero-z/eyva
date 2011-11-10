@@ -72,5 +72,5 @@ AyeLog::logf(log_type type, char const* format, ...)
 			|| (type == LOG_NORMAL && log_verbosity >= 2)
 			|| (type == LOG_WARNING && log_verbosity >= 1)
 			|| (type == LOG_ERROR))
-		printf("%s\n", b3);
+		printf("%s\r\n", b3);
 }

@@ -24,7 +24,7 @@ Postmaster
 		Postmaster(void);
 		~Postmaster(void);
 		void send(Box box, char const* msg);
-		size_t fetch(char* msg, Box box);
+		size_t fetch(char* buf, Box box);
 	
 	private:
 		std::vector<char*>* identify(Box box);

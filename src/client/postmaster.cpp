@@ -39,15 +39,29 @@ Postmaster::send(Box box, char const* msg)
 /**
  * This method is used to get the oldest message out of a postbox (FIFO).
  * The message will be removed from the box.
- * @param msg A pointer to the string to store the message to.
+ * @param buf A pointer to the buffer to store the message to (buffer size
+ *            should be BUFFER_SIZE).
  * @param box The postbox to be checked.
  * @return    The size of the message (msglen()).
  */
 size_t
-Postmaster::fetch(char* msg, Box box)
+Postmaster::fetch(char* buf, Box box)
 {
-	memcpy(msg, (*identify(box))[0], msglen((*identify(box))[0]));
-	return msglen(msg);
+	/* See what box is requested:
+	 */
+	std::vector<char*>* inbox = identify(box);
+
+	/* Check if there's data at all:
+	 */
+	if(inbox->size() == 0)
+		return 0;
+	
+	/* Copy the data. Use memcpy instead of strcpy, since there is all kinds of
+	 * data (also \0 bytes):
+	 */
+	memset(buf, 0, BUFFER_SIZE);
+	memcpy(buf, (*inbox)[0], msglen((*inbox)[0]));
+	return msglen(buf);
 }
 
 

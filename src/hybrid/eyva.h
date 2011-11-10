@@ -7,7 +7,7 @@
 
 /* This is the size of the network buffer:
  */
-#define BUFFER_SIZE (MESSAGE_HEAD_SIZE+653385)
+#define BUFFER_SIZE (MESSAGE_HEAD_SIZE+65335)
 
 /* This is the maximum size of the exception message:
  */

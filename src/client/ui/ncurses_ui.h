@@ -12,6 +12,7 @@
 
 // Others:
 #include <ncurses.h>
+#include <cstdio>
 
 class
 NCursesUI : public UI

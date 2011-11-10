@@ -38,8 +38,8 @@ Network
 
 		Postmaster* pm;
 		int sockc;
-		char* buffer_in;
-		char* buffer_out;
+		char buffer_in[BUFFER_SIZE];
+		char buffer_out[BUFFER_SIZE];
 		bool connected;
 };
 
