@@ -16,14 +16,14 @@ main(int argc, char** argv)
 	 */
 	pm = new Postmaster();
 	network = new Network(pm);
-	ui = new NCursesUI(pm);
+	ui = new UI(pm);
 
 	/* Loop: Check for activitiy on the network layer, then for activity on
 	 * userspace level.
 	 */
 	for(bool term_signal = false; !term_signal; ) {
 		network->poll();
-		ui->poll(0.1);
+		ui->poll(1.0);
 		// TODO quit loop if needed
 	}
 

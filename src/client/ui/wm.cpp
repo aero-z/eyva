@@ -1,9 +1,9 @@
-#include "ncurses_wm.h"
+#include "wm.h"
 
 /**
  * Constructor.
  */
-NCursesWM::NCursesWM(void)
+WM::WM(void)
 {
 	// TODO create windows
 }
@@ -11,11 +11,9 @@ NCursesWM::NCursesWM(void)
 /**
  * Destructor.
  */
-NCursesWM::~NCursesWM(void)
+WM::~WM(void)
 {
-	for(size_t i = 0; i < windows.size(); i++) {
-		delete windows[i];
-	}
+	windows.clear();
 }
 
 
@@ -28,7 +26,7 @@ NCursesWM::~NCursesWM(void)
  * @param input The key pressed by the user.
  */
 void
-NCursesWM::process(char input)
+WM::process(char input)
 {
 	// TODO
 }

@@ -1,18 +1,18 @@
 /* This is the window manager for the ncurses client.
  */
 
-#ifndef _NCURSES_WM_H_
-#define _NCURSES_WM_H_
+#ifndef _WM_H_
+#define _WM_H_
 
 #include <ncurses.h>
 #include <vector>
 
 class
-NCursesWM
+WM
 {
 	public:
-		NCursesWM(void);
-		~NCursesWM(void);
+		WM(void);
+		~WM(void);
 		void process(char input);
 	
 	private:

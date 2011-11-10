@@ -1,16 +1,33 @@
-/* This is an abstract class from which all UI classes must be derived.
- */
-
 #ifndef _UI_H_
 #define _UI_H_
 
-#include <hybrid/eyva.h>
+// Client:
+#include "wm.h"
+#include "../postmaster.h"
 
-class UI
+// Utils:
+#include <utils/exception.h>
+#include <utils/ayelog.h>
+
+// Others:
+#include <ncurses.h>
+#include <cstdio>
+
+class
+UI
 {
 	public:
-		UI(void) {};
-		virtual void poll(double timeout) = 0;
+		UI(Postmaster* pm);
+		~UI(void);
+		void poll(double timeout);
+
+	private:
+		void pollNetwork(void);
+		void pollInput(double timeout);
+
+		WM* wm;
+		Postmaster* pm;
+		char buffer_text[BUFFER_SIZE];
 };
 
 #endif

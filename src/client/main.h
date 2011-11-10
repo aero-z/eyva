@@ -4,7 +4,7 @@
 // Client:
 #include "postmaster.h"
 #include "network.h"
-#include "ui/ncurses_ui.h"
+#include "ui/ui.h"
 
 // Utils:
 #include <utils/ayelog.h>

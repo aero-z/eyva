@@ -1,4 +1,4 @@
-#include "ncurses_ui.h"
+#include "ui.h"
 
 using namespace AyeLog;
 
@@ -9,13 +9,13 @@ using namespace AyeLog;
  *                     network object, and that handles all information related
  *                     stuff.
  */
-NCursesUI::NCursesUI(Postmaster* pm)
+UI::UI(Postmaster* pm)
 {
 	logf(LOG_DEBUG, "starting ncurses UI ...");
 	this->pm = pm;
 
-	initscr();             // start ncurses mode
-	wm = new NCursesWM();  // our window manager
+	initscr();      // start ncurses mode
+	wm = new WM();  // our window manager
 
 	/* Check for colors and active if available:
 	 */
@@ -41,7 +41,7 @@ NCursesUI::NCursesUI(Postmaster* pm)
  * The ncurses session is stopped here in order to be able to normally go on
  * with terminal work.
  */
-NCursesUI::~NCursesUI(void)
+UI::~UI(void)
 {
 	delete wm;
 	endwin();   // end ncurses mode
@@ -49,6 +49,7 @@ NCursesUI::~NCursesUI(void)
 
 
 /* PUBLIC METHODS */
+
 
 /**
  * This is a method defined [virtual] by the UI superclass.
@@ -58,13 +59,43 @@ NCursesUI::~NCursesUI(void)
  *                in seconds.
  */
 void
-NCursesUI::poll(double timeout)
+UI::poll(double timeout)
+{
+	pollNetwork();
+	pollInput(timeout);
+}
+
+
+/* PRIVATE METHODS */
+
+
+/**
+ * This method checks for new network messages (postmaster).
+ */
+void
+UI::pollNetwork(void)
+{
+	// TODO
+}
+
+/**
+ * This method checks for user input and lets the WM handle it.
+ * @param timeout The time to block on a user input polling.
+ */
+void
+UI::pollInput(double timeout)
 {
 	halfdelay((int)(timeout*10));
-	printw("hello!");
+	int input = getch();
+	switch(input) {
+		case ERR:
+			printw(". ");
+			break;
+		default:
+			// TODO invoke the WM
+			printw("%d ", input);
+			break;
+	}
 	refresh();
-	getch();
-
-	// TODO alert network handler
 }
 
