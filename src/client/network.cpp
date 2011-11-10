@@ -149,15 +149,13 @@ Network::pollOut(void)
 		/* Command [01 CONNECT] requires additional action:
 		 */
 		if(buffer_out[1] == 1) {
-			/* Make sure that there is no connection:
-			 */
-			disconnect();
-
 			/* Prepare required data and connect:
 			 */
-			iptoa(buffer_in, buffer_out+4); // IP
-			int port = porttoi(buffer_out+8);          // TCP port
-			connect(buffer_in, port);
+			iptoa(buffer_in, buffer_out+4);   // IP address
+			int port = porttoi(buffer_out+8); // TCP port
+			if(!connect(buffer_in, port)) {
+				continue;
+			}
 		}
 	
 		/* MSG_NOSIGNAL avoids a program crash by a SIGPIPE that would normally
