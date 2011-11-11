@@ -28,9 +28,11 @@ Panel::process(int input)
 		case 10: // newline
 			// TODO evaluate buffer
 			prompt.clear();
+			cursor_pos = 0;  // not necessary, but secure
 			break;
 		case 27: //escape
 			prompt.clear();
+			cursor_pos = 0;  // not necessary, but secure
 			break;
 		case 127: //backslash
 			if(cursor_pos > 0)

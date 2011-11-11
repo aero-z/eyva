@@ -10,7 +10,6 @@ Network::Network(Postmaster* pm)
 {
 	this->pm = pm;
 	connected = false;
-	logf(LOG_DEBUG, "BUFFER_SIZE = %d", BUFFER_SIZE);
 }
 
 /**
