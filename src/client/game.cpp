@@ -5,7 +5,7 @@
  */
 Game::Game(void)
 {
-	// VOID
+	region = new Region();
 }
 
 /**
@@ -13,6 +13,6 @@ Game::Game(void)
  */
 Game::~Game(void)
 {
-	// VOID
+	delete region;
 }
 
