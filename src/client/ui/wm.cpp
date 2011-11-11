@@ -5,7 +5,8 @@
  */
 WM::WM(void)
 {
-	panel = new Panel(0, 20, 80, 4);
+	game = new Game();
+	panel = new Panel(game, 0, 20, 80, 4);
 	
 	// TODO
 	focus = panel;
@@ -19,6 +20,7 @@ WM::WM(void)
 WM::~WM(void)
 {
 	delete panel;
+	delete game;
 }
 
 

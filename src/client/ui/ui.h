@@ -12,6 +12,8 @@
 // Others:
 #include <ncurses.h>
 #include <cstdio>
+#include <clocale>
+#include <cstdlib>
 
 class
 UI

@@ -4,6 +4,9 @@
 // Parent class:
 #include "window.h"
 
+// Client:
+#include "../game.h"
+
 // Others:
 #include <vector>
 
@@ -13,12 +16,13 @@ class
 Panel : public Window
 {
 	public:
-		Panel(int xpos, int ypos, int width, int height);
+		Panel(Game* game, int xpos, int ypos, int width, int height);
 		/*virtual*/ bool process(int input);
 		/*virtual*/ void focusWindow(void);
 		/*virtual*/ bool unfocusWindow(void);
 	
 	private:
+		Game* game;
 		std::vector<char> prompt;
 		unsigned int cursor_pos;
 };

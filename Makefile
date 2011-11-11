@@ -4,7 +4,7 @@
 CC = g++
 CFLAGS = -c -g -Wall -Isrc
 SERVER_LDFLAGS = 
-CLIENT_LDFLAGS = -lncurses
+CLIENT_LDFLAGS = -lncursesw
 
 HYBRID_SOURCES = $(wildcard src/utils/*.cpp) $(wildcard src/hybrid/*.cpp)
 SERVER_SOURCES = $(wildcard src/server/*.cpp)

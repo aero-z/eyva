@@ -14,6 +14,10 @@ UI::UI(Postmaster* pm)
 	logf(LOG_DEBUG, "starting ncurses UI ...");
 	this->pm = pm;
 
+	/* TODO supposed to support umlauts and the like, but doesn't work:
+	 */
+	setlocale(LC_ALL, "");
+
 	initscr();      // start ncurses mode
 	wm = new WM();  // our window manager
 

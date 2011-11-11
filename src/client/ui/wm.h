@@ -4,10 +4,13 @@
 #ifndef _WM_H_
 #define _WM_H_
 
-// UI
+// UI:
 #include "panel.h"
 
-// Others
+// Client:
+#include "../game.h"
+
+// Others:
 #include <ncurses.h>
 
 class
@@ -19,12 +22,13 @@ WM
 		void process(int input);
 	
 	private:
-		Window* panel;  // bottom panel
-		Window* world;  // "main" window
-		Window* social; // chat etc.
-		Window* map;    // orientation map
-		Window* menu;   // character overview, options, etc.
-		Window* login;  // login dialog
+		Game* game;
+		Window* map;        // "main" window
+		Window* panel;      // bottom panel [':']
+		Window* social;     // chat etc. [TAB -> right]
+		Window* navigation; // orientation map ['m' -> top]
+		Window* menu;       // character overview, options, etc. [ESC -> bottom]
+		Window* login;      // login dialog
 		Window* focus;
 };
 

@@ -7,9 +7,10 @@
  * @param width  The window's width.
  * @param height The window's height.
  */
-Panel::Panel(int xpos, int ypos, int width, int height) :
+Panel::Panel(Game* game, int xpos, int ypos, int width, int height) :
 		Window(xpos, ypos, width, height)
 {
+	this->game = game;
 	cursor_pos = 0;
 }
 
@@ -24,6 +25,7 @@ Panel::Panel(int xpos, int ypos, int width, int height) :
 bool
 Panel::process(int input)
 {
+	// TODO put this into external file
 	switch(input) {
 		case 10: // newline
 			// TODO evaluate buffer
