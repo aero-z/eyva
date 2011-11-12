@@ -1,27 +1,20 @@
 #ifndef _WINDOW_H_
 #define _WINDOW_H_
 
-#include <ncurses.h>
+// UI:
+#include "vars.h"
 
-enum Color {
-	BLACK,
-	RED,
-	GREEN,
-	YELLOW,
-	BLUE,
-	MAGENTA,
-	CYAN,
-	WHITE
-};
+// Others:
+#include <ncurses.h>
 
 class
 Window
 {
 	public:
 		Window(int xpos, int ypos, int width, int height);
-		virtual bool process(int input);
-		virtual void focusWindow(void);
-		virtual bool unfocusWindow(void);
+		virtual WindowName process(int input);
+		virtual void focus(void);
+		virtual bool unfocus(void);
 		void moveWindow(int xpos, int ypos);
 		void resizeWindow(int width, int height);
 	

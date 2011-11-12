@@ -121,7 +121,7 @@ Message definition:
 21  SEND_MOVE_DOWN - [client]
 22  SEND_MOVE_LEFT - [client]
 23  SEND_MOVE_RIGHT - [client]
-    Asks the server to move the character one step to north/south/east/west.
+    Asks the server to move the character one step to north/south/west/east.
 
 
 24  ACTION - [client]

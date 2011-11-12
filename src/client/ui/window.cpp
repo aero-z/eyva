@@ -19,22 +19,23 @@ Window::Window(int xpos, int ypos, int width, int height)
 
 /**
  * This method handles an input. This is the basic window class, so one may only
- * unfocus the window.
- * @param input The user input.
+ * unfocus the window back to the main menu by pressing ESC.
+ * @param input The user's input key.
+ * @return      The name of the window that shall be focused next.
  */
-bool
+WindowName
 Window::process(int input)
 {
 	/* unfocus if ESC:
 	 */
-	return(input == 27);
+	return input == 27 ? MENU : IDENTITY;
 }
 
 /**
  * This method defines what happens if the window gains focus.
  */
 void
-Window::focusWindow(void)
+Window::focus(void)
 {
 	curs_set(0);
 }
@@ -44,7 +45,7 @@ Window::focusWindow(void)
  * @return False if the window shall be destroyed, otherwise true.
  */
 bool
-Window::unfocusWindow(void)
+Window::unfocus(void)
 {
 	return false;
 }
@@ -86,10 +87,13 @@ Window::resizeWindow(int width, int height)
  * @param bg    An enum indicating the background color.
  */
 void
-Window::printch(int x, int y, char c, Color fg=BLACK, Color bg=WHITE)
+Window::printch(int x, int y, char c, Color fg, Color bg)
 {
+	init_pair(1, (int)fg, (int)bg);
+	attron(COLOR_PAIR(1));
 	// TODO handle colors
 	if(x >= 0 && x < width && y >= 0 && y < height)
 		mvaddch(ypos+y, xpos+x, c);
+	attroff(COLOR_PAIR(1));
 }
 

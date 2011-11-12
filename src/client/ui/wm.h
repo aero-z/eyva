@@ -5,7 +5,9 @@
 #define _WM_H_
 
 // UI:
-#include "panel.h"
+#include "vars.h"
+#include "bottom_panel.h"
+#include "playground.h"
 
 // Client:
 #include "../game.h"
@@ -23,13 +25,16 @@ WM
 	
 	private:
 		Game* game;
-		Window* map;        // "main" window
-		Window* panel;      // bottom panel [':']
-		Window* social;     // chat etc. [TAB -> right]
-		Window* navigation; // orientation map ['m' -> top]
-		Window* menu;       // character overview, options, etc. [ESC -> bottom]
-		Window* login;      // login dialog
-		Window* focus;
+		Window* playground;
+		Window* bottom_panel;
+		Window* top_panel;
+		Window* login;
+		Window* menu;
+		Window* options;
+		Window* navigation;
+		Window* social;
+		Window* inventory;
+		Window* active;     // virtual; points to the currently focused window
 };
 
 #endif

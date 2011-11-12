@@ -6,12 +6,13 @@
 WM::WM(void)
 {
 	game = new Game();
-	panel = new Panel(game, 0, 20, 80, 4);
+	playground = new Playground(game);
+	bottom_panel = new BottomPanel(game);
 	
 	// TODO
-	focus = panel;
+	active = playground;
 
-	focus->focusWindow();
+	active->focus();
 }
 
 /**
@@ -19,7 +20,8 @@ WM::WM(void)
  */
 WM::~WM(void)
 {
-	delete panel;
+	delete bottom_panel;
+	delete playground;
 	delete game;
 }
 
@@ -35,7 +37,40 @@ WM::~WM(void)
 void
 WM::process(int input)
 {
-	// TODO check return value to update focus
-	focus->process(input);
+	/* Let the active window process the input:
+	 */
+	WindowName next = active->process(input);
+
+	/* The processing method will return the name of the next window to be
+	 * focused. If the window does not point to itself, perform a focus change:
+	 */
+	if(next != IDENTITY) {
+		/* The unfocussing method will return false, if the window shall be
+		 * destroyed:
+		 */
+		if(!active->unfocus())
+			delete active;
+
+		switch(next) {
+			case PLAYGROUND:
+				active = playground;
+				break;
+			case BOTTOM_PANEL:
+			case BOTTOM_PANEL_COMMAND:
+				active = bottom_panel;
+				break;
+			default:
+				break;
+		}
+
+		/* Invoke the focussing process:
+		 */
+		active->focus();
+
+		/* Special case: If the bottom panel was entered with a ':':
+		 */
+		if(next == BOTTOM_PANEL_COMMAND)
+			active->process(':');
+	}
 }
 

@@ -30,14 +30,13 @@ Map::~Map(void)
  * @override
  * This method processes a user input.
  * @param input The user input.
- * @return      False if the window shall lose focus on this user action,
- *              otherwise true.
+ * @return      The name of the window that shall be focused next.
  */
-bool
+WindowName
 Map::process(int input)
 {
 	// TODO
-	return true;
+	return IDENTITY;
 }
 
 /**
@@ -45,7 +44,7 @@ Map::process(int input)
  * This method defines what happens if this window gains focus.
  */
 void
-Map::focusWindow(void)
+Map::focus(void)
 {
 	curs_set(0);
 }
@@ -57,7 +56,7 @@ Map::focusWindow(void)
  *         true.
  */
 bool
-Map::unfocusWindow(void)
+Map::unfocus(void)
 {
 	// TODO
 	return true;
