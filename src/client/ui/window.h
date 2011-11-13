@@ -3,7 +3,6 @@
 
 // UI:
 #include "vars.h"
-#include "content.h"
 
 // Utils:
 #include <utils/exception.h>
@@ -24,12 +23,11 @@ Window
 		void draw(void);
 	
 	protected:
-		void printch(int x, int y, char c, int color);
 		void initColors(void);
+		void setBG(int color);
 
 		int xpos, ypos;   // upper left corner position
 		int width, height;
-		Content* content;
 };
 
 #endif

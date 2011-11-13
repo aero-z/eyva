@@ -11,7 +11,7 @@ WM::WM(Pipe* pipe, Game* game)
 	/* Create windows:
 	 */
 	playground = new Playground(pipe, game);
-	panel = new Panel(pipe, game);
+	prompt = new Prompt(pipe, game);
 	
 	// TODO
 	active = playground;
@@ -25,7 +25,7 @@ WM::WM(Pipe* pipe, Game* game)
 WM::~WM(void)
 {
 	delete playground;
-	delete panel;
+	delete prompt;
 }
 
 
@@ -58,9 +58,9 @@ WM::process(int input)
 			case PLAYGROUND:
 				active = playground;
 				break;
-			case PANEL:
-			case PANEL_COMMAND:
-				active = panel;
+			case PROMPT:
+			case PROMPT_COMMAND:
+				active = prompt;
 				break;
 			default:
 				break;
@@ -70,9 +70,9 @@ WM::process(int input)
 		 */
 		active->focus();
 
-		/* Special case: if the bottom panel was entered with a ':':
+		/* Special case: if the prompt was entered with a ':':
 		 */
-		if(next == PANEL_COMMAND)
+		if(next == PROMPT_COMMAND)
 			active->process(':');
 	}
 }

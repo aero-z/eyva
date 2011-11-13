@@ -13,7 +13,6 @@ Window::Window(int xpos, int ypos, int width, int height)
 	moveWindow(xpos, ypos);
 	this->width = width;
 	this->height = height;
-	content = new Content(width, height);
 }
 
 /**
@@ -23,9 +22,7 @@ Window::Window(int xpos, int ypos, int width, int height)
  */
 Window::~Window(void)
 {
-	mvprintw(0,1, "base window class destroyed");
-	getch();
-	delete content;
+	// VOID
 }
 
 
@@ -49,22 +46,6 @@ Window::moveWindow(int xpos, int ypos)
 
 
 /**
- * This method prints a character to the window area.
- * @param x     The window-relative X coordinate.
- * @param y     The window-relative Y coordinate.
- * @param c     The character to be printed.
- * @param color The color pair defined in color.h.
- */
-void
-Window::printch(int x, int y, char c, int color)
-{
-	attron(COLOR_PAIR(color));
-	if(x >= 0 && x < width && y >= 0 && y < height)
-		mvaddch(ypos+y, xpos+x, c);
-	attroff(COLOR_PAIR(color));
-}
-
-/**
  * This method defines all the color pairs we need:
  */
 void
@@ -81,6 +62,7 @@ Window::initColors(void)
 	 */
 	use_default_colors();
 
+	// on black background:
 	init_pair(1, COLOR_RED, COLOR_BLACK);
 	init_pair(2, COLOR_GREEN, COLOR_BLACK);
 	init_pair(3, COLOR_YELLOW, COLOR_BLACK);
@@ -89,6 +71,7 @@ Window::initColors(void)
 	init_pair(6, COLOR_CYAN, COLOR_BLACK);
 	init_pair(7, COLOR_WHITE, COLOR_BLACK);
 
+	// on yellow background:
 	init_pair(30, COLOR_BLACK, COLOR_YELLOW);
 	init_pair(31, COLOR_RED, COLOR_YELLOW);
 	init_pair(32, COLOR_GREEN, COLOR_YELLOW);
@@ -96,5 +79,39 @@ Window::initColors(void)
 	init_pair(35, COLOR_MAGENTA, COLOR_YELLOW);
 	init_pair(36, COLOR_CYAN, COLOR_YELLOW);
 	init_pair(37, COLOR_WHITE, COLOR_YELLOW);
+
+	// on white background:
+	init_pair(70, COLOR_BLACK, COLOR_WHITE);
+	init_pair(71, COLOR_RED, COLOR_WHITE);
+	init_pair(72, COLOR_GREEN, COLOR_WHITE);
+	init_pair(73, COLOR_YELLOW, COLOR_WHITE);
+	init_pair(74, COLOR_BLUE, COLOR_WHITE);
+	init_pair(75, COLOR_MAGENTA, COLOR_WHITE);
+	init_pair(76, COLOR_CYAN, COLOR_WHITE);
+}
+
+/**
+ * This method draws the background in specified color.
+ * @param color The number of the color pair to be used (see above).
+ *              Since only the background (with empty foreground) is drawn, the
+ *              foreground color doesn't matter and the color value can
+ *              therefore be set to one of the following values:
+ *              -  1 BLACK
+ *              - 10 RED
+ *              - 20 GREEN
+ *              - 30 YELLOW
+ *              - 40 BLUE
+ *              - 50 MAGENTA
+ *              - 60 CYAN
+ *              - 70 WHITE
+ */
+void
+Window::setBG(int color)
+{
+	attron(COLOR_PAIR(color));
+	for(int x = 0; x < width; x++)
+		for(int y = 0; y < height; y++)
+			mvaddch(ypos+y, xpos+x, ' ');
+	attroff(COLOR_PAIR(color));
 }
 

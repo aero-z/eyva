@@ -6,7 +6,7 @@
 
 // UI:
 #include "vars.h"
-#include "panel.h"
+#include "prompt.h"
 #include "playground.h"
 
 // Client:
@@ -29,8 +29,9 @@ WM
 		Pipe* pipe;
 		Game* game;
 		Window* playground;
-		Window* panel;
+		Window* prompt;
 		Window* infobar;
+		Window* actionbar;
 		Window* login;
 		Window* menu;
 		Window* options;

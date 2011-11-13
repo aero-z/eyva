@@ -34,9 +34,9 @@ Playground::process(int input)
 {
 	switch(input) {
 		case 10: // ENTER
-			return PANEL;
+			return PROMPT;
 		case ':':
-			return PANEL_COMMAND;
+			return PROMPT_COMMAND;
 		default:
 			return IDENTITY;
 	}

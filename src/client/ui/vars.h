@@ -7,9 +7,10 @@
 
 enum WindowName {
 	PLAYGROUND,     //         where you play the game
-	PANEL,          // [ENTER] fast chat window
-	PANEL_COMMAND,  // [':']   fast chat window, with a preceding ':'
+	PROMPT,         // [ENTER] prompt (also "fast chat")
+	PROMPT_COMMAND, // [':']   prompt with a preceding ':'
 	INFOBAR,        //         top panel, showing information
+	ACTIONBAR,      //         bottom panel, showing actions and information
 	LOGIN,          //         login window
 	MENU,           // [ESC]   main menu, containing
 	OPTIONS,        //         - options
@@ -17,6 +18,7 @@ enum WindowName {
 	SOCIAL,         // [TAB]   ingame chat, online stats, etc.
 	CHARACTER,      // ['c']   ingame character settings
 	INVENTORY,      // ['b']   character inventory
+
 	IDENTITY        // (virtual) currently focused window
 };
 

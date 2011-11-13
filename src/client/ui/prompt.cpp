@@ -1,23 +1,21 @@
-#include "panel.h"
+#include "prompt.h"
 
 /**
  * Constructor.
  * @param pipe Allows communication with the network object.
  * @param game Handles and stores game data.
  */
-Panel::Panel(Pipe* pipe, Game* game) :
-		Window(0, 21, 80, 3)
+Prompt::Prompt(Pipe* pipe, Game* game) :
+		Window(0, 21, 80, 1)
 {
 	this->pipe = pipe;
 	this->game = game;
-
-	draw();
 }
 
 /**
  * Destructor.
  */
-Panel::~Panel(void)
+Prompt::~Prompt(void)
 {
 	// VOID
 }
@@ -32,7 +30,7 @@ Panel::~Panel(void)
  * @return      The name of the window that shall be focused next.
  */
 WindowName
-Panel::process(int input)
+Prompt::process(int input)
 {
 	switch(input) {
 		case 10: // newline
@@ -95,17 +93,12 @@ Panel::process(int input)
 			break;
 	}
 	
-	/* First, clear the "background":
-	 */
-	for(int i = 0; i < PROMPT_SIZE; i++)
-		printch(i, 0, ' ', 7);
-	
-	/* Second, print the buffer content:
+	/* Print prompt content:
 	 */
 	for(size_t i = 0; i < prompt.size(); i++)
-		printch(i, 0, prompt[i], 7);
+		mvprintw(ypos, xpos+i, "%c", prompt[i]);
 
-	/* Third, update the cursor position on the screen and print out:
+	/* Update cursor position and print out:
 	 */
 	move(ypos, xpos+cursor_pos);
 	refresh();
@@ -119,13 +112,12 @@ Panel::process(int input)
  * This method describes what happens when the window gains focus.
  */
 void
-Panel::focus(void)
+Prompt::focus(void)
 {
-	/* Paint first line background black:
+	/* Set background black:
 	 */
-	for(int x = 0; x < width; x++)
-		printch(x, 0, ' ', 7);
-	
+	setBG(1);
+
 	/* Set cursor:
 	 */
 	cursor_pos = 0;
@@ -141,21 +133,12 @@ Panel::focus(void)
  *         destroyed.
  */
 bool
-Panel::unfocus(void)
+Prompt::unfocus(void)
 {
-	/* TODO reset properly:
-	 */
-	for(int x = 0; x < width; x++)
-		printch(x, 0, ' ', 30);
-	
-	draw();
+	// TODO draw underlying window (actionbar) correctly
 
-	/* Remain persistent:
+	/* Don't display anymore:
 	 */
-	return true;
+	return false;
 }
-
-/**
- * This header files handles all cases of user input for the bottom panel.
- */
 

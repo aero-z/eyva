@@ -1,5 +1,5 @@
-#ifndef _PANEL_H_
-#define _PANEL_H_
+#ifndef _PROMPT_H_
+#define _PROMPT_H_
 
 // Parent class:
 #include "window.h"
@@ -14,11 +14,11 @@
 #define PROMPT_SIZE 80
 
 class
-Panel : public Window
+Prompt : public Window
 {
 	public:
-		Panel(Pipe* pipe, Game* game);
-		~Panel(void);
+		Prompt(Pipe* pipe, Game* game);
+		~Prompt(void);
 		/*virtual*/ WindowName process(int input);
 		/*virtual*/ void focus(void);
 		/*virtual*/ bool unfocus(void);
@@ -26,7 +26,7 @@ Panel : public Window
 	private:
 		Pipe* pipe;
 		Game* game;
-		std::vector<char> prompt;
+		std::vector<int> prompt;
 		unsigned int cursor_pos;
 };
 
