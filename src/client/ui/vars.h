@@ -20,16 +20,5 @@ enum WindowName {
 	IDENTITY              // (virtual) currently focused window
 };
 
-enum Color {
-	BLACK,
-	RED,
-	GREEN,
-	YELLOW,
-	BLUE,
-	MAGENTA,
-	CYAN,
-	WHITE
-};
-
 #endif
 

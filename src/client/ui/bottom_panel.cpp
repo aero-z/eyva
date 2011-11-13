@@ -33,12 +33,12 @@ BottomPanel::process(int input)
 	/* First, clear the "background":
 	 */
 	for(int i = 0; i < PROMPT_SIZE; i++)
-		printch(i, 0, ' ', BLACK, WHITE);
+		printch(i, 0, ' ', 7);
 	
 	/* Second, print the buffer content:
 	 */
 	for(size_t i = 0; i < prompt.size(); i++)
-		printch(i, 0, prompt[i], WHITE, BLACK);
+		printch(i, 0, prompt[i], 7);
 
 	/* Third, update the cursor position on the screen and print out:
 	 */
@@ -56,13 +56,18 @@ BottomPanel::process(int input)
 void
 BottomPanel::focus(void)
 {
-	/* Paint line background black:
+	/* Paint first line background black:
 	 */
-	for(int x = 0; x < width; x++)
-		printch(x, 0, ' ', WHITE, BLACK);
+	for(int x = 0; x < width; x++) {
+		printch(x, 0, ' ', 7);
+	}
+	
+	/* Set cursor:
+	 */
 	cursor_pos = 0;
 	move(ypos, xpos+cursor_pos);
 	curs_set(1);
+
 	refresh();
 }
 
@@ -93,9 +98,9 @@ BottomPanel::unfocus(void)
 void
 BottomPanel::drawContent(void)
 {
-	for(int x = 0; x < width; x++)
-		for(int y = 0; y < height; y++)
-			printch(x, y, ' ', BLACK, YELLOW); // yellow
+	for(int y = 0; y < height; y++)
+		for(int x = 0; x < width; x++)
+			printch(x, y, ' ', 30); // yellow background
 	
 	// TODO display informations
 }

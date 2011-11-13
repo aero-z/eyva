@@ -4,6 +4,9 @@
 // UI:
 #include "vars.h"
 
+// Utils:
+#include <utils/exception.h>
+
 // Others:
 #include <ncurses.h>
 
@@ -19,7 +22,9 @@ Window
 		void resizeWindow(int width, int height);
 	
 	protected:
-		void printch(int x, int y, char c, Color fg, Color bg);
+		void printch(int x, int y, char c, int color);
+		void initColors(void);
+
 		int xpos, ypos;   // upper left corner position
 		int width, height;
 };

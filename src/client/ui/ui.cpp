@@ -21,17 +21,6 @@ UI::UI(Postmaster* pm)
 	initscr();      // start ncurses mode
 	wm = new WM();  // our window manager
 
-	/* Check for colors and active if available:
-	 */
-	if(!has_colors())
-		throw new Exception("colors not supported");
-	start_color();
-
-	/* This is used to enable transparent background, but we use it to let some
-	 * terminal applications (like gnome-terminal) display colors correctly:
-	 */
-	use_default_colors();
-
 	/* Set the behaviour of ncurses:
 	 */
 	cbreak();              // for user input, don't wait for the return
