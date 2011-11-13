@@ -7,29 +7,36 @@ case 10: // newline
 	prompt.clear();
 	cursor_pos = 0;  // not necessary, but secure
 	break;
+
 case 27: //escape
 	prompt.clear();
 	cursor_pos = 0;  // not necessary, but secure
 	break;
+
 case 127: //backslash
 	if(cursor_pos > 0)
 		prompt.erase(prompt.begin()+(--cursor_pos));
 	break;
+
 case 260: //left arrow key
 	if(cursor_pos > 0)
 		cursor_pos--;
 	break;
+
 case 261: //right arrow key
 	if(cursor_pos < prompt.size())
 		cursor_pos++;
 	break;
+
 case 262: //home
 	cursor_pos = 0;
 	break;
+
 case 330: //delete
 	if(cursor_pos < prompt.size())
 		prompt.erase(prompt.begin()+cursor_pos);
 	break;
+
 case 360: //end
 	cursor_pos = prompt.size();
 	break;
