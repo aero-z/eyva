@@ -3,9 +3,10 @@
 /**
  * Constructor.
  */
-Playground::Playground(Game* game) :
+Playground::Playground(Pipe* pipe, Game* game) :
 		Window(0, 1, 80, 20)
 {
+	this->pipe = pipe;
 	this->game = game;
 
 	// TODO fill map with game data
@@ -33,9 +34,9 @@ Playground::process(int input)
 {
 	switch(input) {
 		case 10: // ENTER
-			return BOTTOM_PANEL;
+			return PANEL;
 		case ':':
-			return BOTTOM_PANEL_COMMAND;
+			return PANEL_COMMAND;
 		default:
 			return IDENTITY;
 	}

@@ -3,6 +3,7 @@
 
 // UI:
 #include "vars.h"
+#include "content.h"
 
 // Utils:
 #include <utils/exception.h>
@@ -15,7 +16,7 @@ Window
 {
 	public:
 		Window(int xpos, int ypos, int width, int height);
-		~Window(void);
+		virtual ~Window(void);
 		virtual WindowName process(int input) = 0;
 		virtual void focus(void) = 0;
 		virtual bool unfocus(void) = 0;
@@ -28,7 +29,7 @@ Window
 
 		int xpos, ypos;   // upper left corner position
 		int width, height;
-		char*** content;
+		Content* content;
 };
 
 #endif

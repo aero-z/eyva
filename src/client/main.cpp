@@ -12,9 +12,9 @@ main(int argc, char** argv)
 	AyeLog::log_verbosity = 3;   // debug log output
 
 	game = new Game();
-	pipe = new Pipe();
-	ui = new UI(pipe, game);
-	network = new Network(game, ui, pipe);
+	network_pipe = new Pipe();
+	ui = new UI(network_pipe, game);
+	network = new Network(game, ui, network_pipe);
 
 	/* Loop: Check for activitiy on the network layer, then for activity on
 	 * userspace level.
@@ -28,7 +28,7 @@ main(int argc, char** argv)
 	delete game;
 	delete ui;
 	delete network;
-	delete pipe;
+	delete network_pipe;
 	return 0;
 }
 

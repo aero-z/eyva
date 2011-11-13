@@ -3,14 +3,14 @@
 
 // Client:
 #include "game.h"
-#include "pipe.h"
 #include "network.h"
 #include "ui/ui.h"
+#include "pipe.h"
 
 // Utils:
 #include <utils/ayelog.h>
 
-Pipe* pipe;
+Pipe* network_pipe;
 Network* network;
 UI* ui;
 Game* game;

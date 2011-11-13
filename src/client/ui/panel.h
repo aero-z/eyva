@@ -1,5 +1,5 @@
-#ifndef _BOTTOM_PANEL_H_
-#define _BOTTOM_PANEL_H_
+#ifndef _PANEL_H_
+#define _PANEL_H_
 
 // Parent class:
 #include "window.h"
@@ -14,11 +14,11 @@
 #define PROMPT_SIZE 80
 
 class
-BottomPanel : public Window
+Panel : public Window
 {
 	public:
-		BottomPanel(Pipe* pipe, Game* game);
-		~BottomPanel(void);
+		Panel(Pipe* pipe, Game* game);
+		~Panel(void);
 		/*virtual*/ WindowName process(int input);
 		/*virtual*/ void focus(void);
 		/*virtual*/ bool unfocus(void);

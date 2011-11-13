@@ -6,12 +6,13 @@
 
 // Client:
 #include "../game.h"
+#include "../pipe.h"
 
 class
 Playground : public Window
 {
 	public:
-		Playground(Game* game);
+		Playground(Pipe* pipe, Game* game);
 		~Playground(void);
 		/*virtual*/ WindowName process(int input);
 		/*virtual*/ void focus(void);
@@ -19,6 +20,7 @@ Playground : public Window
 	
 	private:
 		Game* game;
+		Pipe* pipe;
 };
 
 #endif

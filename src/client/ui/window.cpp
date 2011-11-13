@@ -13,15 +13,19 @@ Window::Window(int xpos, int ypos, int width, int height)
 	moveWindow(xpos, ypos);
 	this->width = width;
 	this->height = height;
-	content = new char[width][height][3]; // character, foreground, background
+	content = new Content(width, height);
 }
 
 /**
  * Destructor.
+ * This destructor is marked virtual, but will still be executed (probably
+ * that's a special case for destructors).
  */
 Window::~Window(void)
 {
-	delete[][][] content;
+	mvprintw(0,1, "base window class destroyed");
+	getch();
+	delete content;
 }
 
 
@@ -57,6 +61,7 @@ Window::printch(int x, int y, char c, int color)
 	attron(COLOR_PAIR(color));
 	if(x >= 0 && x < width && y >= 0 && y < height)
 		mvaddch(ypos+y, xpos+x, c);
+	attroff(COLOR_PAIR(color));
 }
 
 /**
