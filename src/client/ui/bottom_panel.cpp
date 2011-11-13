@@ -2,16 +2,25 @@
 
 /**
  * Constructor.
- * @param xpos   The window's upper left edge's X coordinate.
- * @param ypos   The window's upper left edge's Y coordinate.
- * @param width  The window's width.
- * @param height The window's height.
+ * @param pipe Allows communication with the network object.
+ * @param game Handles and stores game data.
  */
-BottomPanel::BottomPanel(Game* game) :
+BottomPanel::BottomPanel(Pipe* pipe, Game* game) :
 		Window(0, 21, 80, 3)
 {
+	this->pipe = pipe;
 	this->game = game;
-	drawContent();
+
+	draw();
+}
+
+/**
+ * Destructor.
+ */
+BottomPanel::~BottomPanel(void) :
+		~Window()
+{
+	// VOID
 }
 
 
@@ -86,22 +95,5 @@ BottomPanel::unfocus(void)
 	/* Remain persistent:
 	 */
 	return true;
-}
-
-
-/* PRIVATE METHODS */
-
-
-/**
- * This method draws the bottom panel's content.
- */
-void
-BottomPanel::drawContent(void)
-{
-	for(int y = 0; y < height; y++)
-		for(int x = 0; x < width; x++)
-			printch(x, y, ' ', 30); // yellow background
-	
-	// TODO display informations
 }
 

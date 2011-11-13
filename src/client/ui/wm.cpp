@@ -3,11 +3,15 @@
 /**
  * Constructor.
  */
-WM::WM(void)
+WM::WM(Pipe* pipe, Game* game)
 {
-	game = new Game();
-	playground = new Playground(game);
-	bottom_panel = new BottomPanel(game);
+	this->pipe = pipe;
+	this->game = game;
+
+	/* Create windows:
+	 */
+	playground = new Playground(pipe, game);
+	bottom_panel = new BottomPanel(pipe, game);
 	
 	// TODO
 	active = playground;
@@ -20,9 +24,8 @@ WM::WM(void)
  */
 WM::~WM(void)
 {
-	delete bottom_panel;
 	delete playground;
-	delete game;
+	delete bottom_panel;
 }
 
 
@@ -72,5 +75,15 @@ WM::process(int input)
 		if(next == BOTTOM_PANEL_COMMAND)
 			active->process(':');
 	}
+}
+
+/**
+ * This method processes a network message.
+ * @param msg The eyva protocol compliant message to be processed.
+ */
+void
+WM::process(char const* msg)
+{
+	// TODO animation!
 }
 

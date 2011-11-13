@@ -4,11 +4,15 @@ using namespace AyeLog;
 
 /**
  * Constructor
- * @param pm The postmaster that is needed to communicate to the UI.
+ * @param game Class to handle and store game data.
+ * @param ui   User interface that will display stuff.
+ * @param pipe Network's "postbox".
  */
-Network::Network(Postmaster* pm)
+Network::Network(Game* game, UI* ui, Pipe* pipe)
 {
-	this->pm = pm;
+	this->game = game;
+	this->ui = ui;
+	this->pipe = pipe;
 	connected = false;
 }
 
@@ -17,6 +21,7 @@ Network::Network(Postmaster* pm)
  */
 Network::~Network(void)
 {
+	// VOID
 }
 
 
@@ -129,8 +134,10 @@ Network::pollIn(void)
 	 * just ignore it.
 	 * Process the received bytes if the number is positive:
 	 */
-	if(received > 0)
-		pm->send(BOX_UI, buffer_in);
+	if(received > 0) {
+		game->process(buffer_in);
+		ui->process(buffer_in);
+	}
 }
 
 /**
@@ -142,8 +149,7 @@ Network::pollOut(void)
 	/* Check for new messages in the postbox. The message will be stored to
 	 * buffer_out, the length of the data will be returned:
 	 */
-	for(size_t msg_len = pm->fetch(buffer_out, BOX_NETWORK);
-			msg_len > 0; ) {
+	for(size_t msg_len = pipe->fetch(buffer_out); msg_len > 0; ) {
 
 		/* Command [01 CONNECT] requires additional action:
 		 */

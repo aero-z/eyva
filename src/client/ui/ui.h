@@ -1,9 +1,12 @@
 #ifndef _UI_H_
 #define _UI_H_
 
-// Client:
+// UI:
 #include "wm.h"
-#include "../postmaster.h"
+
+// Client:
+#include "../pipe.h"
+#include "../game.h"
 
 // Utils:
 #include <utils/exception.h>
@@ -19,16 +22,17 @@ class
 UI
 {
 	public:
-		UI(Postmaster* pm);
+		UI(Pipe* pipe, Game* game);
 		~UI(void);
 		void poll(double timeout);
+		void process(char const* msg);
 
 	private:
-		void pollNetwork(void);
 		void pollInput(double timeout);
 
 		WM* wm;
-		Postmaster* pm;
+		Pipe* pipe;
+		Game* game;
 };
 
 #endif

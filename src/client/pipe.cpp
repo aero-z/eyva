@@ -8,7 +8,7 @@ Pipe::Pipe(void)
 	// VOID
 }
 
-/** 
+/**
  * Destructor.
  */
 Pipe::~Pipe(void)
@@ -21,7 +21,19 @@ Pipe::~Pipe(void)
 
 
 /**
- * This method gets the oldest message out of the box (FIFO).
+ * This method adds a message to the box (FIFO).
+ * @param msg The message to be added to the box.
+ */
+void
+Pipe::add(char const* msg)
+{
+	char* tmp = new char[msglen(msg)];
+	memcpy(tmp, msg, msglen(msg));
+	box.push_back(tmp);
+}
+
+/**
+ * This method is gets the oldest message out of the box (FIFO).
  * The message will be removed from the box.
  * @param buf A pointer to the buffer to store the message to (buffer size
  *            should be BUFFER_SIZE).
@@ -36,18 +48,6 @@ Pipe::fetch(char* buf)
 		return msglen(buf);
 	}
 	return 0;
-}
-
-/**
- * This method adds a message to the box (FIFO).
- * @param msg The message to be added to the box.
- */
-void
-Pipe::add(char const* msg)
-{
-	char* tmp = new char[msglen(msg)];
-	memcpy(tmp, msg, msglen(msg));
-	box.push_back(tmp);
 }
 
 /**

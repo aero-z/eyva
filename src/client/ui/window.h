@@ -15,11 +15,12 @@ Window
 {
 	public:
 		Window(int xpos, int ypos, int width, int height);
-		virtual WindowName process(int input);
-		virtual void focus(void);
-		virtual bool unfocus(void);
+		~Window(void);
+		virtual WindowName process(int input) = 0;
+		virtual void focus(void) = 0;
+		virtual bool unfocus(void) = 0;
 		void moveWindow(int xpos, int ypos);
-		void resizeWindow(int width, int height);
+		void draw(void);
 	
 	protected:
 		void printch(int x, int y, char c, int color);
@@ -27,6 +28,7 @@ Window
 
 		int xpos, ypos;   // upper left corner position
 		int width, height;
+		char*** content;
 };
 
 #endif

@@ -6,6 +6,7 @@
 
 // Client:
 #include "../game.h"
+#include "../pipe.h"
 
 // Others:
 #include <vector>
@@ -16,14 +17,14 @@ class
 BottomPanel : public Window
 {
 	public:
-		BottomPanel(Game* game);
+		BottomPanel(Pipe* pipe, Game* game);
+		~BottomPanel(void);
 		/*virtual*/ WindowName process(int input);
 		/*virtual*/ void focus(void);
 		/*virtual*/ bool unfocus(void);
 	
 	private:
-		void drawContent(void);
-
+		Pipe* pipe;
 		Game* game;
 		std::vector<char> prompt;
 		unsigned int cursor_pos;

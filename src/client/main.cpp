@@ -11,12 +11,10 @@ main(int argc, char** argv)
 {
 	AyeLog::log_verbosity = 3;   // debug log output
 
-	/* The postmaster object is used by the network handler and the UI to
-	 * communicate with each other:
-	 */
-	pm = new Postmaster();
-	network = new Network(pm);
-	ui = new UI(pm);
+	game = new Game();
+	pipe = new Pipe();
+	ui = new UI(pipe, game);
+	network = new Network(game, ui, pipe);
 
 	/* Loop: Check for activitiy on the network layer, then for activity on
 	 * userspace level.
@@ -27,9 +25,10 @@ main(int argc, char** argv)
 		// TODO quit loop if needed
 	}
 
+	delete game;
 	delete ui;
 	delete network;
-	delete pm;
+	delete pipe;
 	return 0;
 }
 

@@ -11,6 +11,7 @@
 
 // Client:
 #include "../game.h"
+#include "../pipe.h"
 
 // Others:
 #include <ncurses.h>
@@ -19,11 +20,13 @@ class
 WM
 {
 	public:
-		WM(void);
+		WM(Pipe* pipe, Game* game);
 		~WM(void);
 		void process(int input);
+		void process(char const* msg);
 	
 	private:
+		Pipe* pipe;
 		Game* game;
 		Window* playground;
 		Window* bottom_panel;

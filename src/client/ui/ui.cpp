@@ -5,21 +5,22 @@ using namespace AyeLog;
 /**
  * Constructor.
  * The ncurses session is started here.
- * @param data_handler The data handler that is needed to communicate to the
- *                     network object, and that handles all information related
- *                     stuff.
+ * @param pipe Used to send messages to the network.
+ * @param game Handles and stores game data.
  */
-UI::UI(Postmaster* pm)
+UI::UI(Pipe* pipe, Game* game)
 {
+	this->pipe = pipe;
+	this->game = game;
+
 	logf(LOG_DEBUG, "starting ncurses UI ...");
-	this->pm = pm;
 
 	/* TODO supposed to support umlauts and the like, but doesn't work:
 	 */
 	setlocale(LC_ALL, "");
 
 	initscr();      // start ncurses mode
-	wm = new WM();  // our window manager
+	wm = new WM(pipe, game);  // our window manager
 
 	/* Set the behaviour of ncurses:
 	 */
@@ -53,22 +54,22 @@ UI::~UI(void)
 void
 UI::poll(double timeout)
 {
-	pollNetwork();
 	pollInput(timeout);
+}
+
+/**
+ * This method processes a network message.
+ * @param msg The eyva protocol conform message.
+ */
+void
+UI::process(char const* msg)
+{
+	wm->process(msg);
 }
 
 
 /* PRIVATE METHODS */
 
-
-/**
- * This method checks for new network messages (postmaster).
- */
-void
-UI::pollNetwork(void)
-{
-	// TODO
-}
 
 /**
  * This method checks for user input and lets the WM handle it.

@@ -1,8 +1,10 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
-// Server:
-#include "postmaster.h"
+// Client:
+#include "pipe.h"
+#include "ui/ui.h"
+#include "game.h"
 
 // Utils:
 #include <utils/ayelog.h>
@@ -26,7 +28,7 @@ class
 Network
 {
 	public:
-		Network(Postmaster* pm);
+		Network(Game* game, UI* ui, Pipe* pipe);
 		~Network(void);
 		void poll(void);
 
@@ -36,7 +38,9 @@ Network
 		void pollIn(void);
 		void pollOut(void);
 
-		Postmaster* pm;
+		Game* game;
+		UI* ui;
+		Pipe* pipe;
 		int sockc;
 		char buffer_in[BUFFER_SIZE];
 		char buffer_out[BUFFER_SIZE];

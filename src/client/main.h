@@ -2,16 +2,18 @@
 #define __ECLIENT
 
 // Client:
-#include "postmaster.h"
+#include "game.h"
+#include "pipe.h"
 #include "network.h"
 #include "ui/ui.h"
 
 // Utils:
 #include <utils/ayelog.h>
 
-Postmaster* pm;
+Pipe* pipe;
 Network* network;
 UI* ui;
+Game* game;
 
 int main(int argc, char** argv);
 

@@ -9,6 +9,7 @@ Game
 	public:
 		Game(void);
 		~Game(void);
+		void process(char const* msg);
 
 	private:
 		Region* region;
