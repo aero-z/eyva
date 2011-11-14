@@ -14,6 +14,7 @@ UI::UI(Pipe* pipe, Game* game)
 	this->game = game;
 
 	logf(LOG_DEBUG, "starting ncurses UI ...");
+	logf(LOG_DEBUG, "maximum number of color pairs: %d", COLOR_PAIRS);
 
 	/* TODO supposed to support umlauts and the like, but doesn't work:
 	 */

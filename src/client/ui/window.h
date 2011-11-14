@@ -19,6 +19,7 @@ Window
 		virtual WindowName process(int input) = 0;
 		virtual void focus(void) = 0;
 		virtual bool unfocus(void) = 0;
+		virtual void repaint(void) = 0;
 		void moveWindow(int xpos, int ypos);
 		void draw(void);
 	

@@ -6,8 +6,17 @@
 
 // UI:
 #include "vars.h"
-#include "prompt.h"
 #include "playground.h"
+#include "prompt.h"
+//#include "infobar.h"
+#include "actionbar.h"
+//#include "login.h"
+//#include "menu.h"
+//#include "options.h"
+//#include "navigation.h"
+//#include "social.h"
+//#include "inventory.h"
+//#include "character.h"
 
 // Client:
 #include "../game.h"
@@ -29,7 +38,6 @@ WM
 		Pipe* pipe;
 		Game* game;
 		Window* playground;
-		Window* prompt;
 		Window* infobar;
 		Window* actionbar;
 		Window* login;
@@ -37,7 +45,7 @@ WM
 		Window* options;
 		Window* navigation;
 		Window* social;
-		Window* inventory;
+		Window* character;
 		Window* active;     // virtual; points to the currently focused window
 };
 

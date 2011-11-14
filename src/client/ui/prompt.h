@@ -5,7 +5,6 @@
 #include "window.h"
 
 // Client:
-#include "../game.h"
 #include "../pipe.h"
 
 // Others:
@@ -17,15 +16,15 @@ class
 Prompt : public Window
 {
 	public:
-		Prompt(Pipe* pipe, Game* game);
+		Prompt(Pipe* pipe);
 		~Prompt(void);
 		/*virtual*/ WindowName process(int input);
 		/*virtual*/ void focus(void);
 		/*virtual*/ bool unfocus(void);
+		/*virtual*/ void repaint(void);
 	
 	private:
 		Pipe* pipe;
-		Game* game;
 		std::vector<int> prompt;
 		unsigned int cursor_pos;
 };

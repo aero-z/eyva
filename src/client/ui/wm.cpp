@@ -11,7 +11,7 @@ WM::WM(Pipe* pipe, Game* game)
 	/* Create windows:
 	 */
 	playground = new Playground(pipe, game);
-	prompt = new Prompt(pipe, game);
+	actionbar = new Actionbar(game);
 	
 	// TODO
 	active = playground;
@@ -25,7 +25,7 @@ WM::WM(Pipe* pipe, Game* game)
 WM::~WM(void)
 {
 	delete playground;
-	delete prompt;
+	delete actionbar;
 }
 
 
@@ -49,18 +49,22 @@ WM::process(int input)
 	 */
 	if(next != IDENTITY) {
 		/* The unfocussing method will return false, if the window shall be
-		 * destroyed:
+		 * destroyed. In that case, also refresh the screen to make sure
+		 * underlying windows are drawn correctly:
 		 */
-		if(!active->unfocus())
+		if(!active->unfocus()) {
 			delete active;
+			// TODO determine underlying windows to be drawn
+		}
 
 		switch(next) {
 			case PLAYGROUND:
 				active = playground;
+				actionbar->repaint();
 				break;
 			case PROMPT:
 			case PROMPT_COMMAND:
-				active = prompt;
+				active = new Prompt(pipe);
 				break;
 			default:
 				break;

@@ -5,11 +5,12 @@
  * @param pipe Allows communication with the network object.
  * @param game Handles and stores game data.
  */
-Prompt::Prompt(Pipe* pipe, Game* game) :
+Prompt::Prompt(Pipe* pipe) :
 		Window(0, 21, 80, 1)
 {
 	this->pipe = pipe;
-	this->game = game;
+
+	repaint();
 }
 
 /**
@@ -80,8 +81,8 @@ Prompt::process(int input)
 		case 274: // F10
 		case 275: // F11
 		case 276: // F12
-		case 258: // down arrow key
-		case 259: // up arrow key
+		case 258: // down arrow key (TODO history)
+		case 259: // up arrow key (TODO history)
 		case 331: // insert
 		case 338: // page down
 		case 339: // page up
@@ -93,10 +94,13 @@ Prompt::process(int input)
 			break;
 	}
 	
-	/* Print prompt content:
+	/* Update prompt display:
 	 */
+	repaint(); // not to display relicts
+	attron(COLOR_PAIR(10));
 	for(size_t i = 0; i < prompt.size(); i++)
-		mvprintw(ypos, xpos+i, "%c", prompt[i]);
+		mvprintw(ypos, xpos+i, "%s", &(prompt[i]));
+	attroff(COLOR_PAIR(10));
 
 	/* Update cursor position and print out:
 	 */
@@ -114,9 +118,7 @@ Prompt::process(int input)
 void
 Prompt::focus(void)
 {
-	/* Set background black:
-	 */
-	setBG(1);
+	repaint();
 
 	/* Set cursor:
 	 */
@@ -140,5 +142,16 @@ Prompt::unfocus(void)
 	/* Don't display anymore:
 	 */
 	return false;
+}
+
+/**
+ * This method repaints the window.
+ */
+void
+Prompt::repaint(void)
+{
+	setBG(10);
+
+	refresh();
 }
 

@@ -9,6 +9,8 @@ Playground::Playground(Pipe* pipe, Game* game) :
 	this->pipe = pipe;
 	this->game = game;
 
+	repaint();
+
 	// TODO fill map with game data
 }
 
@@ -48,6 +50,7 @@ Playground::process(int input)
 void
 Playground::focus(void)
 {
+	repaint();
 	curs_set(0);
 }
 
@@ -59,5 +62,18 @@ bool
 Playground::unfocus(void)
 {
 	return true;
+}
+
+/**
+ * This method repaints the window.
+ */
+void
+Playground::repaint(void)
+{
+	setBG(7);
+
+	// TODO
+
+	refresh();
 }
 

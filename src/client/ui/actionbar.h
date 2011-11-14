@@ -1,27 +1,25 @@
-#ifndef _PLAYGROUND_H_
-#define _PLAYGROUND_H_
+#ifndef _ACTIONBAR_H_
+#define _ACTIONBAR_H_
 
 // Parent class:
 #include "window.h"
 
 // Client:
 #include "../game.h"
-#include "../pipe.h"
 
 class
-Playground : public Window
+Actionbar : public Window
 {
 	public:
-		Playground(Pipe* pipe, Game* game);
-		~Playground(void);
+		Actionbar(Game* game);
+		~Actionbar(void);
 		/*virtual*/ WindowName process(int input);
 		/*virtual*/ void focus(void);
 		/*virtual*/ bool unfocus(void);
 		/*virtual*/ void repaint(void);
-	
+
 	private:
 		Game* game;
-		Pipe* pipe;
 };
 
 #endif
