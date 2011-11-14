@@ -21,9 +21,10 @@ Introduction:
 Requirements:
 
     * ncurses
+    * GNU make
     * OS:
       - GNU/Linux (tested on Arch Linux)
-      - Mac OS X (see issue #4 for troubleshooting)
+      - Mac OS X (tested on 10.6)
 
 
 Compile:
@@ -34,13 +35,10 @@ Compile:
 
 Execute:
    
-    Currently, the components have no real functionality:
-   
-    `eserver' will listen to port 1251. You may use `netcat' to send and receive
-    data.
-
-    `eclient' will just connect to the default IP and port where the server is
-    supposed to run, send nothing, and display messages until killed.
+    * `eserver' will listen to port 1251. You may use `netcat' to send and
+      receive data.
+    * `eclient' is currently just a UI without any functionality. It can be
+      killed with ^C.
 
 
 Bugs:
