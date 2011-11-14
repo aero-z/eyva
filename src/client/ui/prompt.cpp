@@ -33,12 +33,14 @@ Prompt::~Prompt(void)
 WindowName
 Prompt::process(int input)
 {
+	WindowName next_win = IDENTITY;
+
 	switch(input) {
 		case 10: // newline
-			// TODO evaluate command
+			next_win = evaluate();
 			prompt.clear();
 			cursor_pos = 0;  // not necessary, but secure
-			break;
+			return next_win;
 		case 27: //escape
 			prompt.clear();
 			cursor_pos = 0;  // not necessary, but secure
@@ -154,5 +156,68 @@ Prompt::repaint(void)
 	setBG(10);
 
 	refresh();
+}
+
+
+/* PRIVATE METHODS */
+
+
+/**
+ * This method evaluates the prompt buffer.
+ * @return The name of the window that shall be focused next. Since this method
+ *         is called by the process() method, that one should forward it back to
+ *         its caller.
+ */
+WindowName
+Prompt::evaluate(void)
+{
+	// TODO let the menu handle this (logout etc.)
+	if(cmdcmp(":q"))
+		return TERM;
+	
+	return PLAYGROUND;
+}
+
+/**
+ * This method checks if the command (first word) in the buffer is equal to a
+ * specific value.
+ * @param keyword The command to be checked.
+ * @return        True if the command is equal to the keyword, otherwise false.
+ */
+bool
+Prompt::cmdcmp(char const* keyword)
+{
+	bool equal = (strlen(keyword) <= prompt.size());
+	for(size_t i = 0; i < strlen(keyword) && i < prompt.size(); i++)
+		if(keyword[i] != prompt[i]) {
+			equal = false;
+			break;
+		}
+	
+	return equal;
+}
+
+/**
+ * This method counts the number of arguments in the prompt buffer.
+ * @return The number of arguments in the prompt buffer.
+ */
+int
+Prompt::argcount(void)
+{
+	// TODO
+	return 0;
+}
+
+/**
+ * This method fetches a specific argument from the prompt buffer.
+ * @param buffer The C string buffer where the argument shall be stored to.
+ * @param pos    The index of the argument.
+ * @return       The size of the argument.
+ */
+size_t
+Prompt::argfetch(char* buffer, int pos)
+{
+	// TODO
+	return 0;
 }
 

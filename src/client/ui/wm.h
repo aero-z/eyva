@@ -31,7 +31,7 @@ WM
 	public:
 		WM(Pipe* pipe, Game* game);
 		~WM(void);
-		void process(int input);
+		bool process(int input);
 		void process(char const* msg);
 	
 	private:

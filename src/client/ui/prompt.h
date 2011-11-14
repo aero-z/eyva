@@ -24,6 +24,11 @@ Prompt : public Window
 		/*virtual*/ void repaint(void);
 	
 	private:
+		WindowName evaluate(void);
+		bool cmdcmp(char const* keyword);
+		int argcount(void);
+		size_t argfetch(char* buffer, int pos);
+
 		Pipe* pipe;
 		std::vector<int> prompt;
 		unsigned int cursor_pos;

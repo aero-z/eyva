@@ -19,7 +19,8 @@ enum WindowName {
 	CHARACTER,      // ['c']   ingame character settings
 	INVENTORY,      // ['b']   character inventory
 
-	IDENTITY        // (virtual) currently focused window
+	IDENTITY,       // (virtual) currently focused window
+	TERM            // (virtual) indicates program shutdown
 };
 
 #endif

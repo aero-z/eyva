@@ -22,11 +22,12 @@ main(int argc, char** argv)
 	for(bool term_signal = false; !term_signal; ) {
 		network->poll();
 		ui->poll(1.0);
-		// TODO quit loop if needed
+		term_signal = ui->checkTermSignal();
 	}
 
 	delete game;
 	delete ui;
+	AyeLog::logf(LOG_NORMAL, "shutting down eyva client ...");
 	delete network;
 	delete network_pipe;
 	return 0;

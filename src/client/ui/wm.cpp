@@ -36,13 +36,20 @@ WM::~WM(void)
  * This method processes a user input (button) by sending it to the currently
  * focused window.
  * @param input The key pressed by the user.
+ * @return      The term signal (true if a shutdown command was given, otherwise
+ *              false).
  */
-void
+bool
 WM::process(int input)
 {
 	/* Let the active window process the input:
 	 */
 	WindowName next = active->process(input);
+
+	/* If the window name is TERM, the program shall be stopped:
+	 */
+	if(next == TERM)
+		return true;
 
 	/* The processing method will return the name of the next window to be
 	 * focused. If the window does not point to itself, perform a focus change:
@@ -79,6 +86,10 @@ WM::process(int input)
 		if(next == PROMPT_COMMAND)
 			active->process(':');
 	}
+
+	/* Send no term signal:
+	 */
+	return false;
 }
 
 /**

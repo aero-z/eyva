@@ -26,6 +26,7 @@ UI
 		~UI(void);
 		void poll(double timeout);
 		void process(char const* msg);
+		bool checkTermSignal(void);
 
 	private:
 		void pollInput(double timeout);
@@ -33,6 +34,7 @@ UI
 		WM* wm;
 		Pipe* pipe;
 		Game* game;
+		bool term_signal;
 };
 
 #endif

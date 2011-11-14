@@ -28,6 +28,8 @@ UI::UI(Pipe* pipe, Game* game)
 	cbreak();              // for user input, don't wait for the return
 	keypad(stdscr, TRUE);  // allow arrow and F keys
 	noecho();              // don't display user input
+
+	term_signal = false;   // this is false as long as the program shall run
 }
 
 /**
@@ -68,6 +70,16 @@ UI::process(char const* msg)
 	wm->process(msg);
 }
 
+/**
+ * This method checks if the term signal is set.
+ * @return True if the signal is set, otherwise false.
+ */
+bool
+UI::checkTermSignal(void)
+{
+	return term_signal;
+}
+
 
 /* PRIVATE METHODS */
 
@@ -85,7 +97,7 @@ UI::pollInput(double timeout)
 		case ERR:
 			break;
 		default:
-			wm->process(input);
+			term_signal = wm->process(input);
 	}
 }
 
