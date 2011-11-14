@@ -44,6 +44,7 @@ Prompt::process(int input)
 			cursor_pos = 0;  // not necessary, but secure
 			break;
 		case 127: //backslash
+		case 263: //backslash (xterm and virtual terminals)
 			if(cursor_pos > 0)
 				prompt.erase(prompt.begin()+(--cursor_pos));
 			break;

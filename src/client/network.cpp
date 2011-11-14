@@ -99,10 +99,6 @@ void
 Network::disconnect(void)
 {
 	/* Send a zero-byte message, which will close the connection.
-	 * The default behaviour of send() is to invoke a sigpipe by the system that
-	 * will immediately kill the program (FSM knows why). To avoid that, send()
-	 * is called with the MSG_NOSIGNAL flag.
-	 * TODO make Mac OS X compatible (MSG_NOSIGNAL is SO_NOSIGPIPE).
 	 */
 	send(sockc, NULL, 0, MSG_NOSIGNAL);
 
@@ -158,16 +154,15 @@ Network::pollOut(void)
 			 */
 			iptoa(buffer_in, buffer_out+4);   // IP address
 			int port = porttoi(buffer_out+8); // TCP port
+
+			/* If there was an error, don't go on to sending data.
+			 * TODO notify UI that connection failed
+			 */
 			if(!connect(buffer_in, port)) {
 				continue;
 			}
 		}
 	
-		/* MSG_NOSIGNAL avoids a program crash by a SIGPIPE that would normally
-		 * be invoked if there's a sending error. That's the default behaviour,
-		 * FSM knows why.
-		 * TODO make Mac OS X compatible (MSG_NOSIGNAL is SO_NOSIGPIPE)
-		 */
 		int sent = send(sockc, buffer_out, msg_len, MSG_NOSIGNAL);
 
 		/* send() should return the number of bytes sent. If the number is

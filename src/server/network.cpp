@@ -255,11 +255,6 @@ Network::pollOut(void)
 		logf(LOG_DEBUG, "sending data to %s on socket %d",
 				sessions[socks]->getIP(), socks);
 		 
-		/* Default behaviour of send() is to raise a SIGPIPE (and thus to cause
-		 * a program crash) whenever it fails (FSM knows why). To avoid that, we
-		 * set MSG_NOSIGNAL.
-		 * TODO make Mac OS X compatible (MSG_NOSIGNAL is SO_NOSIGPIPE)
-		 */
 		int sent = send(socks, buffer_out, message_len, MSG_NOSIGNAL);
 
 		/* If there was an error sending, the client may be assumed as
