@@ -14,7 +14,7 @@ Session
 	public:
 		Session(int id, char const* ip, Pipe* pipe);
 		~Session(void);
-		void handle(char const* message, int message_len);
+		void process(char const* message, int message_len);
 		char const* getIP(void);
 		int getID(void);
 	

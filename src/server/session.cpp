@@ -38,7 +38,7 @@ Session::~Session(void)
  * @param message_len The received message's length.
  */
 void
-Session::handle(char const* message, int message_len)
+Session::process(char const* message, int message_len)
 {
 	// TODO
 }

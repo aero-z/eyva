@@ -229,10 +229,10 @@ Network::handleData(int socket)
 			sessions.erase(socket);
 		}
 
-		/* Otherwise, the session may handle the data:
+		/* Otherwise, the session may process the data:
 		 */
 		else {
-			sessions[socket]->handle(buffer_in, received);
+			sessions[socket]->process(buffer_in, received);
 		}
 	}
 }
