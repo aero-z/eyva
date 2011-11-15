@@ -1,5 +1,5 @@
-#ifndef _PLAYGROUND_H_
-#define _PLAYGROUND_H_
+#ifndef _UI_PLAYGROUND_H_
+#define _UI_PLAYGROUND_H_
 
 // Parent class:
 #include "window.h"
@@ -9,11 +9,11 @@
 #include "../pipe.h"
 
 class
-Playground : public Window
+WinPlayground : public Window
 {
 	public:
-		Playground(Pipe* pipe, Game* game);
-		~Playground(void);
+		WinPlayground(Pipe* pipe, Game* game);
+		~WinPlayground(void);
 		/*virtual*/ WindowName process(int input);
 		/*virtual*/ void focus(void);
 		/*virtual*/ bool unfocus(void);

@@ -10,8 +10,8 @@ WM::WM(Pipe* pipe, Game* game)
 
 	/* Create windows:
 	 */
-	playground = new Playground(pipe, game);
-	actionbar = new Actionbar(game);
+	playground = new WinPlayground(pipe, game);
+	actionbar = new WinActionbar(game);
 	
 	// TODO
 	active = playground;
@@ -48,13 +48,13 @@ WM::process(int input)
 
 	/* If the window name is TERM, the program shall be stopped:
 	 */
-	if(next == TERM)
+	if(next == WINDOW_TERM)
 		return true;
 
 	/* The processing method will return the name of the next window to be
 	 * focused. If the window does not point to itself, perform a focus change:
 	 */
-	if(next != IDENTITY) {
+	if(next != WINDOW_IDENTITY) {
 		/* The unfocussing method will return false, if the window shall be
 		 * destroyed. In that case, also refresh the screen to make sure
 		 * underlying windows are drawn correctly:
@@ -65,13 +65,13 @@ WM::process(int input)
 		}
 
 		switch(next) {
-			case PLAYGROUND:
+			case WINDOW_PLAYGROUND:
 				active = playground;
 				actionbar->repaint();
 				break;
-			case PROMPT:
-			case PROMPT_COMMAND:
-				active = new Prompt(pipe);
+			case WINDOW_PROMPT:
+			case WINDOW_PROMPT_COMMAND:
+				active = new WinPrompt(pipe);
 				break;
 			default:
 				break;
@@ -83,7 +83,7 @@ WM::process(int input)
 
 		/* Special case: if the prompt was entered with a ':':
 		 */
-		if(next == PROMPT_COMMAND)
+		if(next == WINDOW_PROMPT_COMMAND)
 			active->process(':');
 	}
 

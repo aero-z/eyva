@@ -1,5 +1,5 @@
-#ifndef _WINDOW_H_
-#define _WINDOW_H_
+#ifndef _UI_WINDOW_H_
+#define _UI_WINDOW_H_
 
 // UI:
 #include "vars.h"

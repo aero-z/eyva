@@ -4,7 +4,7 @@
  * Constructor.
  * @param game The game that handles and holds all game related data.
  */
-Actionbar::Actionbar(Game* game) :
+WinActionbar::WinActionbar(Game* game) :
 		Window(0, 21, 80, 3)
 {
 	this->game = game;
@@ -15,7 +15,7 @@ Actionbar::Actionbar(Game* game) :
 /**
  * Destructor.
  */
-Actionbar::~Actionbar(void)
+WinActionbar::~WinActionbar(void)
 {
 	// VOID
 }
@@ -30,9 +30,9 @@ Actionbar::~Actionbar(void)
  * @return      The name of the next window that shall be focused.
  */
 WindowName
-Actionbar::process(int input)
+WinActionbar::process(int input)
 {
-	return PLAYGROUND;
+	return WINDOW_PLAYGROUND;
 }
 
 /**
@@ -40,7 +40,7 @@ Actionbar::process(int input)
  * the actionbar (and thus never focused), it won't do anything.
  */
 void
-Actionbar::focus(void)
+WinActionbar::focus(void)
 {
 	// VOID
 }
@@ -51,7 +51,7 @@ Actionbar::focus(void)
  * @return False if the window shall be destroyed at unfocusing, otherwise true.
  */
 bool
-Actionbar::unfocus(void)
+WinActionbar::unfocus(void)
 {
 	return true;
 }
@@ -60,7 +60,7 @@ Actionbar::unfocus(void)
  * This method repaints the window.
  */
 void
-Actionbar::repaint(void)
+WinActionbar::repaint(void)
 {
 	setBG(11);
 

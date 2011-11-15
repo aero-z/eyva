@@ -1,8 +1,8 @@
 /* This is the window manager for the ncurses client.
  */
 
-#ifndef _WM_H_
-#define _WM_H_
+#ifndef _UI_WM_H_
+#define _UI_WM_H_
 
 // UI:
 #include "vars.h"

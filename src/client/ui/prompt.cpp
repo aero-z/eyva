@@ -5,7 +5,7 @@
  * @param pipe Allows communication with the network object.
  * @param game Handles and stores game data.
  */
-Prompt::Prompt(Pipe* pipe) :
+WinPrompt::WinPrompt(Pipe* pipe) :
 		Window(0, 21, 80, 1)
 {
 	this->pipe = pipe;
@@ -16,7 +16,7 @@ Prompt::Prompt(Pipe* pipe) :
 /**
  * Destructor.
  */
-Prompt::~Prompt(void)
+WinPrompt::~WinPrompt(void)
 {
 	// VOID
 }
@@ -31,9 +31,9 @@ Prompt::~Prompt(void)
  * @return      The name of the window that shall be focused next.
  */
 WindowName
-Prompt::process(int input)
+WinPrompt::process(int input)
 {
-	WindowName next_win = IDENTITY;
+	WindowName next_win = WINDOW_IDENTITY;
 
 	switch(input) {
 		case 10: // newline
@@ -112,14 +112,14 @@ Prompt::process(int input)
 
 	/* If the buffer is empty, unfocus:
 	 */
-	return prompt.size() > 0 ? IDENTITY : PLAYGROUND;
+	return prompt.size() > 0 ? WINDOW_IDENTITY : WINDOW_PLAYGROUND;
 }
 
 /**
  * This method describes what happens when the window gains focus.
  */
 void
-Prompt::focus(void)
+WinPrompt::focus(void)
 {
 	repaint();
 
@@ -138,7 +138,7 @@ Prompt::focus(void)
  *         destroyed.
  */
 bool
-Prompt::unfocus(void)
+WinPrompt::unfocus(void)
 {
 	// TODO draw underlying window (actionbar) correctly
 
@@ -151,7 +151,7 @@ Prompt::unfocus(void)
  * This method repaints the window.
  */
 void
-Prompt::repaint(void)
+WinPrompt::repaint(void)
 {
 	setBG(10);
 
@@ -169,13 +169,15 @@ Prompt::repaint(void)
  *         its caller.
  */
 WindowName
-Prompt::evaluate(void)
+WinPrompt::evaluate(void)
 {
 	// TODO let the menu handle this (logout etc.)
 	if(cmdcmp(":q"))
-		return TERM;
+		return WINDOW_TERM;
 	
-	return PLAYGROUND;
+	// TODO
+
+	return WINDOW_PLAYGROUND;
 }
 
 /**
@@ -185,7 +187,7 @@ Prompt::evaluate(void)
  * @return        True if the command is equal to the keyword, otherwise false.
  */
 bool
-Prompt::cmdcmp(char const* keyword)
+WinPrompt::cmdcmp(char const* keyword)
 {
 	bool equal = (strlen(keyword) <= prompt.size());
 	for(size_t i = 0; i < strlen(keyword) && i < prompt.size(); i++)
@@ -202,7 +204,7 @@ Prompt::cmdcmp(char const* keyword)
  * @return The number of arguments in the prompt buffer.
  */
 int
-Prompt::argcount(void)
+WinPrompt::argcount(void)
 {
 	// TODO
 	return 0;
@@ -215,7 +217,7 @@ Prompt::argcount(void)
  * @return       The size of the argument.
  */
 size_t
-Prompt::argfetch(char* buffer, int pos)
+WinPrompt::argfetch(char* buffer, int pos)
 {
 	// TODO
 	return 0;

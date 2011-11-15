@@ -1,5 +1,5 @@
-#ifndef _ACTIONBAR_H_
-#define _ACTIONBAR_H_
+#ifndef _UI_ACTIONBAR_H_
+#define _UI_ACTIONBAR_H_
 
 // Parent class:
 #include "window.h"
@@ -8,11 +8,11 @@
 #include "../game.h"
 
 class
-Actionbar : public Window
+WinActionbar : public Window
 {
 	public:
-		Actionbar(Game* game);
-		~Actionbar(void);
+		WinActionbar(Game* game);
+		~WinActionbar(void);
 		/*virtual*/ WindowName process(int input);
 		/*virtual*/ void focus(void);
 		/*virtual*/ bool unfocus(void);

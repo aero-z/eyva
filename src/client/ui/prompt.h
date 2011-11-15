@@ -1,5 +1,5 @@
-#ifndef _PROMPT_H_
-#define _PROMPT_H_
+#ifndef _UI_PROMPT_H_
+#define _UI_PROMPT_H_
 
 // Parent class:
 #include "window.h"
@@ -13,11 +13,11 @@
 #define PROMPT_SIZE 80
 
 class
-Prompt : public Window
+WinPrompt : public Window
 {
 	public:
-		Prompt(Pipe* pipe);
-		~Prompt(void);
+		WinPrompt(Pipe* pipe);
+		~WinPrompt(void);
 		/*virtual*/ WindowName process(int input);
 		/*virtual*/ void focus(void);
 		/*virtual*/ bool unfocus(void);

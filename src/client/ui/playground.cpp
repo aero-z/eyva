@@ -3,7 +3,7 @@
 /**
  * Constructor.
  */
-Playground::Playground(Pipe* pipe, Game* game) :
+WinPlayground::WinPlayground(Pipe* pipe, Game* game) :
 		Window(0, 1, 80, 20)
 {
 	this->pipe = pipe;
@@ -17,7 +17,7 @@ Playground::Playground(Pipe* pipe, Game* game) :
 /**
  * Destructor.
  */
-Playground::~Playground(void)
+WinPlayground::~WinPlayground(void)
 {
 	// VOID
 }
@@ -32,15 +32,15 @@ Playground::~Playground(void)
  * @return      The name of the window that shall be focused next.
  */
 WindowName
-Playground::process(int input)
+WinPlayground::process(int input)
 {
 	switch(input) {
 		case 10: // ENTER
-			return PROMPT;
+			return WINDOW_PROMPT;
 		case ':':
-			return PROMPT_COMMAND;
+			return WINDOW_PROMPT_COMMAND;
 		default:
-			return IDENTITY;
+			return WINDOW_IDENTITY;
 	}
 }
 
@@ -48,7 +48,7 @@ Playground::process(int input)
  * This method defines what happens if this window gains focus.
  */
 void
-Playground::focus(void)
+WinPlayground::focus(void)
 {
 	repaint();
 	curs_set(0);
@@ -59,7 +59,7 @@ Playground::focus(void)
  * @return False if this window shall be destroyed, otherwise true.
  */
 bool
-Playground::unfocus(void)
+WinPlayground::unfocus(void)
 {
 	return true;
 }
@@ -68,7 +68,7 @@ Playground::unfocus(void)
  * This method repaints the window.
  */
 void
-Playground::repaint(void)
+WinPlayground::repaint(void)
 {
 	setBG(7);
 
