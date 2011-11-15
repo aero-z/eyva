@@ -6,10 +6,7 @@
 
 // UI:
 #include "vars.h"
-#include "playground.h"
-#include "prompt.h"
-//#include "infobar.h"
-#include "actionbar.h"
+#include "game.h"
 //#include "login.h"
 //#include "menu.h"
 //#include "options.h"
@@ -37,9 +34,7 @@ WM
 	private:
 		Pipe* pipe;
 		Game* game;
-		Window* playground;
-		Window* infobar;
-		Window* actionbar;
+		Window* win_game;
 		Window* login;
 		Window* menu;
 		Window* options;

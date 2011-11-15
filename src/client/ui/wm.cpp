@@ -10,12 +10,15 @@ WM::WM(Pipe* pipe, Game* game)
 
 	/* Create windows:
 	 */
-	playground = new WinPlayground(pipe, game);
-	actionbar = new WinActionbar(game);
+	win_game = new WinGame(pipe, game);
+	//login = new WinLogin(pipe);
+	//menu = new WinMenu(pipe, game);
+	//options = new WinOptions();
+	//character = new WinCharacter(pipe, game);
+	//social = new WinSocial(pipe, game);
+	//navigation = new WinNavigation(game);
 	
-	// TODO
-	active = playground;
-
+	active = win_game;
 	active->focus();
 }
 
@@ -24,8 +27,13 @@ WM::WM(Pipe* pipe, Game* game)
  */
 WM::~WM(void)
 {
-	delete playground;
-	delete actionbar;
+	delete win_game;
+	//delete login;
+	//delete menu;
+	//delete options;
+	//delete character;
+	//delete social;
+	//delete navigation;
 }
 
 
@@ -52,43 +60,29 @@ WM::process(int input)
 		return true;
 
 	/* The processing method will return the name of the next window to be
-	 * focused. If the window does not point to itself, perform a focus change:
+	 * focused. If the window points to itself, ignore and return:
 	 */
-	if(next != WINDOW_IDENTITY) {
-		/* The unfocussing method will return false, if the window shall be
-		 * destroyed. In that case, also refresh the screen to make sure
-		 * underlying windows are drawn correctly:
-		 */
-		if(!active->unfocus()) {
-			delete active;
-			// TODO determine underlying windows to be drawn
-		}
+	if(next == WINDOW_IDENTITY)
+		return false;
 
-		switch(next) {
-			case WINDOW_PLAYGROUND:
-				active = playground;
-				actionbar->repaint();
-				break;
-			case WINDOW_PROMPT:
-			case WINDOW_PROMPT_COMMAND:
-				active = new WinPrompt(pipe);
-				break;
-			default:
-				break;
-		}
+	/* Otherwise unfocus and check if the window shall remain persistent. If not
+	 * destroy it:
+	 */
+	if(!active->unfocus())
+		delete active;
 
-		/* Invoke the focussing process:
-		 */
-		active->focus();
-
-		/* Special case: if the prompt was entered with a ':':
-		 */
-		if(next == WINDOW_PROMPT_COMMAND)
-			active->process(':');
+	switch(next) {
+		case WINDOW_GAME:
+			active = win_game;
+			break;
+		default:
+			break;
 	}
 
-	/* Send no term signal:
+	/* Invoke the focussing process:
 	 */
+	active->repaint();
+	active->focus();
 	return false;
 }
 

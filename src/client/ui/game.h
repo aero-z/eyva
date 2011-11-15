@@ -21,11 +21,17 @@ WinGame: public Window
 	public:
 		WinGame(Pipe* pipe, Game* game);
 		~WinGame(void);
+		/*virtual*/ WindowName process(int input);
+		/*virtual*/ void focus(void);
+		/*virtual*/ bool unfocus(void);
+		/*virtual*/ void repaint(void);
 	
 	private:
-		WinPlayground* playground;
-		WinPrompt* prompt;
-		WinActionbar* actionbar;
+		Window* playground;
+		Window* actionbar;
+		Window* active;
+		Pipe* pipe;
+		Game* game;
 };
 
 #endif
