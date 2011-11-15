@@ -12,6 +12,7 @@ Network::Network(int port)
 {
 	pipe = new Pipe();
 	game = new Game(pipe);
+	term_signal = false;
 
 	/* Create socket:
 	 * AF_INET:     domain (ARPA, IPv4)
@@ -93,6 +94,16 @@ Network::poll(void)
 	logf(LOG_DEBUG, "handling %d sessions ...", sessions.size());
 	pollIn();
 	pollOut();
+}
+
+/**
+ * This method checks the state of the term signal
+ * @return True if to shut down, otherwise false.
+ */
+bool
+Network::checkTermSignal(void)
+{
+	return term_signal;
 }
 
 
@@ -232,7 +243,7 @@ Network::handleData(int socket)
 		/* Otherwise, the session may process the data:
 		 */
 		else {
-			sessions[socket]->process(buffer_in, received);
+			sessions[socket]->process(buffer_in, (size_t)received);
 		}
 	}
 }
@@ -251,6 +262,22 @@ Network::pollOut(void)
 		/* The byte zero holds the session's socket file descriptor:
 		 */
 		int socks = buffer_out[0];
+
+		/* Special case: socket number is zero.
+		 * This can either mean "broadcast", or an internal shutdown command:
+		 */
+		if(buffer_out[0] == 0) {
+			/* Check for shutdown signal:
+			 */
+			if(buffer_out[1] == 0) {
+				term_signal = true;
+				return;
+			}
+
+			/* Broadcast:
+			 */
+			// TODO
+		}
 
 		logf(LOG_DEBUG, "sending data to %s on socket %d",
 				sessions[socks]->getIP(), socks);

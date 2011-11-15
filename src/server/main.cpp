@@ -30,6 +30,7 @@ main(int argc, char** argv)
 	for(bool term_signal = false; !term_signal; ) {
 		try {
 			network->poll();
+			term_signal = network->checkTermSignal();
 		} catch(Exception* e) {
 			AyeLog::logf(LOG_ERROR, "%s", e->str());
 			return -1;

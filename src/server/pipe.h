@@ -14,7 +14,7 @@ Pipe
 		Pipe(void);
 		~Pipe(void);
 		size_t fetch(char* msg);
-		void add(char const* msg);
+		void push(char const* msg);
 		bool check(void);
 	
 	private:

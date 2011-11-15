@@ -54,6 +54,7 @@ Network
 		Network(int port);
 		~Network(void);
 		void poll(void);
+		bool checkTermSignal(void);
 
 	private:
 		void pollIn(void);
@@ -68,6 +69,7 @@ Network
 		int sockc;                            // connection socket
 		char buffer_in[BUFFER_SIZE];
 		char buffer_out[BUFFER_SIZE];
+		bool term_signal;
 };
 
 #endif

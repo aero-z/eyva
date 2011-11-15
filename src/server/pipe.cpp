@@ -43,7 +43,7 @@ Pipe::fetch(char* buf)
  * @param msg The message to be added to the box.
  */
 void
-Pipe::add(char const* msg)
+Pipe::push(char const* msg)
 {
 	char* tmp = new char[msglen(msg)];
 	memcpy(tmp, msg, msglen(msg));

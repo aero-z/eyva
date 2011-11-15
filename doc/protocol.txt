@@ -41,6 +41,12 @@ Message definition:
 ===============================
 
 
+00  SHUTDOWN - [internal]
+    This message is not sent over the network, but is used to set the
+    termination signal.
+    Currently implemented server-side.
+
+
 01  CONNECT - [client]
     This is the first message sent to the server. It's a connection
     request from the client containing all that is needed in a first step.
@@ -110,6 +116,10 @@ Message definition:
 
 09  LOGOUT - [client]
     Logout as a character (and thus leave the game).
+
+
+0A  FAIL - [server]
+    Indicates that the server has received a malformed message.
 
 
 ===================

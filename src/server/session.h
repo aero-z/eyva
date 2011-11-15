@@ -12,16 +12,20 @@ class
 Session
 {
 	public:
-		Session(int id, char const* ip, Pipe* pipe);
+		Session(int session_id, char const* ip, Pipe* pipe);
 		~Session(void);
-		void process(char const* message, int message_len);
+		void process(char const* message, size_t message_len);
 		char const* getIP(void);
-		int getID(void);
+		int getSessionID(void);
 	
 	private:
 		Pipe* pipe;
-		int id;
+		int session_id;
 		char* ip;
+		bool authenticated;
+		int user_id;
+		bool logged_in;
+		int character_id;
 };
 
 #endif

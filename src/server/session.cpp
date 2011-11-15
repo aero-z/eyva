@@ -8,10 +8,10 @@ using namespace AyeLog;
  * @param ip   The client's IP address.
  * @param pipe A pointer to where answer messages shall be stored to.
  */
-Session::Session(int id, char const* ip, Pipe* pipe)
+Session::Session(int session_id, char const* ip, Pipe* pipe)
 {
 	this->pipe = pipe;
-	this->id = id;
+	this->session_id = session_id;
 
 	this->ip = new char[strlen(ip)+1]; // +1 for \0
 	strncpy(this->ip, ip, strlen(ip));
@@ -38,9 +38,26 @@ Session::~Session(void)
  * @param message_len The received message's length.
  */
 void
-Session::process(char const* message, int message_len)
+Session::process(char const* message, size_t message_len)
 {
-	// TODO
+	/* TODO
+	 * This is temporary, until we've got an admin client:
+	 */
+	if(message_len == 3 && message[0] == ':' && message[1] == 'q'
+			&& message[2] == 10) {
+		char response[4] = {0, 0, 0, 0};
+		pipe->push(response);
+		return;
+	}
+
+	/* If the message length does not correspond to the length indicated in the
+	 * message, send a [0A FAIL] message back:
+	 */
+	if(msglen(message) != message_len) {
+		char response[4] = {session_id, 10, 0, 0};
+		pipe->push(response);
+		return;
+	}
 }
 
 /**
@@ -56,8 +73,8 @@ Session::getIP(void)
  * @return The session ID (and also socket file descriptor).
  */
 int
-Session::getID(void)
+Session::getSessionID(void)
 {
-	return id;
+	return session_id;
 }
 
