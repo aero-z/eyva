@@ -8,10 +8,11 @@ using namespace AyeLog;
  * @param ip   The client's IP address.
  * @param pipe A pointer to where answer messages shall be stored to.
  */
-Session::Session(int session_id, char const* ip, Pipe* pipe)
+Session::Session(int session_id, char const* ip, Pipe* pipe, Game* game)
 {
 	this->pipe = pipe;
 	this->session_id = session_id;
+	this->game = game;
 
 	this->ip = new char[strlen(ip)+1]; // +1 for \0
 	strncpy(this->ip, ip, strlen(ip));
@@ -57,6 +58,14 @@ Session::process(char const* message, size_t message_len)
 		char response[4] = {session_id, 10, 0, 0};
 		pipe->push(response);
 		return;
+	}
+
+	switch(message[1]) {
+		case 1: // [01 CONNECT]
+			// TODO write a message wrapper object
+			break;
+		default:
+			game->process(message);
 	}
 }
 

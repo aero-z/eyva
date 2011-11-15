@@ -186,7 +186,8 @@ Network::handleConnection(void)
 	 */
 	if(sessions.size() < QUEUE_SIZE) {
 		sessions.insert(std::pair<int, Session*>(sock_new,
-				new Session(sock_new, inet_ntoa(client_addr.sin_addr), pipe)));
+				new Session(sock_new, inet_ntoa(client_addr.sin_addr), pipe,
+				game)));
 		logf(LOG_NORMAL, "> \e[32m%s\e[0m: new connection on socket %d",
 				sessions[sock_new]->getIP(), sock_new);
 	} else {

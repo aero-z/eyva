@@ -3,6 +3,7 @@
 
 #include "user.h"
 #include "pipe.h"
+#include "game.h"
 
 #include <utils/ayelog.h>
 
@@ -12,7 +13,7 @@ class
 Session
 {
 	public:
-		Session(int session_id, char const* ip, Pipe* pipe);
+		Session(int session_id, char const* ip, Pipe* pipe, Game* game);
 		~Session(void);
 		void process(char const* message, size_t message_len);
 		char const* getIP(void);
@@ -20,6 +21,8 @@ Session
 	
 	private:
 		Pipe* pipe;
+		Game* game;
+		User* user;
 		int session_id;
 		char* ip;
 		bool authenticated;

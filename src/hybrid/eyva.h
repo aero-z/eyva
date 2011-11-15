@@ -13,5 +13,15 @@
  */
 #define BUFFER_EXCEPTION_MSG 80
 
+/* Release version:
+ */
+#define VERSION_MAJOR_RELEASE 0
+#define VERSION_MINOR_RELEASE 1
+#define VERSION_PATCH 0
+#define VERSION_ONE_SIDE_PATCH 0
+/* Note: the one side patch is not checked during login process, since they only
+ * count patches that have no impact on the "other part".
+ */
+
 #endif
 
