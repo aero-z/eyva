@@ -7,7 +7,7 @@ class
 User
 {
 	public:
-		User(int id);
+		User(char const* name);
 		~User(void);
 		size_t getName(char* name);
 		int getID(void);

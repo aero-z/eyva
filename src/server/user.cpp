@@ -2,11 +2,13 @@
 
 /**
  * Constructor.
- * @param id The user's ID.
+ * @param name The user's name that will be used to get the necessary
+ * information from the users' savefile.
  */
-User::User(int id)
+User::User(char const* name)
 {
-	this->id= id;
+	this->name = new char[strlen(name)+1]; // +1 for \0
+	strcpy(this->name, name);
 
 	// TODO read save file for information generation
 }

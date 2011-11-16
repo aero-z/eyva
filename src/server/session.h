@@ -1,12 +1,18 @@
 #ifndef _SESSION_H_
 #define _SESSION_H_
 
+// Game:
 #include "user.h"
 #include "pipe.h"
 #include "game.h"
 
+// Hybrid:
+#include <hybrid/eyva.h>
+
+// Utils:
 #include <utils/ayelog.h>
 
+// Others:
 #include <cstring>
 
 class
@@ -29,6 +35,7 @@ Session
 		int user_id;
 		bool logged_in;
 		int character_id;
+		char buffer[BUFFER_SIZE];
 };
 
 #endif

@@ -46,7 +46,7 @@ Session::process(char const* message, size_t message_len)
 	 */
 	if(message_len == 3 && message[0] == ':' && message[1] == 'q'
 			&& message[2] == 10) {
-		char response[4] = {0, 0, 0, 0};
+		char response[] = {0x00, 0x00, 0x00, 0x00};
 		pipe->push(response);
 		return;
 	}
@@ -55,17 +55,49 @@ Session::process(char const* message, size_t message_len)
 	 * message, send a [0A FAIL] message back:
 	 */
 	if(msglen(message) != message_len) {
-		char response[4] = {session_id, 10, 0, 0};
+		char response[] = {session_id, 0x0A, 0x00, 0x00};
 		pipe->push(response);
 		return;
 	}
 
+	/* This is the part where the messages are checked and processed. It's quite
+	 * a long piece of code, maybe we can move this out to an external file:
+	 */
+	bool valid = true;
 	switch(message[1]) {
-		case 1: // [01 CONNECT]
-			// TODO write a message wrapper object
+
+		/* This is the first message to be received by the client. It contains
+		 * the client's software version on bytes 10-12, plus the username to
+		 * log in on bytes 13+ (zero terminated).
+		 */
+		case 1: { // [01 CONNECT]
+			valid = valid && (message[10] == VERSION_MAJOR_RELEASE);
+			valid = valid && (message[11] == VERSION_MINOR_RELEASE);
+			valid = valid && (message[12] == VERSION_MAJOR_PATCH);
+			if(!valid) { // [51 ERROR_CLIENT_COMPATIBILITY]
+				char response[] = {session_id, 0x51, 0x03, 0x00,
+						VERSION_MAJOR_RELEASE, VERSION_MINOR_RELEASE,
+						VERSION_MAJOR_PATCH};
+				pipe->push(response);
+				break;
+			}
+			valid = valid && ((user = new User(message+13)) != NULL);
+			if(!valid) { // [50 ERROR_AURHENTICATION]
+				char response[] = {session_id, 0x50, 0x00, 0x00};
+				pipe->push(response);
+				break;
+			}
+			/* OK, login was successful; send a response [12 ACCEPT_CONNECTION].
+			 * TODO send message of the day
+			 */
+			char response[] = {session_id, 0x12, 0x00, 0x00};
+			pipe->push(response);
 			break;
+		}
+
 		default:
 			game->process(message);
+			break;
 	}
 }
 
