@@ -13,6 +13,7 @@ Session::Session(int session_id, char const* ip, Pipe* pipe, Game* game)
 	this->pipe = pipe;
 	this->session_id = session_id;
 	this->game = game;
+	authenticated = false;
 
 	this->ip = new char[strlen(ip)+1]; // +1 for \0
 	strncpy(this->ip, ip, strlen(ip));
@@ -26,6 +27,18 @@ Session::Session(int session_id, char const* ip, Pipe* pipe, Game* game)
  */
 Session::~Session(void)
 {
+	/* In case the user is still logged in, log out:
+	 */
+	game->logout(session_id);
+
+	/* In case the user is still connected, disconnect:
+	 */
+	if(authenticated)
+		delete user;
+	authenticated = false;
+
+	/* Clean up:
+	 */
 	delete[] ip;
 }
 
@@ -70,7 +83,7 @@ Session::process(char const* message, size_t message_len)
 		 * the client's software version on bytes 10-12, plus the username to
 		 * log in on bytes 13+ (zero terminated).
 		 */
-		case 1: { // [01 CONNECT]
+		case 0x11: { // [11 CONNECT]
 			valid = valid && (message[10] == VERSION_MAJOR_RELEASE);
 			valid = valid && (message[11] == VERSION_MINOR_RELEASE);
 			valid = valid && (message[12] == VERSION_MAJOR_PATCH);
@@ -90,7 +103,21 @@ Session::process(char const* message, size_t message_len)
 			/* OK, login was successful; send a response [12 ACCEPT_CONNECTION].
 			 * TODO send message of the day
 			 */
-			char response[] = {session_id, 0x12, 0x00, 0x00};
+			authenticated = true;
+			char response[] = {session_id, 0x12, 0x05, 0x00, 'd','a','d','a',0};
+			pipe->push(response);
+			break;
+		}
+
+		/* This is the message received by the client to disconnect. There won't
+		 * be done anything here, but instead the destructor will handle
+		 * everything. The network handler is just alerted to destroy this
+		 * session.
+		 * This is the `eyva' variant to the zero-byte message to close a
+		 * connection:
+		 */
+		case 0x15: { // [15 DISCONNECT]
+			char response[] = {session_id, 0x01, 0x00, 0x00};
 			pipe->push(response);
 			break;
 		}

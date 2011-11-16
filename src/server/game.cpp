@@ -32,3 +32,17 @@ Game::process(char const* msg)
 	// TODO
 }
 
+/**
+ * This method logs out a character from the game.
+ * @param session_id The session ID of the user playing the character.
+ */
+void
+Game::logout(int session_id)
+{
+	for(size_t i = 0; i < characters.size(); i++)
+		if(characters[i]->getSessionID() == session_id) {
+			characters.erase(characters.begin()+i);
+		}
+}
+
+

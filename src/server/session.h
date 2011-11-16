@@ -31,10 +31,8 @@ Session
 		User* user;
 		int session_id;
 		char* ip;
-		bool authenticated;
 		int user_id;
-		bool logged_in;
-		int character_id;
+		bool authenticated;
 		char buffer[BUFFER_SIZE];
 };
 

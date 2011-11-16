@@ -47,6 +47,12 @@ Message definition:
     Currently implemented server-side.
 
 
+01  CLOSE - [internal]
+    This message is not sent over the network, but is used to tell the server
+    side network handler to close a session (typically sent by the session
+    itself).
+
+
 ===============================
 10-1F: connection/session level
 ===============================
@@ -83,7 +89,7 @@ Message definition:
 
 15  DISCONNECT - [client]
     The client will invoke a disconnection process at the server.
-    This is the `eyva' variante of a zero-byte message.
+    This is the `eyva' variant of a zero-byte message.
 
 
 16  REQUEST_CHARACTER_LIST - [client]
