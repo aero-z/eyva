@@ -36,9 +36,9 @@ XX  MESSAGE_NAME - [source]
 Message definition:
 
 
-===============================
-00-1F: connection/session level
-===============================
+===========
+00-0F: meta
+===========
 
 
 00  SHUTDOWN - [internal]
@@ -47,7 +47,12 @@ Message definition:
     Currently implemented server-side.
 
 
-01  CONNECT - [client]
+===============================
+10-1F: connection/session level
+===============================
+
+
+11  CONNECT - [client]
     This is the first message sent to the server. It's a connection
     request from the client containing all that is needed in a first step.
 
@@ -60,42 +65,32 @@ Message definition:
     - username (* bytes)
 
 
-02  ACCEPT_CONNECTION - [server]
-    After a [01 CONNECT], this is the server's answer to assure the client it
+12  ACCEPT_CONNECTION - [server]
+    After a [11 CONNECT], this is the server's answer to assure the client it
     has correctly been connected.
 
     BODY:
     - message of the day (* bytes)
 
 
-03  REQUEST_CLIENT_UPDATE - [server]
-    This is a possible answer to a client's connection request, if the client's
-    version number does not fulfill the requirements of the server.
-    No further login is possible until the client has been updated.
-
-    BODY:
-    - required version number - major release (1 byte)
-    - required version number - minor release (1 byte)
-    - required version number - patch (1 byte)
-
-
-04  KICK - [server]
+14  KICK - [server]
     If a server sends this, the client must consider itself "kicked out".
+    This is the `eyva' variant of a zero-byte message.
 
     BODY:
     - reason (* bytes)
 
 
-05  DISCONNECT - [client]
+15  DISCONNECT - [client]
     The client will invoke a disconnection process at the server.
-    This is the `eyva' alternative to the zero-byte message.
+    This is the `eyva' variante of a zero-byte message.
 
 
-06  REQUEST_CHARACTER_LIST - [client]
+16  REQUEST_CHARACTER_LIST - [client]
     A list of characters belonging to the user is requested.
 
 
-07  CHARACTER_LIST - [server]
+17  CHARACTER_LIST - [server]
     A list of characters belonging to the user who requested it is sent.
 
     BODY:
@@ -107,43 +102,39 @@ Message definition:
       + character level (1 byte)
 
 
-08  LOGIN - [client]
-    Log in as a character.
-
-    BODY:
-    - character id
-
-
-09  LOGOUT - [client]
-    Logout as a character (and thus leave the game).
-
-
-0A  FAIL - [server]
-    Indicates that the server has received a malformed message.
-
-
 ===================
 20-3F: ingame level
 ===================
 
 
-20  SEND_MOVE_UP - [client]
-21  SEND_MOVE_DOWN - [client]
-22  SEND_MOVE_LEFT - [client]
-23  SEND_MOVE_RIGHT - [client]
+20  LOGIN - [client]
+    Login as a character to the game.
+
+    BODY:
+    - character ID
+
+
+21  LOGOUT - [client]
+    Logout from the game.
+
+
+22  SEND_MOVE_UP - [client]
+23  SEND_MOVE_DOWN - [client]
+24  SEND_MOVE_LEFT - [client]
+25  SEND_MOVE_RIGHT - [client]
     Asks the server to move the character one step to north/south/west/east.
 
 
-24  ACTION - [client]
+26  ACTION - [client]
     Triggers an action on the field the character is placed on.
 
 
-25  REQUEST_MAP_INFORMATION - [client]
+27  REQUEST_MAP_INFORMATION - [client]
     Asks the server to send all information (map, players, objects, etc.).
     Usually invoked after logging in or changing region.
 
 
-26  MOVE [server]
+28  MOVE [server]
     Broadcasts in the same region that something has been moved.
 
     BODY:
@@ -155,7 +146,7 @@ Message definition:
     - yend (1 byte)
 
 
-27  MAP_INFORMATION - [server]
+29  MAP_INFORMATION - [server]
     If a character receives this message, it must consider itself as placed into
     a new region (e.g. after logging in or changing region).
     The client should erase all information about the region and replace it by
@@ -163,7 +154,7 @@ Message definition:
 
     BODY:
     - terrain layer (40*20=800 bytes)
-    - object layer (40*20=800 bytes)
+    - object layer (40*20*2=1600 bytes)
     - number of characters in region (2 bytes)
     - repeat:
       + character ID (2 bytes)
@@ -174,11 +165,11 @@ Message definition:
       + character y position (1 byte)
 
 
-28  REQUEST_OBJECT_LIST - [client]
+2A  REQUEST_OBJECT_LIST - [client]
     A list of objects belonging to one's character is requested.
 
       
-29  OBJECT_LIST - [server]
+2B  OBJECT_LIST - [server]
 
     BODY:
     - number of objects (2 bytes)
@@ -187,7 +178,7 @@ Message definition:
       + object type (1 byte)
 
 
-2A  USE_OBJECT - [client]
+2C  USE_OBJECT - [client]
     This will result in the server executing the message linked to that object.
 
     BODY:
@@ -212,4 +203,22 @@ Message definition:
     BODY:
     - character ID (2 bytes)
     - char message (* bytes)
+
+
+=============
+50-6F: errors
+=============
+
+
+50  ERROR_AUTHENTICATION - [server]
+    The login credentials that were sent by the client are not correct.
+
+
+51  ERROR_CLIENT_COMPATIBILITY - [server]
+    The login cannot be continiued due to client version incompatibility.
+
+    BODY:
+    - required version number - major release (1 byte)
+    - required version number - minor release (1 byte)
+    - required version number - major patch (1 byte)
 
