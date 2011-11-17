@@ -76,7 +76,6 @@ Session::process(char const* message, size_t message_len)
 	/* This is the part where the messages are checked and processed. It's quite
 	 * a long piece of code, maybe we can move this out to an external file:
 	 */
-	bool valid = true;
 	switch(message[1]) {
 
 		/* This is the first message to be received by the client. It contains
@@ -84,6 +83,7 @@ Session::process(char const* message, size_t message_len)
 		 * log in on bytes 13+ (zero terminated).
 		 */
 		case 0x11: { // [11 CONNECT]
+			bool valid = true;
 			valid = valid && (message[10] == VERSION_MAJOR_RELEASE);
 			valid = valid && (message[11] == VERSION_MINOR_RELEASE);
 			valid = valid && (message[12] == VERSION_MAJOR_PATCH);
@@ -119,6 +119,19 @@ Session::process(char const* message, size_t message_len)
 		case 0x15: { // [15 DISCONNECT]
 			char response[] = {session_id, 0x01, 0x00, 0x00};
 			pipe->push(response);
+			break;
+		}
+
+		/* This is a request for all characters belonging to a user. First check
+		 * if the client is correctly logged in before answering on that one:
+		 */
+		case 0x16: { // [16 REQUEST_CHARACTER_LIST]
+			if(!authenticated) { // [50 ERROR_AUTHENTICATION]
+				char response[] = {session_id, 0x50, 0x00, 0x00};
+				pipe->push(response);
+				break;
+			}
+			// TODO create message with character list
 			break;
 		}
 

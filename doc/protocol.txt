@@ -217,7 +217,9 @@ Message definition:
 
 
 50  ERROR_AUTHENTICATION - [server]
-    The login credentials that were sent by the client are not correct.
+    The login credentials that were sent by the client are not correct. This
+    message is also sent if any message is sent that requires authentication
+    before.
 
 
 51  ERROR_CLIENT_COMPATIBILITY - [server]
