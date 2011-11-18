@@ -13,10 +13,12 @@ Character
 		char const* getName(void);
 	
 	private:
-		int session_id;
-		int character_id;
 		char* name;
+		unsigned int session_id;
+		unsigned int character_id;
 		unsigned int level;
+		unsigned int tribe;
+		unsigned int value;
 };
 
 #endif
