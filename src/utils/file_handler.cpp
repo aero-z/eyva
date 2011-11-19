@@ -1,23 +1,25 @@
-#include "ayson.h"
+#include "file_handler.h"
 
 /**
  * This is probably the most generic method of this class.
- * It opens a file and writes each line to a given buffer.
+ * This method gets the content of a given file.
  * @param buffer The buffer where the file content shall be written to. Each
  *               element of the buffer vector corresponds to a line in the file.
  * @param path   The path to the file that shall be "dumped".
  * @return       The number of lines read.
  */
-size_t
-Ayson::getFileLines(std::vector<char*>* buffer, char const* path)
+FileHandler::FileHandler(size_t* size, char const* path)
 {
+	file_buffer.clear();
 	char content_buffer[FILE_BUFFER];
 
 	/* If the file does not exist or could not be read, break here:
 	 */
 	FILE* file;
-	if((file = fopen(path, "r")) == NULL)
-		return 0;
+	if((file = fopen(path, "r")) == NULL) {
+		size = 0;
+		return;
+	}
 	
 	/* Otherwise, start copying the whole file content to the temporary buffer,
 	 * and count:
@@ -31,26 +33,33 @@ Ayson::getFileLines(std::vector<char*>* buffer, char const* path)
 
 	/* Copy line per line to the buffer:
 	 */
-	unsigned int line_start = 0;
+	unsigned int line_begin = 0;
 	for(size_t i = 0; i < filesize; i++) {
 		/* If the current character is a newline, copy everything from the
 		 * beginning of the line to the current character - 1 (without newline)
 		 * to a newly created C string:
 		 */
 		if(content_buffer[i] == 10) {
-			char* line = new char[i-line_start]; // -1 for \n; +1 for \0
-			memcpy(line, content_buffer+line_start, i-line_start-1);
+			char* line = new char[i-line_begin]; // -1 for \n; +1 for \0
+			memcpy(line, content_buffer+line_begin, i-line_begin-1);
 			line[i] = 0; // terminate
-			buffer->push_back(line);
-			line_start = i+1; // update for next line
+			file_buffer.push_back(line);
+			line_begin = i+1; // update for next line
 		}
 	}
+}
 
-	return buffer->size();
+/**
+ * This method writes the buffer to the file.
+ */
+void
+FileHandler::save(void)
+{
+	// TODO
 }
 
 
-/* GETTERS */
+/* PUBLIC METHODS */
 
 
 /**
@@ -61,8 +70,9 @@ Ayson::getFileLines(std::vector<char*>* buffer, char const* path)
  * @return       The length of the name.
  */
 size_t
-Ayson::getName(char* buffer, char const* path, unsigned int id)
+FileHandler::getName(char* buffer, char const* path, unsigned int id)
 {
+	std::vector<char*> entry;
 	// TODO
 	return 0;
 }
@@ -75,7 +85,7 @@ Ayson::getName(char* buffer, char const* path, unsigned int id)
  * @return       The length of the message.
  */
 size_t
-Ayson::getEffect(char* buffer, char const* path, unsigned int id)
+FileHandler::getEffect(char* buffer, char const* path, unsigned int id)
 {
 	// TODO
 	return 0;
@@ -89,7 +99,7 @@ Ayson::getEffect(char* buffer, char const* path, unsigned int id)
  * @return       The length of the message.
  */
 size_t
-Ayson::getTrigger(char* buffer, char const* path, unsigned int id)
+FileHandler::getTrigger(char* buffer, char const* path, unsigned int id)
 {
 	// TODO
 	return 0;
@@ -103,7 +113,7 @@ Ayson::getTrigger(char* buffer, char const* path, unsigned int id)
  * @return       The length of the message.
  */
 size_t
-Ayson::getDescription(char* buffer, char const* path, unsigned int id)
+FileHandler::getDescription(char* buffer, char const* path, unsigned int id)
 {
 	// TODO
 	return 0;
@@ -116,7 +126,7 @@ Ayson::getDescription(char* buffer, char const* path, unsigned int id)
  * @return     The value of the "value" field.
  */
 unsigned int
-Ayson::getValue(char const* path, unsigned int id)
+FileHandler::getValue(char const* path, unsigned int id)
 {
 	// TODO
 	return 0;
@@ -129,7 +139,7 @@ Ayson::getValue(char const* path, unsigned int id)
  * @return     The value of the "level" field.
  */
 unsigned int
-Ayson::getLevel(char const* path, unsigned int id)
+FileHandler::getLevel(char const* path, unsigned int id)
 {
 	// TODO
 	return 0;
@@ -143,7 +153,7 @@ Ayson::getLevel(char const* path, unsigned int id)
  * @param id     The ID of the entry.
  */
 size_t
-Ayson::getInventory(std::vector<int>* buffer, char const* path, unsigned int id)
+FileHandler::getInventory(std::vector<int>* buffer, char const* path, unsigned int id)
 {
 	// TODO
 	return 0;
@@ -157,7 +167,7 @@ Ayson::getInventory(std::vector<int>* buffer, char const* path, unsigned int id)
  * @param id     The ID of the entry.
  */
 size_t
-Ayson::getCharacters(std::vector<int>* buffer, char const* path,
+FileHandler::getCharacters(std::vector<int>* buffer, char const* path,
 		unsigned int id)
 {
 	// TODO
@@ -171,7 +181,7 @@ Ayson::getCharacters(std::vector<int>* buffer, char const* path,
  * @return     The value of the "tribe" field.
  */
 unsigned int
-Ayson::getTribe(char const* path, unsigned int id)
+FileHandler::getTribe(char const* path, unsigned int id)
 {
 	// TODO
 	return false;
@@ -182,28 +192,28 @@ Ayson::getTribe(char const* path, unsigned int id)
 
 
 bool
-Ayson::setName(char const* path, char const* name, unsigned int id)
+FileHandler::setName(char const* path, char const* name, unsigned int id)
 {
 	// TODO
 	return false;
 }
 
 bool
-Ayson::setValue(char const* path, unsigned int value, unsigned int id)
+FileHandler::setValue(char const* path, unsigned int value, unsigned int id)
 {
 	// TODO
 	return false;
 }
 
 bool
-Ayson::setLevel(char const* path, unsigned int level, unsigned int id)
+FileHandler::setLevel(char const* path, unsigned int level, unsigned int id)
 {
 	// TODO
 	return false;
 }
 
 bool
-Ayson::setInventory(char const* path, const std::vector<int>* inventory,
+FileHandler::setInventory(char const* path, const std::vector<int>* inventory,
 		unsigned int id)
 {
 	// TODO
@@ -211,7 +221,7 @@ Ayson::setInventory(char const* path, const std::vector<int>* inventory,
 }
 
 bool
-Ayson::setCharacters(char const* path, const std::vector<int>* characters,
+FileHandler::setCharacters(char const* path, const std::vector<int>* characters,
 		unsigned int id)
 {
 	// TODO
@@ -219,16 +229,27 @@ Ayson::setCharacters(char const* path, const std::vector<int>* characters,
 }
 
 bool
-Ayson::addCharacter(char const* path)
+FileHandler::addCharacter(char const* path)
 {
 	// TODO
 	return false;
 }
 
 bool
-Ayson::setTribe(char const* path, unsigned int tribe, unsigned int id)
+FileHandler::setTribe(char const* path, unsigned int tribe, unsigned int id)
 {
 	// TODO
 	return false;
+}
+
+
+/* PRIVATE METHODS */
+
+
+size_t
+FileHandler::updateEntry(void)
+{
+	// TODO
+	return 0;
 }
 
