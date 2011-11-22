@@ -1,11 +1,11 @@
 # List of characters saved on this server.
 
 .start
-id|1
-name|Eriya
-tribe|1  #southern
-level|1
-value|13
-inventory|4|3|8|8|6
+id:1
+name:Eriya
+tribe:1  #southern
+level:1
+value:13
+inventory:4:3:8:8:6
 .end
 
