@@ -33,7 +33,7 @@ $(CLIENT_EXECUTABLE): $(CLIENT_HEADERS) $(HYBRID_HEADERS) $(CLIENT_OBJECTS)
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
 
-keymap:
+keymap: src/meta/keymap.cpp
 	g++ -lncurses src/meta/keymap.cpp -o keymap
 
 clean:
