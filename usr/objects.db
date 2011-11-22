@@ -1,0 +1,52 @@
+# Object database.
+# Please heed that the effect field will be interpreted as hex.
+
+.start
+title-en|"Small Refreshment"
+descr-en|"Use: You get back 1 life point."
+title-de|"Kleine Erfrischung"
+descr-de|"Benutzen: Erhalte 1 Lebenspunkt zurück."
+id|1
+persistent|0
+effect|$|0x30|0x01|0x00|0x01
+value|2
+.end
+
+.start
+title-en|"Swimming (Level 1)"
+descr-en|"You are able to swim in riverbanks."
+title-de|"Schwimmen (Stufe 1)"
+descr-de|"Ermöglicht das Schwimmen in seichtem Wasser (Fluss- und Seeufer)."
+id|2
+persistent|1
+.end
+
+.start
+title-en|"Swimming (Level 2)"
+descr-en|"You are able to swim in deep water, without inventory and/or gear."
+title-de|"Schwimmen (Stufe 2)"
+descr-de|"Ermöglicht das Schwimmen in tiefem Wasser (Inventar und Rüstung wird abgeworfen."
+id|3
+persistent|1
+.end
+
+.start
+title-en|"Spirit of Gaara"
+descr-en|"You are able to swim in deep water."
+title-de|"Geist von Gaara"
+descr-de|"Ermöglicht das Schwimmen in tiefem Wasser."
+id|4
+persistent|1
+.end
+
+.start
+title-en|"Brick"
+descr-en|"Use: Causes 1 damage to target opponent."
+title-de|"Ziegelstein"
+descr-de|"Benutzen: Fügt dem Gegner 1 Schaden zu."
+id|5
+value|5
+effect|@|0x31|0x01|0x00|0x01
+persistent|0
+.end
+
