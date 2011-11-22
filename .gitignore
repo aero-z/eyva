@@ -2,7 +2,8 @@
 *.o
 eserver
 eclient
-test
+etest
 keymap
 hist/eyva_0.1d1
 valgrind.log
+

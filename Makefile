@@ -23,7 +23,7 @@ TEST_OBJECTS = $(TEST_SOURCES:.cpp=.o) $(HYBRID_SOURCES:.cpp=.o)
 
 SERVER_EXECUTABLE = eserver
 CLIENT_EXECUTABLE = eclient
-TEST_EXECUTABLE = test
+TEST_EXECUTABLE = etest
 
 SHELL = /bin/bash
 

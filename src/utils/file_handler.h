@@ -21,7 +21,7 @@ class
 FileHandler
 {
 	public:
-		FileHandler(char const* path);
+		FileHandler(char const* path, bool* flag);
 		~FileHandler(void);
 		void save(void);
 	
@@ -46,10 +46,12 @@ FileHandler
 		int addCharacter(void);
 	
 	private:
-		size_t updateEntry(void);
+		size_t updateEntry(int id);
+		size_t tokenize(char const* key, int id);
 
 		std::vector<char*> file_buffer;
 		std::vector<char*> entry_buffer;
+		std::vector<char*> line_buffer; // tokenized
 		char* path;
 		int id;
 };
