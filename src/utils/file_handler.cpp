@@ -50,6 +50,14 @@ FileHandler::FileHandler(size_t* size, char const* path)
 }
 
 /**
+ * Destructor.
+ */
+FileHandler::~FileHandler(void)
+{
+	save();
+}
+
+/**
  * This method writes the buffer to the file.
  */
 void
@@ -60,6 +68,9 @@ FileHandler::save(void)
 
 
 /* PUBLIC METHODS */
+
+
+/* GETTERS */
 
 
 /**
@@ -249,7 +260,33 @@ FileHandler::setTribe(char const* path, unsigned int tribe, unsigned int id)
 size_t
 FileHandler::updateEntry(void)
 {
-	// TODO
+	/* Go through all the lines in the file content buffer and check for an
+	 * entry start (marked with ".start"):
+	 */
+	for(size_t file_line = 0; file_line < file_buffer.size(); file_line++) {
+		/* If an entry starts here, search for the "id" field, cycling through
+		 * all lines until a ".end" occurs:
+		 */
+		if(strcmp(file_buffer[file_line], ".start") == 0) {
+			for(size_t entry_line = file_line;
+					strcmp(file_buffer[entry_line], ".end")==0; entry_line++) {
+				/* If the "id" field was found, get the value and compare to the
+				 * required value.
+				 * TODO use the strtok() function
+				 */
+				if(strstr(file_buffer[entry_line], "id:")
+						== file_buffer[entry_line]) {
+					/* If the ID is correct, store all lines to the entry_buffer
+					 * and return the number of lines:
+					 */
+					// TODO
+					/* Otherwise, skip the rest of the entry and go on:
+					 */
+					// TODO
+				}
+			}
+		}
+	}
 	return 0;
 }
 
