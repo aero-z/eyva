@@ -2,10 +2,8 @@
 
 .start
 id:1
-title-en:"Small Refreshment"
-descr-en:"Use: You get back 1 life point."
-title-de:"Kleine Erfrischung"
-descr-de:"Benutzen: Erhalte 1 Lebenspunkt zurück."
+name:"Small Refreshment"
+rules:"Use: You get back 1 life point."
 persistent:0
 effect:$:0x30:0x01:0x00:0x01  # TODO define message
 value:2
@@ -13,29 +11,23 @@ value:2
 
 .start
 id:2
-title-en:"Swimming (Level 1)"
-descr-en:"You are able to swim in riverbanks."
-title-de:"Schwimmen (Stufe 1)"
-descr-de:"Ermöglicht das Schwimmen in seichtem Wasser (Fluss- und Seeufer)."
+name:"Swimming (Level 1)"
+rules:"You are able to swim in riverbanks."
 persistent:1
 .end
 
 .start
 id:3
-title-en:"Swimming (Level 2)"
-descr-en:"You are able to swim in deep water, without inventory and/or gear."
-title-de:"Schwimmen (Stufe 2)"
-descr-de:"Ermöglicht das Schwimmen in tiefem Wasser (Inventar und Rüstung wird abgeworfen."
+name:"Swimming (Level 2)"
+rules:"You are able to swim in deep water, without inventory and/or gear."
 persistent:1
 .end
 
 .start
 id:4
 persistent:1
-title-en:"Spirit of Gaara"
-descr-en:"You are able to swim in deep water."
-title-de:"Geist von Gaara"
-descr-de:"Ermöglicht das Schwimmen in tiefem Wasser."
+name:"Spirit of Gaara"
+rules:"You are able to swim in deep water."
 .end
 
 .start
@@ -43,18 +35,14 @@ id:5
 effect:@:0x31:0x01:0x00:0x01  # TODO define message
 persistent:0
 value:5
-title-en:"Brick"
-descr-en:"Use: Causes 1 damage to target opponent."
-title-de:"Ziegelstein"
-descr-de:"Benutzen: Fügt dem Gegner 1 Schaden zu."
+name:"Brick"
+rules:"Use: Causes 1 damage to target opponent."
 .end
 
 .start
 id:6
 trigger:$:0x32:0x01:0x00:@  # TODO define message
-title-en:"Ladder"
-descr-en:"Brings you to the next higher layer."
-title-de:"Leiter"
-descr-de:"Bringt dich auf die nächsthöhere Ebene."
+name:"Ladder"
+rules:"Brings you to the next higher layer."
 .end
 
