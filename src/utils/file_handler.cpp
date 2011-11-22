@@ -12,6 +12,7 @@ FileHandler::FileHandler(size_t* size, char const* path)
 {
 	file_buffer.clear();
 	char content_buffer[FILE_BUFFER];
+	id = 0;
 
 	/* If the file does not exist or could not be read, break here:
 	 */
@@ -83,7 +84,6 @@ FileHandler::save(void)
 size_t
 FileHandler::getName(char* buffer, char const* path, unsigned int id)
 {
-	std::vector<char*> entry;
 	// TODO
 	return 0;
 }
@@ -257,36 +257,48 @@ FileHandler::setTribe(char const* path, unsigned int tribe, unsigned int id)
 /* PRIVATE METHODS */
 
 
+/**
+ * This method copies all lines of the entry defined by the "id" value to the
+ * entry buffer.
+ * @return The number of lines copied, 0 if the entry has not been found.
+ */
 size_t
 FileHandler::updateEntry(void)
 {
-	/* Go through all the lines in the file content buffer and check for an
-	 * entry start (marked with ".start"):
+	bool found = false;
+	size_t entry_start = 0, entry_end = 0;
+
+	/* Go through all the lines in the file content buffer while nothing has
+	 * been found:
 	 */
-	for(size_t file_line = 0; file_line < file_buffer.size(); file_line++) {
-		/* If an entry starts here, search for the "id" field, cycling through
-		 * all lines until a ".end" occurs:
+	for(size_t file_line = 0; file_line < file_buffer.size() && !found;
+			file_line++) {
+		/* If an entry starts here, mark this line as the entry start:
 		 */
-		if(strcmp(file_buffer[file_line], ".start") == 0) {
-			for(size_t entry_line = file_line;
-					strcmp(file_buffer[entry_line], ".end")==0; entry_line++) {
-				/* If the "id" field was found, get the value and compare to the
-				 * required value.
-				 * TODO use the strtok() function
+		if(strcmp(file_buffer[file_line], ".start") == 0)
+			entry_start = file_line;
+
+		/* If an entry ends here, mark this line as end and search every line
+		 * from the start line to the end line for the "id" entry:
+		 */
+		if(strcmp(file_buffer[file_line], ".end") == 0) {
+			entry_end = file_line;
+
+			for(size_t i = entry_start+1; i < entry_end; i++) {
+				/* If the searched entry has been found, copy all lines in the
+				 * entry's area to the entry buffer and set the "found" flag:
 				 */
-				if(strstr(file_buffer[entry_line], "id:")
-						== file_buffer[entry_line]) {
-					/* If the ID is correct, store all lines to the entry_buffer
-					 * and return the number of lines:
-					 */
-					// TODO
-					/* Otherwise, skip the rest of the entry and go on:
-					 */
-					// TODO
+				if(strstr(file_buffer[i], "id|") == 0
+						&& aton(file_buffer[i]+3, 10) == id) {
+					entry_buffer.clear();
+					for(size_t j = entry_start+1; j < entry_end; j++)
+						entry_buffer.push_back(file_buffer[j]);
+					found = true;
+					break;
 				}
 			}
 		}
 	}
-	return 0;
+	return found ? entry_buffer.size() : 0;
 }
 

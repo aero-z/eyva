@@ -5,6 +5,10 @@
  */
 #define FILE_BUFFER 16777216
 
+// Utils:
+#include <utils/ayestring.h>
+
+// Others:
 #include <vector>
 #include <cstring>
 #include <cstdio>
@@ -51,7 +55,7 @@ FileHandler
 		std::vector<char*> file_buffer;
 		std::vector<char*> entry_buffer;
 		char* path;
-		unsigned int id;
+		int id;
 };
 
 #endif
