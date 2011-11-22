@@ -1,15 +1,15 @@
 #include "file_handler.h"
 
 /**
- * This is probably the most generic method of this class.
- * This method gets the content of a given file.
- * @param buffer The buffer where the file content shall be written to. Each
- *               element of the buffer vector corresponds to a line in the file.
- * @param path   The path to the file that shall be "dumped".
- * @return       The number of lines read.
+ * Constructor.
+ * Gets the content of a given file.
+ * @param path  The path to the file that shall be "dumped".
  */
-FileHandler::FileHandler(size_t* size, char const* path)
+FileHandler::FileHandler(char const* path)
 {
+	this->path = new char[strlen(path)+1];
+	strcpy(this->path, path);
+
 	file_buffer.clear();
 	char content_buffer[FILE_BUFFER];
 	id = 0;
@@ -18,32 +18,38 @@ FileHandler::FileHandler(size_t* size, char const* path)
 	 */
 	FILE* file;
 	if((file = fopen(path, "r")) == NULL) {
-		size = 0;
 		return;
 	}
 	
-	/* Otherwise, start copying the whole file content to the temporary buffer,
-	 * and count:
+	/* Otherwise, start copying the whole file content to the temporary buffer:
 	 */
-	size_t filesize = 0;
-	while(!feof(file)) {
-		fgets(content_buffer, FILE_BUFFER, file);
-		filesize++;
+	int filesize;
+	for(filesize = 0; filesize < FILE_BUFFER; filesize++) {
+		content_buffer[filesize] = fgetc(file);
+
+		/* If the end of file was reached, replace it by a terminating \0 and
+		 * quit copying:
+		 */
+		if(content_buffer[filesize] == EOF) {
+			content_buffer[filesize] = 0;
+			break;
+		}
 	}
 	fclose(file);
 
 	/* Copy line per line to the buffer:
 	 */
 	unsigned int line_begin = 0;
-	for(size_t i = 0; i < filesize; i++) {
+	for(int i = 0; i < filesize; i++) {
 		/* If the current character is a newline, copy everything from the
 		 * beginning of the line to the current character - 1 (without newline)
 		 * to a newly created C string:
 		 */
 		if(content_buffer[i] == 10) {
-			char* line = new char[i-line_begin]; // -1 for \n; +1 for \0
-			memcpy(line, content_buffer+line_begin, i-line_begin-1);
-			line[i] = 0; // terminate
+			int line_size = i-line_begin; // without \n
+			char* line = new char[line_size+1]; // +1 for \0
+			strncpy(line, content_buffer+line_begin, line_size);
+			line[line_size] = 0; // terminate
 			file_buffer.push_back(line);
 			line_begin = i+1; // update for next line
 		}
@@ -79,12 +85,25 @@ FileHandler::save(void)
  * @param buffer The buffer where the name shall be written to.
  * @param path   The path of the file that shall be searched.
  * @param id     The ID of the entry.
- * @return       The length of the name.
+ * @return       The length of the name. 0 if the name could not be found.
  */
 size_t
-FileHandler::getName(char* buffer, char const* path, unsigned int id)
+FileHandler::getName(char* buffer, int id)
 {
-	// TODO
+	if(this->id != id) {
+		this->id = id;
+		updateEntry();
+	}
+
+	/* Get the "name" entry:
+	 */
+	for(size_t line = 0; line < entry_buffer.size(); line++) {
+		if(strncmp(entry_buffer[line], "name|", 5) == 0) {
+			strcpy(buffer, entry_buffer[line]+5);
+			return strlen(buffer);
+		}
+	}
+
 	return 0;
 }
 
@@ -96,7 +115,7 @@ FileHandler::getName(char* buffer, char const* path, unsigned int id)
  * @return       The length of the message.
  */
 size_t
-FileHandler::getEffect(char* buffer, char const* path, unsigned int id)
+FileHandler::getEffect(char* buffer, int id)
 {
 	// TODO
 	return 0;
@@ -110,7 +129,7 @@ FileHandler::getEffect(char* buffer, char const* path, unsigned int id)
  * @return       The length of the message.
  */
 size_t
-FileHandler::getTrigger(char* buffer, char const* path, unsigned int id)
+FileHandler::getTrigger(char* buffer, int id)
 {
 	// TODO
 	return 0;
@@ -124,7 +143,7 @@ FileHandler::getTrigger(char* buffer, char const* path, unsigned int id)
  * @return       The length of the message.
  */
 size_t
-FileHandler::getDescription(char* buffer, char const* path, unsigned int id)
+FileHandler::getDescription(char* buffer, int id)
 {
 	// TODO
 	return 0;
@@ -136,8 +155,8 @@ FileHandler::getDescription(char* buffer, char const* path, unsigned int id)
  * @param id   The ID of the entry.
  * @return     The value of the "value" field.
  */
-unsigned int
-FileHandler::getValue(char const* path, unsigned int id)
+int
+FileHandler::getValue(int id)
 {
 	// TODO
 	return 0;
@@ -149,8 +168,8 @@ FileHandler::getValue(char const* path, unsigned int id)
  * @param id   The ID of the entry.
  * @return     The value of the "level" field.
  */
-unsigned int
-FileHandler::getLevel(char const* path, unsigned int id)
+int
+FileHandler::getLevel(int id)
 {
 	// TODO
 	return 0;
@@ -164,7 +183,7 @@ FileHandler::getLevel(char const* path, unsigned int id)
  * @param id     The ID of the entry.
  */
 size_t
-FileHandler::getInventory(std::vector<int>* buffer, char const* path, unsigned int id)
+FileHandler::getInventory(std::vector<int>* buffer, int id)
 {
 	// TODO
 	return 0;
@@ -178,8 +197,7 @@ FileHandler::getInventory(std::vector<int>* buffer, char const* path, unsigned i
  * @param id     The ID of the entry.
  */
 size_t
-FileHandler::getCharacters(std::vector<int>* buffer, char const* path,
-		unsigned int id)
+FileHandler::getCharacters(std::vector<int>* buffer, int id)
 {
 	// TODO
 	return 0;
@@ -191,8 +209,8 @@ FileHandler::getCharacters(std::vector<int>* buffer, char const* path,
  * @param id   The ID of the entry.
  * @return     The value of the "tribe" field.
  */
-unsigned int
-FileHandler::getTribe(char const* path, unsigned int id)
+int
+FileHandler::getTribe(int id)
 {
 	// TODO
 	return false;
@@ -203,51 +221,51 @@ FileHandler::getTribe(char const* path, unsigned int id)
 
 
 bool
-FileHandler::setName(char const* path, char const* name, unsigned int id)
+FileHandler::setName(char const* name, int id)
 {
 	// TODO
 	return false;
 }
 
 bool
-FileHandler::setValue(char const* path, unsigned int value, unsigned int id)
+FileHandler::setValue(int value, int id)
 {
 	// TODO
 	return false;
 }
 
 bool
-FileHandler::setLevel(char const* path, unsigned int level, unsigned int id)
+FileHandler::setLevel(int level, int id)
 {
 	// TODO
 	return false;
 }
 
 bool
-FileHandler::setInventory(char const* path, const std::vector<int>* inventory,
-		unsigned int id)
+FileHandler::setInventory(const std::vector<int>* inventory,
+		int id)
 {
 	// TODO
 	return false;
 }
 
 bool
-FileHandler::setCharacters(char const* path, const std::vector<int>* characters,
-		unsigned int id)
+FileHandler::setCharacters(const std::vector<int>* characters,
+		int id)
 {
 	// TODO
 	return false;
 }
 
-bool
-FileHandler::addCharacter(char const* path)
+int
+FileHandler::addCharacter(void)
 {
 	// TODO
-	return false;
+	return 0;
 }
 
 bool
-FileHandler::setTribe(char const* path, unsigned int tribe, unsigned int id)
+FileHandler::setTribe(int tribe, int id)
 {
 	// TODO
 	return false;
@@ -275,8 +293,9 @@ FileHandler::updateEntry(void)
 			file_line++) {
 		/* If an entry starts here, mark this line as the entry start:
 		 */
-		if(strcmp(file_buffer[file_line], ".start") == 0)
+		if(strcmp(file_buffer[file_line], ".start") == 0) {
 			entry_start = file_line;
+		}
 
 		/* If an entry ends here, mark this line as end and search every line
 		 * from the start line to the end line for the "id" entry:
@@ -288,7 +307,7 @@ FileHandler::updateEntry(void)
 				/* If the searched entry has been found, copy all lines in the
 				 * entry's area to the entry buffer and set the "found" flag:
 				 */
-				if(strstr(file_buffer[i], "id|") == 0
+				if(strstr(file_buffer[i], "id|") == file_buffer[i]
 						&& aton(file_buffer[i]+3, 10) == id) {
 					entry_buffer.clear();
 					for(size_t j = entry_start+1; j < entry_end; j++)
