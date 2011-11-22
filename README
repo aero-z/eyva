@@ -21,10 +21,6 @@ Introduction:
 Requirements:
 
     * ncurses
-    * GNU make
-    * OS:
-      - GNU/Linux (tested on Arch Linux)
-      - Mac OS X (tested on 10.6)
 
 
 Compile:
