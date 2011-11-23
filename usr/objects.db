@@ -5,7 +5,7 @@ id:1
 name:"Small Refreshment"
 rules:"Use: You get back 1 life point."
 persistent:0
-effect:$:0x30:0x01:0x00:0x01  # TODO define message
+effect:[1]:0x30:0x01:0x00:0x01
 value:2
 .end
 
@@ -32,17 +32,10 @@ rules:"You are able to swim in deep water."
 
 .start
 id:5
-effect:@:0x31:0x01:0x00:0x01  # TODO define message
+effect:[1]:0x31:0x01:0x00:0x01:[2]
 persistent:0
 value:5
 name:"Brick"
 rules:"Use: Causes 1 damage to target opponent."
-.end
-
-.start
-id:6
-trigger:$:0x32:0x01:0x00:@  # TODO define message
-name:"Ladder"
-rules:"Brings you to the next higher layer."
 .end
 

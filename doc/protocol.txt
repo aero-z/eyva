@@ -145,7 +145,7 @@ Message definition:
 
     BODY:
     - layer type (1 byte) (character, object, terrain)
-    - id (1 byte)
+    - ID (1 byte)
     - xstart (1 byte)
     - ystart (1 byte)
     - xend (1 byte)
@@ -159,11 +159,16 @@ Message definition:
     the newly received data.
 
     BODY:
-    - terrain layer (40*20=800 bytes)
-    - object layer (40*20*2=1600 bytes)
-    - number of characters in region (2 bytes)
+    - terrain width (1 byte)
+    - terrain height (1 byte)
+    - terrain layer (bytes according to values above)
+    - number of objects in region (1 byte)
+      + object ID (1 byte)
+      + object x position (1 byte)
+      + object y position (1 byte)
+    - number of characters in region (1 byte)
     - repeat:
-      + character ID (2 bytes)
+      + character ID (1 byte)
       + character name (* bytes)
       + character class (1 byte)
       + character level (1 byte)
@@ -180,7 +185,7 @@ Message definition:
     BODY:
     - number of objects (2 bytes)
     - repeat:
-      + object ID (2 bytes)
+      + object ID (1 bytes)
       + object type (1 byte)
 
 
@@ -188,7 +193,29 @@ Message definition:
     This will result in the server executing the message linked to that object.
 
     BODY:
-    - object ID (2 bytes)
+    - object ID (1 bytes)
+
+30  GAIN_LIFE - [server]
+    A player will gain an amount of lifepoints.
+
+    BODY:
+    - lifepoints (1 byte)
+
+
+31  DAMAGE - [server]
+    A player will lose an amount of lifepoints by damage caused by a source.
+    
+    BODY:
+    - lifepoints (1 byte)
+    - ID of source (1 byte)
+
+
+32  LOSE_LIFE - [server]
+    A player will lose an amount of lifepoints because of a reason (e.g. fire).
+
+    BODY:
+    - lifepoints (1 byte)
+    - reason type (1 byte)
 
 
 ===============================

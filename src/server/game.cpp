@@ -8,6 +8,7 @@
 Game::Game(Pipe* pipe)
 {
 	this->pipe = pipe;
+	// TODO
 }
 
 /**
