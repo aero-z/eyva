@@ -10,6 +10,7 @@ User::User(char const* name)
 	this->name = new char[strlen(name)+1]; // +1 for \0
 	strcpy(this->name, name);
 
+	FileHandler fh("usr/users.db");
 	// TODO read save file for information generation
 }
 

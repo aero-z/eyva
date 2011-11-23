@@ -16,10 +16,7 @@ Session::Session(int session_id, char const* ip, Pipe* pipe, Game* game)
 	authenticated = false;
 
 	this->ip = new char[strlen(ip)+1]; // +1 for \0
-	strncpy(this->ip, ip, strlen(ip));
-	this->ip[strlen(ip)] = 0; // terminate (strncpy doesn't do that...)
-
-	//logf(LOG_DEBUG, "> %s: new session on socket %d", ip, id);
+	strcpy(this->ip, ip);
 }
 
 /**
@@ -59,6 +56,7 @@ Session::process(char const* message, size_t message_len)
 	 */
 	if(message_len == 3 && message[0] == ':' && message[1] == 'q'
 			&& message[2] == 10) {
+		logf(LOG_DEBUG, ":q");
 		char response[] = {0x00, 0x00, 0x00, 0x00};
 		pipe->push(response);
 		return;
@@ -68,6 +66,7 @@ Session::process(char const* message, size_t message_len)
 	 * message, send a [0A FAIL] message back:
 	 */
 	if(msglen(message) != message_len) {
+		logf(LOG_DEBUG, "%u instead of %u", message_len, msglen(message));
 		char response[] = {session_id, 0x0A, 0x00, 0x00};
 		pipe->push(response);
 		return;
@@ -77,12 +76,12 @@ Session::process(char const* message, size_t message_len)
 	 * a long piece of code, maybe we can move this out to an external file:
 	 */
 	switch(message[1]) {
-
 		/* This is the first message to be received by the client. It contains
 		 * the client's software version on bytes 10-12, plus the username to
 		 * log in on bytes 13+ (zero terminated).
 		 */
-		case 0x11: { // [11 CONNECT]
+		case 0x11: {
+			logf(LOG_DEBUG, "[11 CONNECT]");
 			bool valid = true;
 			valid = valid && (message[10] == VERSION_MAJOR_RELEASE);
 			valid = valid && (message[11] == VERSION_MINOR_RELEASE);
@@ -116,7 +115,8 @@ Session::process(char const* message, size_t message_len)
 		 * This is the `eyva' variant to the zero-byte message to close a
 		 * connection:
 		 */
-		case 0x15: { // [15 DISCONNECT]
+		case 0x15: {
+			logf(LOG_DEBUG, "[15 DISCONNECT]");
 			char response[] = {session_id, 0x01, 0x00, 0x00};
 			pipe->push(response);
 			break;
@@ -125,7 +125,8 @@ Session::process(char const* message, size_t message_len)
 		/* This is a request for all characters belonging to a user. First check
 		 * if the client is correctly logged in before answering on that one:
 		 */
-		case 0x16: { // [16 REQUEST_CHARACTER_LIST]
+		case 0x16: {
+			logf(LOG_DEBUG, "[16 REQUEST_CHARACTER_LIST]");
 			if(!authenticated) { // [50 ERROR_AUTHENTICATION]
 				char response[] = {session_id, 0x50, 0x00, 0x00};
 				pipe->push(response);
