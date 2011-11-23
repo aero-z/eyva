@@ -34,7 +34,7 @@ Execute:
     * `eserver' will listen to port 1251. You may use `netcat' to send and
       receive data.
     * `eclient' is currently just a UI without any functionality. It can be
-      killed with ^C.
+      stopped by the command ":q".
 
 
 Bugs:

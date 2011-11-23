@@ -26,10 +26,10 @@ FileHandler
 		void save(void);
 	
 		/* GETTERS */
-		size_t getName(char* buffer, int id);
-		size_t getEffect(char* buffer, int id);
-		size_t getTrigger(char* buffer, int id);
-		size_t getDescription(char* buffer, int id);
+		size_t getName(char* buffer, int id, size_t len);
+		size_t getEffect(char* buffer, int id, size_t len);
+		size_t getTrigger(char* buffer, int id, size_t len);
+		size_t getRules(char* buffer, int id, size_t len);
 		int getValue(int id);
 		int getLevel(int id);
 		int getTribe(int id);

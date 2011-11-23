@@ -3,12 +3,18 @@
 #this is the admin user:
 .start
 id:1
-name:admin
+name:"admin"
 .end
 
 .start
 id:2
-name:ayekat
+name:"ayekat"
 characters:1:3
+.end
+
+.start
+id:3
+name:"about:blank"
+characters:2
 .end
 

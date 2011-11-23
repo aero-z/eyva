@@ -86,32 +86,38 @@ FileHandler::save(void)
  * This method gets the "name" field of a given ID from a given file.
  * @param buffer The buffer where the name shall be written to.
  * @param id     The ID of the entry.
- * @return       The length of the name. 0 if not found.
+ * @param len    The buffer length.
+ * @return       The length of the name (may be larger than the copied length if
+ *               the buffer was too small). 0 if not found.
  */
 size_t
-FileHandler::getName(char* buffer, int id)
+FileHandler::getName(char* buffer, int id, size_t len)
 {
-	/* Tokenize the line with the "name" keyword:
-	 */
 	if(tokenize("name", id) > 1) {
-		strcpy(buffer, line_buffer[1]);
-		return strlen(buffer);
-	} else
-		return 0;
+		memcpy(buffer, line_buffer[1]+1, len); // skip '"'
+		buffer[strlen(line_buffer[1])-2] = 0; // replace '"' by \0
+		return strlen(line_buffer[1])-2;
+	}
+	return 0;
 }
 
 /**
  * This method gets the "effect" field of a given ID from a given file.
  * @param buffer The buffer where the effect message shall be written to.
  * @param id     The ID of the entry.
- * @return       The length of the message. 0 if not found.
+ * @param len    The buffer length.
+ * @return       The length of the message (may be larger than the copied length
+ *               if the buffer was too small). 0 if not found.
  */
 size_t
-FileHandler::getEffect(char* buffer, int id)
+FileHandler::getEffect(char* buffer, int id, size_t len)
 {
-	updateEntry(id);
-
-	// TODO
+	if(tokenize("effect", id) > 1) {
+		for(size_t i = 1; i < line_buffer.size() && i <= len; i++) {
+			buffer[i-1] = aton(line_buffer[i], 16)%256;
+		}
+		return line_buffer.size()-1;
+	}
 	return 0;
 }
 
@@ -119,25 +125,38 @@ FileHandler::getEffect(char* buffer, int id)
  * This method gets the "trigger" field of a given ID from a given file.
  * @param buffer The buffer where the triggering message shall be written to.
  * @param id     The ID of the entry.
- * @return       The length of the message. 0 if not found.
+ * @param len    The buffer length.
+ * @return       The length of the message (may be larger than the copied length
+ *               if the buffer was too small). 0 if not found.
  */
 size_t
-FileHandler::getTrigger(char* buffer, int id)
+FileHandler::getTrigger(char* buffer, int id, size_t len)
 {
-	// TODO
+	if(tokenize("trigger", id) > 1) {
+		for(size_t i = 1; i < line_buffer.size() && i <= len; i++) {
+			buffer[i-1] = aton(line_buffer[i], 16)%256;
+		}
+		return line_buffer.size()-1;
+	}
 	return 0;
 }
 
 /**
- * This method gets the "description" field of a given ID from a given file.
+ * This method gets the "rules" field of a given ID from a given file.
  * @param buffer The buffer where the description shall be written to.
  * @param id     The ID of the entry.
- * @return       The length of the description. 0 if not found.
+ * @param len    The buffer length.
+ * @return       The length of the rules (may be larger than the copied length
+ *               if the buffer was too small). 0 if not found.
  */
 size_t
-FileHandler::getDescription(char* buffer, int id)
+FileHandler::getRules(char* buffer, int id, size_t len)
 {
-	// TODO
+	if(tokenize("rules", id) > 1) {
+		memcpy(buffer, line_buffer[1]+1, len); // skip '"'
+		buffer[strlen(line_buffer[1])-2] = 0; // replace '"' by \0
+		return strlen(line_buffer[1])-2;
+	}
 	return 0;
 }
 
@@ -149,7 +168,9 @@ FileHandler::getDescription(char* buffer, int id)
 int
 FileHandler::getValue(int id)
 {
-	// TODO
+	if(tokenize("value", id) > 1) {
+		return aton(line_buffer[1], 10);
+	}
 	return 0;
 }
 
@@ -161,7 +182,9 @@ FileHandler::getValue(int id)
 int
 FileHandler::getLevel(int id)
 {
-	// TODO
+	if(tokenize("level", id) > 1) {
+		return aton(line_buffer[1], 10);
+	}
 	return 0;
 }
 
@@ -173,7 +196,9 @@ FileHandler::getLevel(int id)
 int
 FileHandler::getTribe(int id)
 {
-	// TODO
+	if(tokenize("tribe", id) > 1) {
+		return aton(line_buffer[1], 10);
+	}
 	return false;
 }
 
@@ -187,7 +212,13 @@ FileHandler::getTribe(int id)
 size_t
 FileHandler::getInventory(std::vector<int>* buffer, int id)
 {
-	// TODO
+	if(tokenize("inventory", id) > 1) {
+		buffer->clear();
+		for(size_t i = 1; i < line_buffer.size(); i++) {
+			buffer->push_back(aton(line_buffer[i], 10));
+		}
+		return line_buffer.size()-1;
+	}
 	return 0;
 }
 
@@ -201,7 +232,13 @@ FileHandler::getInventory(std::vector<int>* buffer, int id)
 size_t
 FileHandler::getCharacters(std::vector<int>* buffer, int id)
 {
-	// TODO
+	if(tokenize("characters", id) > 1) {
+		buffer->clear();
+		for(size_t i = 1; i < line_buffer.size(); i++) {
+			buffer->push_back(aton(line_buffer[i], 10));
+		}
+		return line_buffer.size()-1;
+	}
 	return 0;
 }
 
