@@ -13,6 +13,7 @@
 #include <utils/ayelog.h>
 #include <utils/exception.h>
 #include <utils/ayestring.h>
+#include <utils/file_handler.h>
 
 // Network headers:
 #include <sys/types.h>  // socket types
@@ -64,6 +65,7 @@ Network
 
 		Game* game;
 		Pipe* pipe;
+		FileHandler* user_savefile;
 		std::map<int, Session*> sessions;
 		std::map<int, Session*>::iterator it; // iterator for the sessions map
 		int sockc;                            // connection socket

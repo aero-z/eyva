@@ -18,12 +18,13 @@ main(int argc, char** argv)
 	AyeLog::log_verbosity = 3; // debug log
 
 	try {
-		AyeLog::logf(LOG_DEBUG, "creating socket on port %d", port);
+		AyeLog::logf(LOG_NORMAL, "creating socket on port %d ...", port);
 		network = new Network(port);
 	} catch(Exception* e) {
 		AyeLog::logf(LOG_ERROR, "%s", e->str());
 		return -1;
 	}
+	AyeLog::logf(LOG_NORMAL, "running");
 
 	/* Loop:
 	 */

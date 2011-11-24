@@ -11,6 +11,8 @@
 
 // Utils:
 #include <utils/ayelog.h>
+#include <utils/file_handler.h>
+#include <utils/exception.h>
 
 // Others:
 #include <cstring>
@@ -19,7 +21,8 @@ class
 Session
 {
 	public:
-		Session(int session_id, char const* ip, Pipe* pipe, Game* game);
+		Session(int session_id, char const* ip, Pipe* pipe, Game* game,
+				FileHandler* file_handler);
 		~Session(void);
 		void process(char const* message, size_t message_len);
 		char const* getIP(void);
@@ -29,6 +32,7 @@ Session
 		Pipe* pipe;
 		Game* game;
 		User* user;
+		FileHandler* user_savefile;
 		int session_id;
 		char* ip;
 		int user_id;

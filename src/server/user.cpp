@@ -5,13 +5,20 @@
  * @param name The user's name that will be used to get the necessary
  * information from the users' savefile.
  */
-User::User(char const* name)
+User::User(char const* name, FileHandler* file_handler)
 {
+	this->file_handler = file_handler;
+
+	/* Get the ID according to the name:
+	 */
+	printf("determinating ID ...\n");
+	if((id = file_handler->getID(name)) == 0)
+		throw new Exception("no user named '%s'", name);
+	
+	/* If the user exists, generate the data:
+	 */
 	this->name = new char[strlen(name)+1]; // +1 for \0
 	strcpy(this->name, name);
-
-	FileHandler fh("usr/users.db");
-	// TODO read save file for information generation
 }
 
 /**
@@ -19,7 +26,8 @@ User::User(char const* name)
  */
 User::~User(void)
 {
-	// TODO
+	file_handler->save();
+	delete name;
 }
 
 
@@ -28,12 +36,13 @@ User::~User(void)
 /**
  * This method provides the user's name.
  * @param name A pointer to the string where the name shall be written to.
- * @return     The size of the name.
+ * @param len  The number of characters to be written (buffer size).
+ * @return     The number of characters written.
  */
 size_t
-User::getName(char* name)
+User::getName(char* name, size_t len)
 {
-	strcpy(name, this->name);
+	strncpy(name, this->name, len);
 	return strlen(this->name);
 }
 

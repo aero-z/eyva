@@ -5,11 +5,10 @@
  * Gets the content of a given file.
  * @param path  The path to the file that shall be "dumped".
  */
-FileHandler::FileHandler(char const* path, bool* flag)
+FileHandler::FileHandler(char const* path)
 {
 	this->path = new char[strlen(path)+1];
 	strcpy(this->path, path);
-	*flag = true; // assume everything is alright
 
 	file_buffer.clear();
 	char content_buffer[FILE_BUFFER];
@@ -19,8 +18,7 @@ FileHandler::FileHandler(char const* path, bool* flag)
 	 */
 	FILE* file;
 	if((file = fopen(path, "r")) == NULL) {
-		*flag = false;
-		return;
+		throw new Exception("could not open file: %s", path);
 	}
 	
 	/* Otherwise, start copying the whole file content to the temporary buffer:
@@ -75,6 +73,56 @@ FileHandler::save(void)
 	// TODO
 }
 
+/**
+ * This method gets an ID according to the provided name (used by the user
+ * class).
+ * @param name The name for which the ID shall be returned.
+ * @return     The ID according to the name.
+ */
+int
+FileHandler::getID(char const* name)
+{
+	/* Go through all entries and check if the name corresponds to the provided
+	 * one:
+	 */
+	for(int id = 1; id <= getHighestID(); id++) {
+		printf("id %d ...\n", id);
+		tokenize("name", id);
+		
+		/* If it does, return the according ID; it's the searched one:
+		 */
+		if(line_buffer.size() > 1 && strcmp(line_buffer[1], name) == 0) {
+			return id;
+		}
+	}
+
+	/* If the ID to the name was not found, return 0. It's an invalid ID and the
+	 * caller will know:
+	 */
+	return 0;
+}
+
+/**
+ * This method returns the highest among IDs.
+ * @return The highest ID indicated in the file.
+ */
+int
+FileHandler::getHighestID(void)
+{
+	/* Go through every line to check if the ".max" entry is here:
+	 */
+	for(size_t i = 0; i < file_buffer.size(); i++)
+		/* If the entry is there, return the value behind:
+		 */
+		if(strncmp(file_buffer[i], ".max:", 5) == 0)
+			return aton(file_buffer[i]+5, 10);
+	
+	/* If the highest ID is not indicated, return 0 (should not happen, if the
+	 * file is correctly written):
+	 */
+	return 0;
+}
+
 
 /* PUBLIC METHODS */
 
@@ -94,8 +142,10 @@ size_t
 FileHandler::getName(char* buffer, int id, size_t len)
 {
 	if(tokenize("name", id) > 1) {
-		memcpy(buffer, line_buffer[1]+1, len); // skip '"'
-		buffer[strlen(line_buffer[1])-2] = 0; // replace '"' by \0
+		if(buffer != NULL) {
+			memcpy(buffer, line_buffer[1]+1, len); // skip preceding quote
+			buffer[strlen(line_buffer[1])-2] = 0; // replace tailing quote by \0
+		}
 		return strlen(line_buffer[1])-2;
 	}
 	return 0;
@@ -113,10 +163,10 @@ size_t
 FileHandler::getEffect(char* buffer, int id, size_t len)
 {
 	if(tokenize("effect", id) > 1) {
-		for(size_t i = 1; i < line_buffer.size() && i <= len; i++) {
-			buffer[i-1] = aton(line_buffer[i], 16)%256;
-		}
-		return line_buffer.size()-1;
+		if(buffer != NULL)
+			for(size_t i = 1; i < line_buffer.size() && i <= len; i++)
+				buffer[i-1] = aton(line_buffer[i], 16)%256;
+		return line_buffer.size()-1; // -1 for the key
 	}
 	return 0;
 }
@@ -133,10 +183,10 @@ size_t
 FileHandler::getTrigger(char* buffer, int id, size_t len)
 {
 	if(tokenize("trigger", id) > 1) {
-		for(size_t i = 1; i < line_buffer.size() && i <= len; i++) {
-			buffer[i-1] = aton(line_buffer[i], 16)%256;
-		}
-		return line_buffer.size()-1;
+		if(buffer != NULL)
+			for(size_t i = 1; i < line_buffer.size() && i <= len; i++)
+				buffer[i-1] = aton(line_buffer[i], 16)%256;
+		return line_buffer.size()-1; // -1 for the key
 	}
 	return 0;
 }
@@ -153,9 +203,11 @@ size_t
 FileHandler::getRules(char* buffer, int id, size_t len)
 {
 	if(tokenize("rules", id) > 1) {
-		memcpy(buffer, line_buffer[1]+1, len); // skip '"'
-		buffer[strlen(line_buffer[1])-2] = 0; // replace '"' by \0
-		return strlen(line_buffer[1])-2;
+		if(buffer != NULL) {
+			memcpy(buffer, line_buffer[1]+1, len); // skip preceding quote
+			buffer[strlen(line_buffer[1])-2] = 0; // replace tailing quote by \0
+		}
+		return strlen(line_buffer[1])-2; // -2 for the quotes
 	}
 	return 0;
 }
@@ -213,31 +265,27 @@ size_t
 FileHandler::getInventory(std::vector<int>* buffer, int id)
 {
 	if(tokenize("inventory", id) > 1) {
-		buffer->clear();
-		for(size_t i = 1; i < line_buffer.size(); i++) {
-			buffer->push_back(aton(line_buffer[i], 10));
+		if(buffer != NULL) {
+			buffer->clear();
+			for(size_t i = 1; i < line_buffer.size(); i++) {
+				buffer->push_back(aton(line_buffer[i], 10));
+			}
 		}
-		return line_buffer.size()-1;
+		return line_buffer.size()-1; // -1 for key
 	}
 	return 0;
 }
 
 /**
- * This method gets the entries at the "characters" field of a given ID from a
- * given file.
- * @param buffer The buffer where the character IDs shall be stored to.
- * @param id     The ID of the entry.
- * @return       The number of characters. 0 if not found.
+ * This method gets the ID of the user that owns a character of the given ID.
+ * @param id The character's ID.
+ * @return   The user's ID. 0 if the character has not been found.
  */
-size_t
-FileHandler::getCharacters(std::vector<int>* buffer, int id)
+int
+FileHandler::getUser(int id)
 {
-	if(tokenize("characters", id) > 1) {
-		buffer->clear();
-		for(size_t i = 1; i < line_buffer.size(); i++) {
-			buffer->push_back(aton(line_buffer[i], 10));
-		}
-		return line_buffer.size()-1;
+	if(tokenize("user", id) > 1) {
+		return aton(line_buffer[1], 10);
 	}
 	return 0;
 }
@@ -275,16 +323,14 @@ FileHandler::setTribe(int tribe, int id)
 }
 
 bool
-FileHandler::setInventory(const std::vector<int>* inventory,
-		int id)
+FileHandler::setInventory(const std::vector<int>* inventory, int id)
 {
 	// TODO
 	return false;
 }
 
 bool
-FileHandler::setCharacters(const std::vector<int>* characters,
-		int id)
+FileHandler::setUser(int user_id, int id)
 {
 	// TODO
 	return false;
@@ -392,12 +438,15 @@ FileHandler::tokenize(char const* key, int id)
 	bool found = false;
 	size_t line;
 	for(line = 0; line < entry_buffer.size(); line++) {
-		if(strstr(entry_buffer[line], tmp) == entry_buffer[line]) {
+		printf("line: [%s]\n", entry_buffer[line]);
+		if(strncmp(entry_buffer[line], tmp, strlen(tmp)) == 0) {
 			found = true;
 			break;
 		}
 	}
 	delete[] tmp;
+
+	printf("%s\n", found ? "found line" : "did not find line");
 
 	if(!found)
 		return 0;
@@ -409,7 +458,7 @@ FileHandler::tokenize(char const* key, int id)
 	bool is_string = false;
 	bool is_comment = false;
 	/* Include the last character (\0), too, so we know when to stop (therefore
-	 * >= instead of >):
+	 * <= instead of <):
 	 */
 	for(size_t i = 0; i <= strlen(entry_buffer[line]); i++) {
 		/* If the ':' appears inside a string, we don't treat it as delimiter,

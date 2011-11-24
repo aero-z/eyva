@@ -1,5 +1,9 @@
 # Object database.
 
+# This is the highest ID. Anything above this will be read, but won't be
+# accessible through the file handler.
+.max:5
+
 .start
 id:1
 name:"Small Refreshment"

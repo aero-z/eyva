@@ -7,6 +7,7 @@
 
 // Utils:
 #include <utils/ayestring.h>
+#include <utils/exception.h>
 
 // Others:
 #include <vector>
@@ -21,9 +22,11 @@ class
 FileHandler
 {
 	public:
-		FileHandler(char const* path, bool* flag);
+		FileHandler(char const* path);
 		~FileHandler(void);
 		void save(void);
+		int getID(char const* name);
+		int getHighestID(void);
 	
 		/* GETTERS */
 		size_t getName(char* buffer, int id, size_t len);
@@ -33,16 +36,16 @@ FileHandler
 		int getValue(int id);
 		int getLevel(int id);
 		int getTribe(int id);
+		int getUser(int id);
 		size_t getInventory(std::vector<int>* buffer, int id);
-		size_t getCharacters(std::vector<int>* buffer, int id);
 
 		/* SETTERS */
 		bool setName(char const* name, int id);
 		bool setValue(int value, int id);
 		bool setLevel(int level, int id);
 		bool setTribe(int tribe, int id);
+		bool setUser(int user_id, int id);
 		bool setInventory(const std::vector<int>* inventory, int id);
-		bool setCharacters(const std::vector<int>* characters, int id);
 		int addCharacter(void);
 	
 	private:

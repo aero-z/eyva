@@ -10,8 +10,13 @@ using namespace AyeLog;
  */
 Network::Network(int port)
 {
+	/* These are likely to throw exceptions. If they do, fall through to the
+	 * main function:
+	 */
 	pipe = new Pipe();
 	game = new Game(pipe);
+	user_savefile = new FileHandler("usr/users.db");
+
 	term_signal = false;
 
 	/* Create socket:
@@ -187,7 +192,7 @@ Network::handleConnection(void)
 	if(sessions.size() < QUEUE_SIZE) {
 		sessions.insert(std::pair<int, Session*>(sock_new,
 				new Session(sock_new, inet_ntoa(client_addr.sin_addr), pipe,
-				game)));
+				game, user_savefile)));
 		logf(LOG_NORMAL, "> \e[32m%s\e[0m: new connection on socket %d",
 				sessions[sock_new]->getIP(), sock_new);
 	} else {

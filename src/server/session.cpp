@@ -4,15 +4,20 @@ using namespace AyeLog;
 
 /**
  * Constructor.
- * @param id   The session ID (= socket file descriptor for this connection).
- * @param ip   The client's IP address.
- * @param pipe A pointer to where answer messages shall be stored to.
+ * @param id            The session ID (= socket file descriptor for this
+ *                      connection).
+ * @param ip            The client's IP address.
+ * @param pipe          A pointer to where answer messages shall be stored to.
+ * @param game          The game that holds and handles all game data.
+ * @param user_savefile Handles the file containing the list of registred users.
  */
-Session::Session(int session_id, char const* ip, Pipe* pipe, Game* game)
+Session::Session(int session_id, char const* ip, Pipe* pipe, Game* game,
+		FileHandler* user_savefile)
 {
 	this->pipe = pipe;
 	this->session_id = session_id;
 	this->game = game;
+	this->user_savefile = user_savefile;
 	authenticated = false;
 
 	this->ip = new char[strlen(ip)+1]; // +1 for \0
@@ -83,24 +88,44 @@ Session::process(char const* message, size_t message_len)
 		case 0x11: {
 			logf(LOG_DEBUG, "[11 CONNECT]");
 			bool valid = true;
+
+			/* Check client software version:
+			 */
 			valid = valid && (message[10] == VERSION_MAJOR_RELEASE);
 			valid = valid && (message[11] == VERSION_MINOR_RELEASE);
-			valid = valid && (message[12] == VERSION_MAJOR_PATCH);
+			valid = valid && (message[12] == VERSION_PATCH);
 			if(!valid) { // [51 ERROR_CLIENT_COMPATIBILITY]
+				logf(LOG_DEBUG, "[51 ERROR_CLIENT_COMPATIBILITY]");
 				char response[] = {session_id, 0x51, 0x03, 0x00,
 						VERSION_MAJOR_RELEASE, VERSION_MINOR_RELEASE,
-						VERSION_MAJOR_PATCH};
+						VERSION_PATCH};
 				pipe->push(response);
 				break;
 			}
-			valid = valid && ((user = new User(message+13)) != NULL);
-			if(!valid) { // [50 ERROR_AURHENTICATION]
+
+			/* Check login credentials:
+			 */
+			try {
+				for(size_t i = 0; i < strlen(message+13); i++)
+					printf("[%c] ", message[13+i]);
+				printf("\n");
+				user = new User(message+13, user_savefile);
+			} catch(Exception* e) {
+				logf(LOG_WARNING, "%s", e->str());
+				valid = false;
+			}
+			// TODO password
+			if(!valid) { // [50 ERROR_AUTHENTICATION]
+				logf(LOG_DEBUG, "[51 ERROR_AUTHENTICATION]");
 				char response[] = {session_id, 0x50, 0x00, 0x00};
 				pipe->push(response);
 				break;
 			}
-			/* OK, login was successful; send a response [12 ACCEPT_CONNECTION].
-			 * TODO send message of the day
+
+			// [12 ACCEPT_CONNECTION]
+			logf(LOG_DEBUG, "successfully logged in: %s", message+13);
+			/* If login was successful, send a response [12 ACCEPT_CONNECTION].
+			 * TODO message of the day
 			 */
 			authenticated = true;
 			char response[] = {session_id, 0x12, 0x05, 0x00, 'd','a','d','a',0};
@@ -110,7 +135,7 @@ Session::process(char const* message, size_t message_len)
 
 		/* This is the message received by the client to disconnect. There won't
 		 * be done anything here, but instead the destructor will handle
-		 * everything. The network handler is just alerted to destroy this
+		 * everything. Thus the network handler is alerted to destroy this
 		 * session.
 		 * This is the `eyva' variant to the zero-byte message to close a
 		 * connection:

@@ -1,4 +1,5 @@
 #include <utils/file_handler.h>
+#include <utils/exception.h>
 #include <cstring>
 
 int main(int argc, char** argv) {
@@ -7,9 +8,9 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
-	bool flag;
-	FileHandler f(argv[1], &flag);
-	if(!flag) {
+	try {
+		FileHandler f(argv[1]);
+	} catch(Exception* e) {
 		printf("problem opening file\n");
 		return -1;
 	}

@@ -17,11 +17,7 @@
  */
 #define VERSION_MAJOR_RELEASE 0
 #define VERSION_MINOR_RELEASE 1
-#define VERSION_MAJOR_PATCH 0
-#define VERSION_MINOR_PATCH 0
-/* Note: the minor patch number is not checked during login process, since it
- * only counts patches that have no impact on the "other part".
- */
+#define VERSION_PATCH 0
 
 #endif
 
