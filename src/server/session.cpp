@@ -128,7 +128,7 @@ Session::process(char const* message, size_t message_len)
 			 * TODO message of the day
 			 */
 			authenticated = true;
-			char response[] = {session_id, 0x12, 0x05, 0x00, 'd','a','d','a',0};
+			char response[] = {session_id, 0x12,0x05,0x00,'d','a','d','a','\n'};
 			pipe->push(response);
 			break;
 		}

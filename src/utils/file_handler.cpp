@@ -86,12 +86,14 @@ FileHandler::getID(char const* name)
 	 * one:
 	 */
 	for(int id = 1; id <= getHighestID(); id++) {
-		printf("id %d ...\n", id);
 		tokenize("name", id);
 		
-		/* If it does, return the according ID; it's the searched one:
+		/* If it does, return the according ID; it's the searched one.
+		 * Notice that we check with ignoring the preceding and tailing quote in
+		 * the savefile value:
 		 */
-		if(line_buffer.size() > 1 && strcmp(line_buffer[1], name) == 0) {
+		if(line_buffer.size() > 1 && strncmp(line_buffer[1]+1, name,
+				strlen(line_buffer[1]+1)-1) == 0) {
 			return id;
 		}
 	}
@@ -438,15 +440,12 @@ FileHandler::tokenize(char const* key, int id)
 	bool found = false;
 	size_t line;
 	for(line = 0; line < entry_buffer.size(); line++) {
-		printf("line: [%s]\n", entry_buffer[line]);
 		if(strncmp(entry_buffer[line], tmp, strlen(tmp)) == 0) {
 			found = true;
 			break;
 		}
 	}
 	delete[] tmp;
-
-	printf("%s\n", found ? "found line" : "did not find line");
 
 	if(!found)
 		return 0;
