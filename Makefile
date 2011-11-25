@@ -45,5 +45,8 @@ keymap: src/meta/keymap.cpp
 	g++ -lncurses src/meta/keymap.cpp -o keymap
 
 clean:
-	rm -f $(SERVER_OBJECTS) $(CLIENT_OBJECTS) $(TEST_OBJECTS)
+	rm -f $(SERVER_OBJECTS) $(CLIENT_OBJECTS) $(TEST_OBJECTS) valgrind.log
+
+purge:
+	rm -f $(SERVER_EXECUTABLE) $(CLIENT_EXECUTABLE) $(TEST_EXECUTABLE) keymap
 
