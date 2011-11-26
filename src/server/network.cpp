@@ -79,8 +79,8 @@ Network::Network(int port)
 
 /**
  * Destructor.
- * All session are correctly closed (savegame, logout) and the server side
- * network is shut down.
+ * All session are correctly closed (savegame, logout) and the network is shut
+ * down.
  */
 Network::~Network(void)
 {
@@ -200,6 +200,7 @@ Network::handleConnection(void)
 
 	/* accept() should return -1 if something went wrong. As we don't want to
 	 * handle the error yet, crash:
+	 * TODO handle error
 	 */
 	if(sock_new < 0)
 		throw new Exception("accept() failed");
@@ -244,32 +245,30 @@ Network::handleData(int socket)
 				sessions[socket]->getIP());
 		close(socket);
 		sessions.erase(socket);
+		return;
 	}
 
-	/* If the number is positive, there is data to handle:
+	/* Send confirmation byte for received data to make sure the client is still
+	 * there:
 	 */
-	else {
-		/* Send confirmation byte, to make sure the client is still there:
-		 */
-		char confirmation_byte = 10;
-		int sent = send(socket, &confirmation_byte, 1, MSG_NOSIGNAL);
+	char confirmation_byte = 10;
+	int sent = send(socket, &confirmation_byte, 1, MSG_NOSIGNAL);
 
-		/* Check if successfully confirmation byte was successfully sent;
-		 * otherwise close session:
-		 */
-		logf(LOG_DEBUG, "confirmation: sent %d bytes", sent);
-		if(sent != 1) {
-			logf(LOG_WARNING, "%s: connection lost", sessions[socket]->getIP());
-			close(socket);
-			sessions.erase(socket);
-		}
-
-		/* Otherwise, the session may process the data:
-		 */
-		else {
-			sessions[socket]->process(buffer_in, (size_t)received);
-		}
+	/* Check if successfully confirmation byte was successfully sent;
+	 * otherwise close session:
+	 */
+	logf(LOG_DEBUG, "confirmation: sent %d bytes", sent);
+	if(sent != 1) {
+		logf(LOG_WARNING, "%s: connection lost", sessions[socket]->getIP());
+		close(socket);
+		sessions.erase(socket);
+		return;
 	}
+
+	/* If, after all, everything is valid, let the sesssion handler process the
+	 * received data:
+	 */
+	sessions[socket]->process(buffer_in, (size_t)received);
 }
 
 /**

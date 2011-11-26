@@ -85,12 +85,12 @@ Session::process(char const* message, size_t message_len)
 		return;
 	}
 
-	/* If the message length does not correspond to the length indicated in the
-	 * message, send a [0A FAIL] message back:
+	/* Check message length:
 	 */
-	if(msglen(message) != message_len) {
-		logf(LOG_DEBUG, "%u instead of %u", message_len, msglen(message));
-		char response[] = {session_id, 0x0A, 0x00, 0x00};
+	if(message_len < 4 || msglen(message) != message_len) {
+		logf(LOG_DEBUG, "[52 ERROR_MESSAGE_LEN] (%u instead of %u)",
+				message_len, message_len >= 4 ? msglen(message) : 0);
+		char response[] = {session_id, 0x52, 0x00, 0x00};
 		pipe->push(response);
 		return;
 	}

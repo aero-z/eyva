@@ -257,3 +257,8 @@ Message definition:
     - required version number - minor release (1 byte)
     - required version number - major patch (1 byte)
 
+
+52  ERROR_MESSAGE_LEN - [server]
+    The message received from the client did not have the same length as
+    indicated in the message.
+
