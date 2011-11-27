@@ -47,6 +47,9 @@ Session
 		int getSessionID(void);
 	
 	private:
+		void handle_CONNECT(char const* message);
+		void handle_DISCONNECT(char const* message);
+		void handle_REQUEST_CHARACTER_LIST(char const* message);
 		Pipe* pipe;
 		Game* game;
 		User* user;

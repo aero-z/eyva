@@ -95,100 +95,18 @@ Session::process(char const* message, size_t message_len)
 		return;
 	}
 
-	/* This is the part where the messages are checked and processed. It's quite
-	 * a long piece of code, maybe we can move this out to an external file:
+	/* This is the part where the messages are checked and processed:
 	 */
 	switch(message[1]) {
-		/* This is the first message to be received by the client. It contains
-		 * the client's software version on bytes 10-12, plus the username to
-		 * log in on bytes 13+ (zero terminated).
-		 */
-		case 0x11: {
-			logf(LOG_DEBUG, "[11 CONNECT]");
-			bool valid = true;
-
-			/* Check client software version:
-			 */
-			valid = valid && (message[10] == VERSION_MAJOR_RELEASE);
-			valid = valid && (message[11] == VERSION_MINOR_RELEASE);
-			valid = valid && (message[12] == VERSION_PATCH);
-			if(!valid) { // [51 ERROR_CLIENT_COMPATIBILITY]
-				logf(LOG_DEBUG, "[51 ERROR_CLIENT_COMPATIBILITY]");
-				char response[] = {session_id, 0x51, 0x03, 0x00,
-						VERSION_MAJOR_RELEASE, VERSION_MINOR_RELEASE,
-						VERSION_PATCH};
-				pipe->push(response);
-				break;
-			}
-
-			/* Check login credentials:
-			 */
-			try {
-				for(size_t i = 0; i < strlen(message+13); i++)
-					printf("[%c] ", message[13+i]);
-				printf("\n");
-				user = new User(message+13, user_savefile);
-			} catch(Exception* e) {
-				logf(LOG_WARNING, "%s", e->str());
-				valid = false;
-			}
-			// TODO password
-			if(!valid) { // [50 ERROR_AUTHENTICATION]
-				logf(LOG_DEBUG, "[51 ERROR_AUTHENTICATION]");
-				char response[] = {session_id, 0x50, 0x00, 0x00};
-				pipe->push(response);
-				break;
-			}
-
-			// [12 ACCEPT_CONNECTION]
-			logf(LOG_DEBUG, "successfully logged in: %s", message+13);
-			/* If login was successful, send a response [12 ACCEPT_CONNECTION].
-			 * TODO message of the day
-			 */
-			authenticated = true;
-			char response[] = {session_id, 0x12,0x05,0x00,'d','a','d','a','\n'};
-			pipe->push(response);
+		case 0x11:
+			handle_CONNECT(message);
 			break;
-		}
-
-		/* This is the message received by the client to disconnect. There won't
-		 * be done anything here, but instead the destructor will handle
-		 * everything. Thus the network handler is alerted to destroy this
-		 * session.
-		 * This is the `eyva' variant to the zero-byte message to close a
-		 * connection:
-		 */
-		case 0x15: {
-			logf(LOG_DEBUG, "[15 DISCONNECT]");
-			char response[] = {session_id, 0x01, 0x00, 0x00};
-			pipe->push(response);
+		case 0x15:
+			handle_DISCONNECT(message);
 			break;
-		}
-
-		/* This is a request for all characters belonging to a user. First check
-		 * if the client is correctly logged in before answering on that one:
-		 */
-		case 0x16: {
-			logf(LOG_DEBUG, "[16 REQUEST_CHARACTER_LIST]");
-			if(!authenticated) { // [50 ERROR_AUTHENTICATION]
-				char response[] = {session_id, 0x50, 0x00, 0x00};
-				pipe->push(response);
-				break;
-			}
-			std::vector<int> characters;
-			user_savefile->getCharacters(&characters, session_id);
-			char response[characters.size()+4];
-			// [17 CHARACTER_LIST]
-			response[0] = session_id;
-			response[1] = 0x17;
-			response[2] = characters.size();
-			response[3] = 0;
-			for(size_t i = 0; i < characters.size(); i++)
-				response[i+4] = characters[i];
-			pipe->push(response);
+		case 0x16:
+			handle_REQUEST_CHARACTER_LIST(message);
 			break;
-		}
-
 		default:
 			game->process(message);
 			break;
@@ -211,5 +129,102 @@ int
 Session::getSessionID(void)
 {
 	return session_id;
+}
+
+
+/* PRIVATE METHODS */
+
+
+/* This method handles the [11 CONNECT] message.
+ * That's the first message to be received by the client. It contains the
+ * client's software version on bytes 10-12, plus the username on bytes 13+
+ * (zero terminated).
+ * @param message The message received from the client.
+ */
+void
+Session::handle_CONNECT(char const* message)
+{
+	logf(LOG_DEBUG, "[11 CONNECT]");
+	bool valid = true;
+
+	/* Check client software version:
+	 */
+	valid = valid && (message[10] == VERSION_MAJOR_RELEASE);
+	valid = valid && (message[11] == VERSION_MINOR_RELEASE);
+	valid = valid && (message[12] == VERSION_PATCH);
+	if(!valid) { // [51 ERROR_CLIENT_COMPATIBILITY]
+		logf(LOG_DEBUG, "[51 ERROR_CLIENT_COMPATIBILITY]");
+		char response[] = {session_id, 0x51, 0x03, 0x00,
+				VERSION_MAJOR_RELEASE, VERSION_MINOR_RELEASE,
+				VERSION_PATCH};
+		pipe->push(response);
+		return;
+	}
+
+	/* Check login credentials:
+	 */
+	try {
+		user = new User(message+13, user_savefile);
+	} catch(Exception* e) {
+		logf(LOG_WARNING, "%s", e->str());
+		valid = false;
+	}
+	// TODO check password
+	if(!valid) { // [50 ERROR_AUTHENTICATION]
+		logf(LOG_DEBUG, "[51 ERROR_AUTHENTICATION]");
+		char response[] = {session_id, 0x50, 0x00, 0x00};
+		pipe->push(response);
+		return;
+	}
+
+	// [12 ACCEPT_CONNECTION]
+	logf(LOG_DEBUG, "[12 ACCEPT_CONNECTION]: %s", message+13);
+	authenticated = true;
+	char response[] = {session_id, 0x12,0x05,0x00,'d','a','d','a','\n'};
+	//TODO message of the day
+	pipe->push(response);
+}
+
+/* This method handles the [15 DISCONNECT] message.
+ * Its purpose is to disconnect the client. It's the `eyva' variant of the
+ * zero-byte message to close a connection.
+ * NOTE: This method actually doesn't do anything, but instead alerts the
+ *       network handler to destroy this object (so the session handler's
+ *       destructor will do the necessary stuff).
+ * @param message The message received from the client.
+ */
+void
+Session::handle_DISCONNECT(char const* message)
+{
+	logf(LOG_DEBUG, "[15 DISCONNECT]");
+	char response[] = {session_id, 0x01, 0x00, 0x00};
+	pipe->push(response);
+}
+
+/* This method handles the [16 REQUEST_CHARACTER_LIST] message.
+ * It's a request for all characters belonging to a user. First check if the
+ * client is correctly logged in before answering on that one:
+ */
+void
+Session::handle_REQUEST_CHARACTER_LIST(char const* message)
+{
+	logf(LOG_DEBUG, "[16 REQUEST_CHARACTER_LIST]");
+	if(!authenticated) { // [50 ERROR_AUTHENTICATION]
+		char response[] = {session_id, 0x50, 0x00, 0x00};
+		pipe->push(response);
+		return;
+	}
+	std::vector<int> characters;
+	user_savefile->getCharacters(&characters, session_id);
+	char response[characters.size()+4];
+
+	// [17 CHARACTER_LIST]
+	response[0] = session_id;
+	response[1] = 0x17;
+	response[2] = characters.size();
+	response[3] = 0;
+	for(size_t i = 0; i < characters.size(); i++)
+		response[i+4] = characters[i];
+	pipe->push(response);
 }
 
