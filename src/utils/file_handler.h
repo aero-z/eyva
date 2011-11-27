@@ -44,7 +44,6 @@ FileHandler
 		~FileHandler(void);
 		void save(void);
 		int getID(char const* name);
-		int getHighestID(void);
 	
 		/* GETTERS */
 		size_t getName(char* buffer, int id, size_t len);
@@ -54,7 +53,7 @@ FileHandler
 		int getValue(int id);
 		int getLevel(int id);
 		int getTribe(int id);
-		int getUser(int id);
+		size_t getCharacters(std::vector<int>* buffer, int id);
 		size_t getInventory(std::vector<int>* buffer, int id);
 
 		/* SETTERS */
@@ -62,19 +61,20 @@ FileHandler
 		bool setValue(int value, int id);
 		bool setLevel(int level, int id);
 		bool setTribe(int tribe, int id);
-		bool setUser(int user_id, int id);
 		bool setInventory(const std::vector<int>* inventory, int id);
-		int addCharacter(void);
+		int addCharacter(int id);
 	
 	private:
 		size_t updateEntry(int id);
 		size_t tokenize(char const* key, int id);
+		void updateIDMax(void);
 
 		std::vector<char*> file_buffer;
 		std::vector<char*> entry_buffer;
 		std::vector<char*> line_buffer; // tokenized
 		char* path;
 		int id;
+		int id_max;
 };
 
 #endif

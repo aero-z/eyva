@@ -12,10 +12,12 @@ name:"admin"
 .start
 id:2
 name:"ayekat"
+characters:1:2
 .end
 
 .start
 id:3
-name:"about:blank"
+name:"kowalski"
+characters:3
 .end
 

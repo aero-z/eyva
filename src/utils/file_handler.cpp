@@ -72,6 +72,10 @@ FileHandler::FileHandler(char const* path)
 			line_begin = i+1; // update for next line
 		}
 	}
+
+	/* Update the id_max variable that holds the value of the highest among IDs:
+	 */
+	updateIDMax();
 }
 
 /**
@@ -103,7 +107,7 @@ FileHandler::getID(char const* name)
 	/* Go through all entries and check if the name corresponds to the provided
 	 * one:
 	 */
-	for(int id = 1; id <= getHighestID(); id++) {
+	for(int id = 1; id <= id_max; id++) {
 		tokenize("name", id);
 		
 		/* If it does, return the according ID; it's the searched one.
@@ -118,27 +122,6 @@ FileHandler::getID(char const* name)
 
 	/* If the ID to the name was not found, return 0. It's an invalid ID and the
 	 * caller will know:
-	 */
-	return 0;
-}
-
-/**
- * This method returns the highest among IDs.
- * @return The highest ID indicated in the file.
- */
-int
-FileHandler::getHighestID(void)
-{
-	/* Go through every line to check if the ".max" entry is here:
-	 */
-	for(size_t i = 0; i < file_buffer.size(); i++)
-		/* If the entry is there, return the value behind:
-		 */
-		if(strncmp(file_buffer[i], ".max:", 5) == 0)
-			return aton(file_buffer[i]+5, 10);
-	
-	/* If the highest ID is not indicated, return 0 (should not happen, if the
-	 * file is correctly written):
 	 */
 	return 0;
 }
@@ -297,15 +280,23 @@ FileHandler::getInventory(std::vector<int>* buffer, int id)
 }
 
 /**
- * This method gets the ID of the user that owns a character of the given ID.
- * @param id The character's ID.
- * @return   The user's ID. 0 if the character has not been found.
+ * This method gets a list of characters belonging to one user.
+ * @param buffer A pointer to the list where the character IDs shall be stored
+ *               to.
+ * @param id     The user's ID.
+ * @return       The number of characters found for this user.
  */
-int
-FileHandler::getUser(int id)
+size_t
+FileHandler::getCharacters(std::vector<int>* buffer, int id)
 {
-	if(tokenize("user", id) > 1) {
-		return aton(line_buffer[1], 10);
+	if(tokenize("characters", id) > 1) {
+		if(buffer != NULL) {
+			buffer->clear();
+			for(size_t i = 1; i < line_buffer.size(); i++) {
+				buffer->push_back(aton(line_buffer[i], 10));
+			}
+		}
+		return line_buffer.size()-1; // -1 for key
 	}
 	return 0;
 }
@@ -349,15 +340,13 @@ FileHandler::setInventory(const std::vector<int>* inventory, int id)
 	return false;
 }
 
-bool
-FileHandler::setUser(int user_id, int id)
-{
-	// TODO
-	return false;
-}
-
+/**
+ * This method creates a new character entry.
+ * @param id The ID of the user to whom the character belongs.
+ * @return   The new character's ID.
+ */
 int
-FileHandler::addCharacter(void)
+FileHandler::addCharacter(int id)
 {
 	// TODO
 	return 0;
@@ -508,5 +497,27 @@ FileHandler::tokenize(char const* key, int id)
 	}
 
 	return line_buffer.size();
+}
+
+/**
+ * This method sets the id_max variable representing the highest among IDs.
+ * TODO make it dynamic (without .max entry)
+ */
+void
+FileHandler::updateIDMax(void)
+{
+	/* Go through every line to check if the ".max" entry is here:
+	 */
+	for(size_t i = 0; i < file_buffer.size(); i++)
+		/* If the entry is there, return the value behind:
+		 */
+		if(strncmp(file_buffer[i], ".max:", 5) == 0) {
+			id_max = aton(file_buffer[i]+5, 10);
+			return;
+		}
+	/* If the highest ID is not indicated, throw an exception to indicate that
+	 * the file is corrupted:
+	 */
+	throw new Exception("%s corrupted: no `.max' entry found", path);
 }
 

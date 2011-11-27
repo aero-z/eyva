@@ -175,7 +175,17 @@ Session::process(char const* message, size_t message_len)
 				pipe->push(response);
 				break;
 			}
-			// TODO create message with character list
+			std::vector<int> characters;
+			user_savefile->getCharacters(&characters, session_id);
+			char response[characters.size()+4];
+			// [17 CHARACTER_LIST]
+			response[0] = session_id;
+			response[1] = 0x17;
+			response[2] = characters.size();
+			response[3] = 0;
+			for(size_t i = 0; i < characters.size(); i++)
+				response[i+4] = characters[i];
+			pipe->push(response);
 			break;
 		}
 
