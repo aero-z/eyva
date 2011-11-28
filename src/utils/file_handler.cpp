@@ -18,6 +18,8 @@
 
 #include "file_handler.h"
 
+using namespace AyeString;
+
 /**
  * Constructor.
  * Gets the content of a given file.

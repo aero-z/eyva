@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * `eyva' - String manipulation collection.
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,14 +25,18 @@
 // Others:
 #include <cstring>
 #include <cstdio>
+#include <vector>
 
-size_t strcpy_fl(char* dst, char const* src);
-size_t msglen(char const* msg);
-size_t iptoa(char* str, char const* ipv4);
-int porttoi(char* port);
-int aton(char const* str, int base);
-int pow(int base, int exp);
-int cton(char const chr, int base);
+namespace
+AyeString
+{
+	size_t msglen(char const* msg);
+	size_t iptoa(char* str, char const* ipv4);
+	int porttoi(char* port);
+	int aton(char const* str, int base);
+	int pow(int base, int exp);
+	int cton(char const chr, int base);
+}
 
 #endif
 

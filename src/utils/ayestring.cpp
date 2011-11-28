@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * `eyva' - String manipulation collection (implementation).
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,30 +19,15 @@
 #include "ayestring.h"
 
 /**
- * This function copies the first line.
- * @param dst The C string where the copied first line shall be written to.
- * @param src The C string from where the first line shall be copied from. The
- *            string is copied until the first appearance of a newline or \0
- *            (string end).
- * @return    The size of the copied string (first line).
- */
-size_t
-strcpy_fl(char* dest, char const* src)
-{
-	size_t to_copy = ((size_t)(strstr(src, "\0")-src) < strlen(src))
-			? (size_t)(strstr(src, "\0")-src) : strlen(src);
-	strncpy(dest, src, to_copy);
-	return to_copy;
-}
-
-/**
  * This function determines the length of a message according to the eyva
  * protocol.
+ * NOTE: It will return the length of the message, not the length of the message
+ *       body. It's intended as a replacement for strlen().
  * @param msg The message of which the line shall be determined.
  * @return    The size of the message.
  */
 size_t
-msglen(char const* msg)
+AyeString::msglen(char const* msg)
 {
 	/* little endian:
 	 */
@@ -60,7 +45,7 @@ msglen(char const* msg)
  * @return     The size of the IP address' string representation.
  */
 size_t
-iptoa(char* str, char const* ip)
+AyeString::iptoa(char* str, char const* ip)
 {
 	size_t len = 11; // start at "all numbers are <100"
 	for(char* i = (char*)ip; i < ip+4; i++) {
@@ -76,7 +61,7 @@ iptoa(char* str, char const* ip)
  * @return     The port as integer.
  */
 int
-porttoi(char* port)
+AyeString::porttoi(char* port)
 {
 	return(port[0] + 256*port[1]);
 }
@@ -92,7 +77,7 @@ porttoi(char* port)
  * @return     The value. It will also be 0 if the string is malformed.
  */
 int
-aton(char const* str, int base)
+AyeString::aton(char const* str, int base)
 {
 	int buffer;
 	int start = 0;
@@ -158,7 +143,8 @@ aton(char const* str, int base)
  * @param base The number to be powered up.
  * @param exp  The exponent.
  */
-int pow(int base, int exp)
+int
+AyeString::pow(int base, int exp)
 {
 	// TODO negative exponents
 	int result = 1;
@@ -177,7 +163,7 @@ int pow(int base, int exp)
  *             base, -1 is returned.
  */
 int
-cton(char const chr, int base)
+AyeString::cton(char const chr, int base)
 {
 	int val;
 

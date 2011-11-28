@@ -19,6 +19,7 @@
 #include "network.h"
 
 using namespace AyeLog;
+using namespace AyeString;
 
 /**
  * Constructor.

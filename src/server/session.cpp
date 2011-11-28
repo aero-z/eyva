@@ -19,6 +19,7 @@
 #include "session.h"
 
 using namespace AyeLog;
+using namespace AyeString;
 
 /**
  * Constructor.

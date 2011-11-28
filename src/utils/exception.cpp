@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * `eyva' - Exception class of which instances are thrown.
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -33,6 +33,7 @@ Exception::Exception(char const* format, ...)
 
 
 /* PUBLIC METHODS */
+
 
 /**
  * @return The exception message.

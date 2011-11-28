@@ -18,6 +18,8 @@
 
 #include "pipe.h"
 
+using namespace AyeString;
+
 /**
  * Constructor.
  */
