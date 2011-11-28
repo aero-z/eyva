@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * `eyva' (server) - Game manager and handler (implementation).
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,7 +26,8 @@
 Game::Game(Pipe* pipe)
 {
 	this->pipe = pipe;
-	// TODO
+	characters_savefile = new FileHandler("usr/characters.db");
+	object_database = new FileHandler("usr/objects.db");
 }
 
 /**
@@ -34,7 +35,9 @@ Game::Game(Pipe* pipe)
  */
 Game::~Game(void)
 {
-	// VOID
+	characters_savefile->save();
+	delete characters_savefile;
+	delete object_database;
 }
 
 
@@ -63,5 +66,4 @@ Game::logout(int session_id)
 			characters.erase(characters.begin()+i);
 		}
 }
-
 

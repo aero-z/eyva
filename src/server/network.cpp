@@ -103,6 +103,9 @@ Network::~Network(void)
 
 	delete game;
 	delete pipe;
+
+	user_savefile->save();
+	delete user_savefile;
 }
 
 

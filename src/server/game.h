@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * `eyva' (server) - Game manager and handler.
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,12 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
+// Server:
 #include "character.h"
 #include "pipe.h"
+
+// Utils:
+#include <utils/file_handler.h>
 
 class
 Game
@@ -34,6 +38,8 @@ Game
 	private:
 		Pipe* pipe;
 		std::vector<Character*> characters;
+		FileHandler* characters_savefile;
+		FileHandler* object_database;
 };
 
 #endif
