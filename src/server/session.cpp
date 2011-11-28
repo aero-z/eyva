@@ -1,6 +1,6 @@
 /*
  * `eyva' (server) handles one connection
- * Copyright (C) 2011  ayekat (martin.weber@epfl.ch)
+ * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
