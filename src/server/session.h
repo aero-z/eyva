@@ -42,23 +42,23 @@ Session
 		Session(int session_id, char const* ip, Pipe* pipe, Game* game,
 				FileHandler* file_handler);
 		~Session(void);
-		void process(char const* message, size_t message_len);
+		void process(char const* msg, size_t msg_len);
 		char const* getIP(void);
 		int getSessionID(void);
 	
 	private:
-		void handle_CONNECT(char const* message);
-		void handle_DISCONNECT(char const* message);
-		void handle_REQUEST_CHARACTER_LIST(char const* message);
+		void handle_CONNECT(char const* msg);
+		void handle_DISCONNECT(char const* msg);
+		void handle_REQUEST_CHARACTER_LIST(char const* msg);
+		void handle_ERROR_AUTHENTICATION(void);
+
 		Pipe* pipe;
 		Game* game;
 		User* user;
 		FileHandler* user_savefile;
 		int session_id;
 		char* ip;
-		int user_id;
 		bool authenticated;
-		char buffer[BUFFER_SIZE];
 };
 
 #endif

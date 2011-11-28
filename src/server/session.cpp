@@ -69,17 +69,16 @@ Session::~Session(void)
 
 /**
  * This method handles a message received by the client.
- * @param message     The received message.
- * @param message_len The received message's length.
+ * @param msg     The received message.
+ * @param msg_len The received message's length.
  */
 void
-Session::process(char const* message, size_t message_len)
+Session::process(char const* msg, size_t msg_len)
 {
 	/* TODO
 	 * This is temporary, until we've got an admin client:
 	 */
-	if(message_len == 3 && message[0] == ':' && message[1] == 'q'
-			&& message[2] == 10) {
+	if(msg_len == 3 && msg[0] == ':' && msg[1] == 'q' && msg[2] == 10) {
 		logf(LOG_DEBUG, ":q");
 		char response[] = {0x00, 0x00, 0x00, 0x00};
 		pipe->push(response);
@@ -88,9 +87,9 @@ Session::process(char const* message, size_t message_len)
 
 	/* Check message length:
 	 */
-	if(message_len < 4 || msglen(message) != message_len) {
+	if(msg_len < 4 || msglen(msg) != msg_len) {
 		logf(LOG_DEBUG, "[52 ERROR_MESSAGE_LEN] (%u instead of %u)",
-				message_len, message_len >= 4 ? msglen(message) : 0);
+				msg_len, msg_len >= 4 ? msglen(msg) : 0);
 		char response[] = {session_id, 0x52, 0x00, 0x00};
 		pipe->push(response);
 		return;
@@ -98,18 +97,22 @@ Session::process(char const* message, size_t message_len)
 
 	/* This is the part where the messages are checked and processed:
 	 */
-	switch(message[1]) {
+	switch(msg[1]) {
 		case 0x11:
-			handle_CONNECT(message);
+			handle_CONNECT(msg);
 			break;
 		case 0x15:
-			handle_DISCONNECT(message);
+			handle_DISCONNECT(msg);
 			break;
 		case 0x16:
-			handle_REQUEST_CHARACTER_LIST(message);
+			authenticated ?
+					handle_REQUEST_CHARACTER_LIST(msg) :
+					handle_ERROR_AUTHENTICATION();
 			break;
 		default:
-			game->process(message);
+			authenticated ?
+					game->process(msg) :
+					handle_ERROR_AUTHENTICATION();
 			break;
 	}
 }
@@ -140,19 +143,19 @@ Session::getSessionID(void)
  * That's the first message to be received by the client. It contains the
  * client's software version on bytes 10-12, plus the username on bytes 13+
  * (zero terminated).
- * @param message The message received from the client.
+ * @param msg The message received from the client.
  */
 void
-Session::handle_CONNECT(char const* message)
+Session::handle_CONNECT(char const* msg)
 {
 	logf(LOG_DEBUG, "[11 CONNECT]");
 	bool valid = true;
 
 	/* Check client software version:
 	 */
-	valid = valid && (message[10] == VERSION_MAJOR_RELEASE);
-	valid = valid && (message[11] == VERSION_MINOR_RELEASE);
-	valid = valid && (message[12] == VERSION_PATCH);
+	valid = valid && (msg[10] == VERSION_MAJOR_RELEASE);
+	valid = valid && (msg[11] == VERSION_MINOR_RELEASE);
+	valid = valid && (msg[12] == VERSION_PATCH);
 	if(!valid) { // [51 ERROR_CLIENT_COMPATIBILITY]
 		logf(LOG_DEBUG, "[51 ERROR_CLIENT_COMPATIBILITY]");
 		char response[] = {session_id, 0x51, 0x03, 0x00,
@@ -165,7 +168,7 @@ Session::handle_CONNECT(char const* message)
 	/* Check login credentials:
 	 */
 	try {
-		user = new User(message+13, user_savefile);
+		user = new User(msg+13, user_savefile);
 	} catch(Exception* e) {
 		logf(LOG_WARNING, "%s", e->str());
 		valid = false;
@@ -179,7 +182,7 @@ Session::handle_CONNECT(char const* message)
 	}
 
 	// [12 ACCEPT_CONNECTION]
-	logf(LOG_DEBUG, "[12 ACCEPT_CONNECTION]: %s", message+13);
+	logf(LOG_DEBUG, "[12 ACCEPT_CONNECTION]: %s", msg+13);
 	authenticated = true;
 	char response[] = {session_id, 0x12,0x05,0x00,'d','a','d','a','\n'};
 	//TODO message of the day
@@ -192,10 +195,10 @@ Session::handle_CONNECT(char const* message)
  * NOTE: This method actually doesn't do anything, but instead alerts the
  *       network handler to destroy this object (so the session handler's
  *       destructor will do the necessary stuff).
- * @param message The message received from the client.
+ * @param msg The message received from the client.
  */
 void
-Session::handle_DISCONNECT(char const* message)
+Session::handle_DISCONNECT(char const* msg)
 {
 	logf(LOG_DEBUG, "[15 DISCONNECT]");
 	char response[] = {session_id, 0x01, 0x00, 0x00};
@@ -205,16 +208,12 @@ Session::handle_DISCONNECT(char const* message)
 /* This method handles the [16 REQUEST_CHARACTER_LIST] message.
  * It's a request for all characters belonging to a user. First check if the
  * client is correctly logged in before answering on that one:
+ * @param msg The message received from the client.
  */
 void
-Session::handle_REQUEST_CHARACTER_LIST(char const* message)
+Session::handle_REQUEST_CHARACTER_LIST(char const* msg)
 {
 	logf(LOG_DEBUG, "[16 REQUEST_CHARACTER_LIST]");
-	if(!authenticated) { // [50 ERROR_AUTHENTICATION]
-		char response[] = {session_id, 0x50, 0x00, 0x00};
-		pipe->push(response);
-		return;
-	}
 	std::vector<int> characters;
 	user_savefile->getCharacters(&characters, session_id);
 	char response[characters.size()+4];
@@ -226,6 +225,16 @@ Session::handle_REQUEST_CHARACTER_LIST(char const* message)
 	response[3] = 0;
 	for(size_t i = 0; i < characters.size(); i++)
 		response[i+4] = characters[i];
+	pipe->push(response);
+}
+
+/**
+ * This method sends the [50 ERROR_AUTHENTICATION] message to the client.
+ */
+void
+Session::handle_ERROR_AUTHENTICATION(void)
+{
+	char response[] = {session_id, 0x50, 0x00, 0x00};
 	pipe->push(response);
 }
 
