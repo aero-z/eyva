@@ -88,7 +88,7 @@ WinPlayground::unfocus(void)
 void
 WinPlayground::repaint(void)
 {
-	setBG(7);
+	setBG(22);
 
 	// TODO
 

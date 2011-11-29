@@ -94,7 +94,10 @@ Window::initColors(void)
 	init_pair(11, COLOR_BLACK, COLOR_BLACK); // e.g. actionbar
 
 	// playground-specific:
-	init_pair(20, COLOR_CYAN, COLOR_BLUE);  // e.g. water
+	init_pair(20, COLOR_BLUE, COLOR_CYAN);  // [3 SHALLOW_WATER]
+	init_pair(21, COLOR_CYAN, COLOR_BLUE);  // [4 DEEP_WATER]
+	init_pair(22, COLOR_WHITE, COLOR_GREEN); // [1 GRASS]
+	init_pair(23, COLOR_WHITE, COLOR_YELLOW); // [2 SAND]
 }
 
 /**

@@ -1,0 +1,76 @@
+EYVA 0.1
+========
+Map terrain values definition
+
+
+Purpose:
+
+    This file serves as an information base for terrain values found in map
+    files.
+
+    Some terrain types specify a terrain object that does not define the ground.
+    In such case, the object may be assumed to be placed upon one of the
+    following ground types:
+
+     * GRASS
+     * SAND
+     * SHALLOW_WATER
+     * DEEP_WATER
+
+    where it will get the ground type that occurs the most in the 8 fields next
+    to the object itself.
+    In case of draw, the type will become the first one of the list above.
+
+    Example:
+    If for example there's a tree surrounded by 2 grass fields, 3 sand
+    fields and 3 shallow water fields, the type of the ground underneath the
+    tree will become "sand").
+
+
+Miscellaneous information:
+
+    Lines 21 and further define the effects that trigger on entering the field.
+    Each line corresponds to a number appearing in the map.
+
+
+Keytable:
+
+ 0  '?' VOID
+        Accessible field that contains nothing. Its purpose is to fill the
+        undefined fields in a map that is not of dimension 40x20.
+        It may also represent a hole, so if a character enters a void field, it
+        will automatically be dropped to the next lower terrain level.
+
+ 1  ' ' GRASS
+        Accessible field that represents a field of grass.
+
+ 2  '.' SAND
+        Accessible field that represents a field of sand.
+
+ 3  'w' SHALLOW_WATER
+        Accessible field that represents a shallow water field. It can be
+        accessed without ability to swim.
+
+ 4  'W' DEEP_WATER
+        Limitedly accessible field that represents a deep water field. It can be
+        accessed only with ability to swim. It causes exhaution at the character
+        for each step taken in that field.
+ 
+ 5  'f' FIRE
+        Accessible field that represents fire. It causes damage at the character
+        for each time period it is in that field.
+ 
+ 6  '~' LAVA
+        Accessible field that represents liquid lava. It causes instant death to
+        the character entering that field.
+ 
+11  '|' WALL_VERTICAL
+12  '-' WALL_HORIZONTAL
+13  '+' WALL_CROSSING
+        Inaccessible object that represent natural walls. Using a pickaxe, one
+        can gain a certain amount of stone from the wall.
+
+14  'T' TREE
+        Inaccessible object that represents a major size plant. Using a hatchet,
+        one can gain a certain amount of wood from the tree.
+
