@@ -23,11 +23,11 @@ UI
 		SDL_Event* event;
 		SDL_Surface* screen;
 		SDL_Surface* image;
-		SDL_Rect* image_pos;
+		SDL_Rect* image_rect;
+		SDL_Rect* mouse_rect;
 		Uint8* keys;
+		Uint8* buttons;
 		bool term_signal;
-		int xpos_new, ypos_new;
-		int xpos, ypos;
 };
 
 #endif

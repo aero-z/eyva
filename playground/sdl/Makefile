@@ -1,2 +1,2 @@
 all: *.h *.cpp
-	g++ `sdl-config --cflags --libs` *.cpp -o eyva
+	g++ -Wall `sdl-config --cflags --libs` *.cpp -o eyva
