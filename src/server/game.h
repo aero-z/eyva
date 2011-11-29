@@ -36,9 +36,12 @@ Game
 		void logout(int session_id);
 	
 	private:
+		void handle_REQUEST_CHARACTER_INFO(char const* msg);
+		void handle_ERROR_INVALID_MESSAGE(char const* msg);
+
 		Pipe* pipe;
 		std::vector<Character*> characters;
-		FileHandler* characters_savefile;
+		FileHandler* character_savefile;
 		FileHandler* object_database;
 };
 

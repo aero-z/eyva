@@ -26,7 +26,7 @@
 Game::Game(Pipe* pipe)
 {
 	this->pipe = pipe;
-	characters_savefile = new FileHandler("usr/characters.db");
+	character_savefile = new FileHandler("usr/characters.db");
 	object_database = new FileHandler("usr/objects.db");
 }
 
@@ -35,8 +35,8 @@ Game::Game(Pipe* pipe)
  */
 Game::~Game(void)
 {
-	characters_savefile->save();
-	delete characters_savefile;
+	character_savefile->save();
+	delete character_savefile;
 	delete object_database;
 }
 
@@ -51,7 +51,14 @@ Game::~Game(void)
 void
 Game::process(char const* msg)
 {
-	// TODO
+	switch(msg[1]) {
+		case 0x42:
+			handle_REQUEST_CHARACTER_INFO(msg);
+			break;
+		default:
+			handle_ERROR_INVALID_MESSAGE(msg);
+			break;
+	}
 }
 
 /**
@@ -65,5 +72,62 @@ Game::logout(int session_id)
 		if(characters[i]->getSessionID() == session_id) {
 			characters.erase(characters.begin()+i);
 		}
+}
+
+
+/* PRIVATE METHODS */
+
+
+/**
+ * This method sends a message containing information for a given character ID.
+ * @param msg The message received from the client.
+ */
+void
+Game::handle_REQUEST_CHARACTER_INFO(char const* msg)
+{
+	/* Get the info from the savefile:
+	 */
+	int id = msg[0];
+	int name_len;
+	char* name = new char[name_len = character_savefile->getName(NULL, id, 0)];
+	if(name_len == 0) {
+		/* We know the character does not exist if its name length is 0:
+		 */
+		char* response = new char[4];
+		response[0] = id;
+		response[1] = 0x53; // [53 ERROR_CHARACTER_NOT_FOUND]
+		response[2] = 0;
+		response[3] = 0;
+		pipe->push(response);
+		return;
+	}
+	character_savefile->getName(name, id, strlen(name));
+	int tribe = character_savefile->getTribe(id);
+	int level = character_savefile->getLevel(id);
+
+	/* Assemble the response:
+	 */
+	int msg_body_len = strlen(name)+3;
+	char* response = new char[4+msg_body_len];
+	response[0] = id;
+	response[1] = 0x43; // [43 CHARACTER_INFO]
+	response[2] = msg_body_len % 256;
+	response[3] = msg_body_len >> 8;
+	response[4] = tribe;
+	response[5] = level;
+	for(size_t i = 0; i < strlen(name); i++)
+		response[i+6] = name[i];
+	pipe->push(response);
+}
+
+/**
+ * This method sends a [54 ERROR_INVALID_MESSAGE] message to the client.
+ * @param msg The message received from the client.
+ */
+void
+Game::handle_ERROR_INVALID_MESSAGE(char const* msg)
+{
+	char response[] = {msg[0], 0x54, 0x00, 0x00};
+	pipe->push(response);
 }
 

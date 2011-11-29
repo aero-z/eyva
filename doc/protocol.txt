@@ -244,9 +244,10 @@ Message definition:
     A message containing all important information about a character.
 
     BODY:
-    - character name (* bytes)
-    - character class (1 byte)
+    - character ID (1 byte)
+    - character tribe (1 byte)
     - character level (1 byte)
+    - character name (* bytes)
     
 
 =============
@@ -272,4 +273,13 @@ Message definition:
 52  ERROR_MESSAGE_LEN - [server]
     The message received from the client did not have the same length as
     indicated in the message.
+
+
+53  ERROR_CHARACTER_NOT_FOUND - [server]
+    If the client requests for character with an invalid ID.
+
+
+54  ERROR_INVALID_MESSAGE - [server]
+    If the message received from the client does not make sense (invalid message
+    ID).
 
