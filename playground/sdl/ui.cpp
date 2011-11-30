@@ -6,11 +6,12 @@ UI::UI(void)
 		throw new Exception("SDL_Init failed");
 	
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+	SDL_WM_SetCaption("eyva", "eyva");
 
 	event = new SDL_Event();
 	term_signal = false;
 
-	screen = SDL_SetVideoMode(400, 260, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	screen = SDL_SetVideoMode(500, 300, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
 	if(screen == NULL)
 		throw new Exception("Surface initialisation failed");
 
@@ -29,6 +30,14 @@ UI::UI(void)
 			SDL_MapRGB(image->format, 255, 255, 255)); // make white transparent
 	SDL_BlitSurface(image, NULL, screen, image_rect);
 
+	/* Setup mouse:
+	 */
+	//SDL_ShowCursor(SDL_DISABLE);
+	Uint8 data[7] = {0, 0, 0, 0, 0, 0, 0};
+	Uint8 mask[7] = {0x82, 0x44, 0x28, 0x10, 0x28, 0x44, 0x82};
+	cursor = SDL_CreateCursor(data, mask, 7, 7, 3, 3);
+	SDL_SetCursor(cursor);
+
 	/* Print out (with double buffering):
 	 */
 	SDL_Flip(screen);
@@ -36,6 +45,7 @@ UI::UI(void)
 
 UI::~UI(void)
 {
+	SDL_FreeCursor(cursor);
 	SDL_FreeSurface(image);
 	SDL_Quit();
 }
@@ -117,10 +127,10 @@ UI::handleData(void)
 void
 UI::render(void)
 {
-	mouse_rect->w = 20;
-	mouse_rect->h = 20;
 	SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
 	SDL_BlitSurface(image, NULL, screen, image_rect);
+	mouse_rect->w = 20;
+	mouse_rect->h = 20;
 	SDL_FillRect(screen, mouse_rect, SDL_MapRGB(screen->format, 100, 180, 50));
 	SDL_Flip(screen);
 }

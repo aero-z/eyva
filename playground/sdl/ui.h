@@ -25,6 +25,7 @@ UI
 		SDL_Surface* image;
 		SDL_Rect* image_rect;
 		SDL_Rect* mouse_rect;
+		SDL_Cursor* cursor;
 		Uint8* keys;
 		Uint8* buttons;
 		bool term_signal;
