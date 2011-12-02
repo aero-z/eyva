@@ -131,7 +131,7 @@ UI::render(void)
 	SDL_BlitSurface(image, NULL, screen, image_rect);
 	mouse_rect->w = 20;
 	mouse_rect->h = 20;
-	SDL_FillRect(screen, mouse_rect, SDL_MapRGB(screen->format, 100, 180, 50));
+	//SDL_FillRect(screen, mouse_rect, SDL_MapRGB(screen->format, 100, 180, 50));
 	SDL_Flip(screen);
 }
 
