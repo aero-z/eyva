@@ -1,22 +1,21 @@
-+-+-------------+---------+------------+
-|               |         |            |
-+-+             |         |  WWWWWWWWWWW
-|     +-+       |            W   +-----+
-|     |1|       |         |  W   |     |
-|     |         |         |  W         |
-|     +-+       |         |  W   |     |
-|               +------- -+  W   +-----+
-|   WWWWWWWWWWWWWWWWWWWWWWWWWW         |
-|  WWWWWW     +--------- ---+          |
-|  WWWWWW     |             |          |
-|  WWWWWW     | 2           |          |
-|  WWWW       |             |      +---+
-|   WW        |             |      |    
-|   W                       |      |
-|   W         |             |      |
-|   W         |             |      |
-+-+WW         |             |      |
-  |W          |             |      |
-  +W----------+-------------+------+
+O O O O O O O O O O O O O O O O O o o o o       .   O O O O o o o o o o o O O O
+O           o o               O O       o o     .   O             w w w       O
+O O o                        T  O       o o o   .   o       w w w w   w w w w w
+O o       o o o  T T T T        O o             . . . .   w w     O O O O O O O
+O o       o o o    T T T        O o             .   o .   w       o o         o
+O         o o1     T            O               .   o . . w . . . . . . . . . .
+O         o o o    T       T    OT T    o o o   o#o O     w   o o o           o
+O                  T T T T T T ToToTO O O O O O O#O O   w w     O o o o o o o o
+O       w w w w w w w w w w w w    T T  o O ? ? ?#O   w w         o           o
+O     w W W W W wT T T T T To w w w wTw w o O O O#O o w o         O o         o
+O     w W WTW W w    T T T ToT T T T T  w w     o#w w w O         o           o
+O     w W W w w w    T T T ToT T? ?  T    w   w w#w     O                   o o
+O     w w w w          T   ToT T T?  T    w w w .#      O           o O o o o o
+O       w w            T   ToT   T              .       O             o
+O       w          T T T                        .       o             O
+O o     w          T       To                   .       O             o O
+O oT T Tw              T T To                   .       O o           o O o
+O O o w wT             T T  o               . . .       o O o o       O O
+O O O wT T T              o O o             .           o O O . . . . . . . . .
+o O O wTO O O O o o o o O O O O O O o o o o . o O O O O O O O .   o o O O O o o
 1:01000001:1:2
-2:0054AAF0

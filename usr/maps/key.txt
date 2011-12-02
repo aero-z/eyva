@@ -7,33 +7,18 @@ Purpose:
 
     This file serves as an information base for terrain values found in map
     files.
-
-    Some terrain types specify a terrain object that does not define the ground.
-    In such case, the object may be assumed to be placed upon one of the
-    following ground types:
-
-     * GRASS
-     * SAND
-     * SHALLOW_WATER
-     * DEEP_WATER
-
-    where it will get the ground type that occurs the most in the 8 fields next
-    to the object itself.
-    In case of draw, the type will become the first one of the list above.
-
-    Example:
-    If for example there's a tree surrounded by 2 grass fields, 3 sand
-    fields and 3 shallow water fields, the type of the ground underneath the
-    tree will become "sand").
+    A field on the map is represented by two characters, the first one
+    describing the basic terrain, the second one describing the object placed on
+    it.
 
 
 Miscellaneous information:
 
-    Lines 21 and further define the effects that trigger on entering the field.
+    Lines 21 and further define the effects that trigger on entering a field.
     Each line corresponds to a number appearing in the map.
 
 
-Keytable:
+Basic terrain:
 
  0  '?' VOID
         Accessible field that contains nothing. Its purpose is to fill the
@@ -64,13 +49,22 @@ Keytable:
         Accessible field that represents liquid lava. It causes instant death to
         the character entering that field.
  
-11  '|' WALL_VERTICAL
-12  '-' WALL_HORIZONTAL
-13  '+' WALL_CROSSING
-        Inaccessible object that represent natural walls. Using a pickaxe, one
-        can gain a certain amount of stone from the wall.
+ 7  'o' ROCK_SMALL
+        Inaccessible field that represents a small rock.
+ 
+ 8  'O' ROCK_LARGE
+        Inaccessible field that represents a large rock. Using a pickaxe, one
+        may gain a certain amount of stone from the large rock.
+ 
 
-14  'T' TREE
+Terrain objects:
+
+20  'T' TREE
         Inaccessible object that represents a major size plant. Using a hatchet,
         one can gain a certain amount of wood from the tree.
+
+21  '#' BRIDGE
+        Accessible object that represents a bridge or footbridge. It disables
+        the field's properties, no matter what terrain is underneath (so Lava
+        won't be lethal, deep water does not require the ability to swim, etc.).
 
