@@ -19,19 +19,12 @@
 #ifndef _MAIN_H_
 #define _MAIN_H_
 
-// Client:
-#include "game.h"
-#include "network.h"
-#include "ui/ui.h"
-#include "pipe.h"
+#include "gui.h"
 
-// Utils:
 #include <utils/ayelog.h>
+#include <utils/exception.h>
 
-Pipe* network_pipe;
-Network* network;
-UI* ui;
-Game* game;
+GUI* gui;
 
 int main(int argc, char** argv);
 

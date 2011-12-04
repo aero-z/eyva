@@ -16,27 +16,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "main.h"
+#include "gui.h"
 
 /**
- * This is the program's main function. It will create a graphical user
- * interface and start its game loop.
- * @param argc Number of arguments given at program start.
- * @param argv Array of arguments.
- * @return     0 if success, otherwise -1.
+ * Constructor.
  */
-int
-main(int argc, char** argv)
+GUI::GUI(void)
 {
+	pipe = new Pipe();
 	try {
-		gui = new GUI();
+		network = new Network(pipe);
 	} catch(Exception* e) {
-		AyeLog::logf(LOG_ERROR, "%s", e->str());
-		return -1;
+		throw new Exception("network: %s", e->str());
 	}
-	gui->run();
-	delete gui;
+}
 
-	return 0;
+/**
+ * Destructor.
+ */
+GUI::~GUI(void)
+{
+	delete network;
+	delete pipe;
+}
+
+/**
+ * This method starts the game loop.
+ */
+void
+GUI::run(void)
+{
+	// TODO
 }
 

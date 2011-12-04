@@ -5,26 +5,32 @@ Readme file
 
 Introduction:
 
-    `eyva' is an attempt to create a network-capable role playing game in 2D.
+    EYVA is an attempt to create a network-capable role playing game in 2D.
 
 
 Requirements:
 
-    * sdl
+    <none>
 
 
 Build:
 
-    Run `make' in the project's root directory. This will create server and
-    client binaries.
+    Run make in the project's root directory. This will create server and client
+    binaries.
 
 
 Execute:
    
-    * `eserver' will listen to port 1251. You may use `netcat' to send and
-      receive data. The server can be stopped by sending ":q\n".
-    * `eclient' is currently just a UI without any functionality. It may be
-      closed by pressing ESC or just closing the window.
+    'eserver' will listen to port 1251. You may use netcat to send and
+    receive data. The server can be stopped by receiving ":q\n".
+
+    'eclient' doesn't do anything.
+
+
+Bugs:
+
+    Please report bugs to the project site:
+    https://github.com/ayekat/eyva
 
 
 Licence:
@@ -43,10 +49,4 @@ Licence:
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
-Bugs:
-
-    Please report bugs to the project site:
-    https://github.com/ayekat/eyva
 

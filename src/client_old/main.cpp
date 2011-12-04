@@ -19,24 +19,35 @@
 #include "main.h"
 
 /**
- * This is the program's main function. It will create a graphical user
- * interface and start its game loop.
- * @param argc Number of arguments given at program start.
- * @param argv Array of arguments.
- * @return     0 if success, otherwise -1.
+ * The main function.
+ * The program loop is running in here.
+ * @param argc Number of arguments passed on program invoke.
+ * @param argv String array containing the arguments.
  */
 int
 main(int argc, char** argv)
 {
-	try {
-		gui = new GUI();
-	} catch(Exception* e) {
-		AyeLog::logf(LOG_ERROR, "%s", e->str());
-		return -1;
-	}
-	gui->run();
-	delete gui;
+	AyeLog::log_verbosity = 3;   // debug log output
 
+	game = new Game();
+	network_pipe = new Pipe();
+	ui = new UI(network_pipe, game);
+	network = new Network(game, ui, network_pipe);
+
+	/* Loop: Check for activitiy on the network layer, then for activity on
+	 * userspace level.
+	 */
+	for(bool term_signal = false; !term_signal; ) {
+		network->poll();
+		ui->poll(1.0);
+		term_signal = ui->checkTermSignal();
+	}
+
+	delete game;
+	delete ui;
+	AyeLog::logf(LOG_NORMAL, "shutting down eyva client ...");
+	delete network;
+	delete network_pipe;
 	return 0;
 }
 

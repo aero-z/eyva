@@ -19,17 +19,20 @@
 #include "network.h"
 
 using namespace AyeLog;
+using namespace AyeString;
 
 /**
- * Constructor.
- * @param pipe The GUI's "postbox". It's required to communicate to the GUI.
+ * Constructor
+ * @param game Class to handle and store game data.
+ * @param ui   User interface that will display stuff.
+ * @param pipe Network's "postbox".
  */
-Network::Network(Pipe* pipe)
+Network::Network(Game* game, UI* ui, Pipe* pipe)
 {
+	this->game = game;
+	this->ui = ui;
 	this->pipe = pipe;
 	connected = false;
-	for(int i = 0; i < BUFFER_SIZE; i++)
-		buffer[i] = 0;
 }
 
 /**
@@ -37,11 +40,28 @@ Network::Network(Pipe* pipe)
  */
 Network::~Network(void)
 {
-	disconnect();
+	// VOID
 }
 
 
 /* PUBLIC METHODS */
+
+
+/**
+ * This method checks the network socket if there is data on it, and it checks
+ * the data handler if this object has been alerted by the UI, so there is data
+ * to be sent to the server.
+ */
+void
+Network::poll(void)
+{
+	if(connected)
+		pollIn();
+	pollOut();
+}
+
+
+/* PRIVATE METHODS */
 
 
 /**
@@ -97,12 +117,9 @@ Network::connect(char const* ip, int port)
 void
 Network::disconnect(void)
 {
-	if(!connected)
-		return;
-	
 	/* Send a zero-byte message, which will close the connection.
 	 */
-	::send(sockc, NULL, 0, MSG_NOSIGNAL);
+	send(sockc, NULL, 0, MSG_NOSIGNAL);
 
 	/* Close the socket:
 	 */
@@ -114,14 +131,11 @@ Network::disconnect(void)
  * This method checks incoming network data and forwards them to the UI.
  */
 void
-Network::poll(void)
+Network::pollIn(void)
 {
-	if(!connected)
-		return;
-	
 	/* Read data to buffer:
 	 */
-	int received = read(sockc, buffer, BUFFER_SIZE);
+	int received = read(sockc, buffer_in, BUFFER_SIZE);
 
 	/* If the number of bytes received is equal to zero, the connection has been
 	 * closed by the server:
@@ -136,26 +150,46 @@ Network::poll(void)
 	 * Process the received bytes if the number is positive:
 	 */
 	if(received > 0) {
-		// TODO received -> package handler -> gui
+		game->process(buffer_in);
+		ui->process(buffer_in);
 	}
 }
 
 /**
- * This method sends data to the server.
- * @param msg The message to be sent.
+ * This method checks the postmaster for new messages and processes them.
  */
 void
-Network::send(char const* msg)
+Network::pollOut(void)
 {
-	// TODO msg -> package handler -> send
-
-	//int sent = ::send(sockc, msg, msglen(msg), MSG_NOSIGNAL);
-
-	/* send() should return the number of bytes sent. If the number is
-	 * negative or equal to zero, there must have been an error, so close
-	 * the connection:
+	/* Check for new messages in the postbox. The message will be stored to
+	 * buffer_out, the length of the data will be returned:
 	 */
-	//if(sent <= 0)
-		//disconnect();
+	for(size_t msg_len = pipe->fetch(buffer_out); msg_len > 0; ) {
+
+		/* Command [01 CONNECT] requires additional action:
+		 */
+		if(buffer_out[1] == 1) {
+			/* Prepare required data and connect:
+			 */
+			iptoa(buffer_in, buffer_out+4);   // IP address
+			int port = porttoi(buffer_out+8); // TCP port
+
+			/* If there was an error, don't go on to sending data.
+			 * TODO notify UI that connection failed
+			 */
+			if(!connect(buffer_in, port)) {
+				continue;
+			}
+		}
+	
+		int sent = send(sockc, buffer_out, msg_len, MSG_NOSIGNAL);
+
+		/* send() should return the number of bytes sent. If the number is
+		 * negative or equal to zero, there must have been an error, so close
+		 * the connection:
+		 */
+		if(sent <= 0)
+			disconnect();
+	}
 }
 

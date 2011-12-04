@@ -21,6 +21,8 @@
 
 // Client:
 #include "pipe.h"
+#include "ui/ui.h"
+#include "game.h"
 
 // Utils:
 #include <utils/ayelog.h>
@@ -56,17 +58,22 @@ class
 Network
 {
 	public:
-		Network(Pipe* pipe);
+		Network(Game* game, UI* ui, Pipe* pipe);
 		~Network(void);
-		bool connect(char const* ip, int port);
-		void disconnect(void);
 		void poll(void);
-		void send(char const* msg);
 
 	private:
+		bool connect(char const* ip, int port);
+		void disconnect(void);
+		void pollIn(void);
+		void pollOut(void);
+
+		Game* game;
+		UI* ui;
 		Pipe* pipe;
-		char buffer[BUFFER_SIZE];
 		int sockc;
+		char buffer_in[BUFFER_SIZE];
+		char buffer_out[BUFFER_SIZE];
 		bool connected;
 };
 

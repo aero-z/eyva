@@ -16,27 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "main.h"
+#ifndef _MAIN_H_
+#define _MAIN_H_
 
-/**
- * This is the program's main function. It will create a graphical user
- * interface and start its game loop.
- * @param argc Number of arguments given at program start.
- * @param argv Array of arguments.
- * @return     0 if success, otherwise -1.
- */
-int
-main(int argc, char** argv)
-{
-	try {
-		gui = new GUI();
-	} catch(Exception* e) {
-		AyeLog::logf(LOG_ERROR, "%s", e->str());
-		return -1;
-	}
-	gui->run();
-	delete gui;
+// Client:
+#include "game.h"
+#include "network.h"
+#include "ui/ui.h"
+#include "pipe.h"
 
-	return 0;
-}
+// Utils:
+#include <utils/ayelog.h>
+
+Pipe* network_pipe;
+Network* network;
+UI* ui;
+Game* game;
+
+int main(int argc, char** argv);
+
+#endif
 

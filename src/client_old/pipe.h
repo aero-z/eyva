@@ -16,27 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "main.h"
+#ifndef _PIPE_H_
+#define _PIPE_H_
 
-/**
- * This is the program's main function. It will create a graphical user
- * interface and start its game loop.
- * @param argc Number of arguments given at program start.
- * @param argv Array of arguments.
- * @return     0 if success, otherwise -1.
- */
-int
-main(int argc, char** argv)
+// Utils:
+#include <utils/ayestring.h>
+
+// Others:
+#include <vector>
+
+class
+Pipe
 {
-	try {
-		gui = new GUI();
-	} catch(Exception* e) {
-		AyeLog::logf(LOG_ERROR, "%s", e->str());
-		return -1;
-	}
-	gui->run();
-	delete gui;
+	public:
+		Pipe(void);
+		~Pipe(void);
+		size_t fetch(char* msg);
+		void add(char const* msg);
+		bool check(void);
+	
+	private:
+		std::vector<char*> box;
+};
 
-	return 0;
-}
+#endif
 
