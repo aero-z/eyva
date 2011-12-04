@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA - graphical user interface
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,30 +18,27 @@
 
 #include "gui.h"
 
-/**
- * Constructor.
- */
 GUI::GUI(void)
 {
 	pipe = new Pipe();
-	try {
-		network = new Network(pipe);
-	} catch(Exception* e) {
-		throw new Exception("network: %s", e->str());
-	}
+	network = NULL;
+
+	// TODO
 }
 
-/**
- * Destructor.
- */
 GUI::~GUI(void)
 {
-	delete network;
 	delete pipe;
+	if(network != NULL)
+		delete network;
 }
 
+
+/* PUBLIC METHODS */
+
+
 /**
- * This method starts the game loop.
+ * Initiate the game loop.
  */
 void
 GUI::run(void)

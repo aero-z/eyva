@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA - client side main function
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,7 @@
 #include "main.h"
 
 /**
- * This is the program's main function. It will create a graphical user
- * interface and start its game loop.
+ * Create graphical user interface and start its game loop.
  * @param argc Number of arguments given at program start.
  * @param argv Array of arguments.
  * @return     0 if success, otherwise -1.

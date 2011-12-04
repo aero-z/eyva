@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * `eyva' - application-widely used variables
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,19 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "pipe.h"
+#ifndef _VARIABLES_H_
+#define _VARIABLES_H_
 
-/**
- * Constructor.
+/* This is the size of a message head following the eyva protocol:
  */
-Pipe::Pipe(void)
-{
-}
+#define MESSAGE_HEAD_SIZE 4
 
-/**
- * Destructor.
+/* This is the size of the network buffer:
  */
-Pipe::~Pipe(void)
-{
-}
+#define BUFFER_SIZE (MESSAGE_HEAD_SIZE+65335)
+
+/* This is the maximum size of the exception message:
+ */
+#define BUFFER_EXCEPTION_MSG 80
+
+/* Release version:
+ */
+#define VERSION_MAJOR_RELEASE 0
+#define VERSION_MINOR_RELEASE 1
+#define VERSION_MAJOR_PATCH 0
+#define VERSION_MINOR_PATCH 0
+
+#endif
 

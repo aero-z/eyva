@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA - client side network handler
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,15 +19,10 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
-// Client:
-#include "pipe.h"
-
-// Utils:
-#include <utils/ayelog.h>
-#include <utils/exception.h>
-
-// Hybrid:
-#include <hybrid/eyva.h>
+#include <shared/pipe.h>
+#include <shared/variables.h>
+#include <shared/utils/ayelog.h>
+#include <shared/utils/exception.h>
 
 // Network:
 #include <sys/types.h>   // socket types
@@ -56,18 +51,15 @@ class
 Network
 {
 	public:
-		Network(Pipe* pipe);
+		Network(Pipe* pipe, char const* ip, int port);
 		~Network(void);
-		bool connect(char const* ip, int port);
-		void disconnect(void);
-		void poll(void);
 		void send(char const* msg);
+		bool poll(void);
 
 	private:
 		Pipe* pipe;
 		char buffer[BUFFER_SIZE];
 		int sockc;
-		bool connected;
 };
 
 #endif

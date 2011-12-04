@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,12 +19,22 @@
 #ifndef _PIPE_H_
 #define _PIPE_H_
 
+#include "utils/ayestring.h"
+
+#include <cstring>
+#include <vector>
+
 class
 Pipe
 {
 	public:
-		Pipe(void);
 		~Pipe(void);
+		void push(char const* msg);
+		bool check(void);
+		size_t fetch(char* buffer, size_t len);
+	
+	private:
+		std::vector<char*> pipe;
 };
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,9 +20,9 @@
 #define _GUI_H_
 
 #include "network.h"
-#include "pipe.h"
 
-#include <utils/exception.h>
+#include <shared/pipe.h>
+#include <shared/utils/exception.h>
 
 #include <SDL/SDL.h>
 

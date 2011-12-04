@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA - client side game data handler
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,15 +19,11 @@
 #include "data.h"
 
 /**
- * Constructor.
  */
 Data::Data(void)
 {
 }
 
-/**
- * Destructor.
- */
 Data::~Data(void)
 {
 }
