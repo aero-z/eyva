@@ -2,44 +2,12 @@
 
 # This is the highest ID. Anything above this will be read, but won't be
 # accessible through the file handler.
-.max:5
+.max:1
 
-.start
+{
 id:1
-name:"Small Refreshment"
-rules:"Use: You get back 1 life point."
-persistent:0
-effect:[1]:0x30:0x01:0x00:0x01
-value:2
-.end
-
-.start
-id:2
-name:"Swimming (Level 1)"
-rules:"You are able to swim in riverbanks."
+name:"Amulet of Water"
+rules:"You are able to swim, without inventory and/or gear."
 persistent:1
-.end
-
-.start
-id:3
-name:"Swimming (Level 2)"
-rules:"You are able to swim in deep water, without inventory and/or gear."
-persistent:1
-.end
-
-.start
-id:4
-persistent:1
-name:"Spirit of Gaara"
-rules:"You are able to swim in deep water."
-.end
-
-.start
-id:5
-effect:[1]:0x31:0x01:0x00:0x01:[2]
-persistent:0
-value:5
-name:"Brick"
-rules:"Use: Causes 1 damage to target opponent."
-.end
+}
 
