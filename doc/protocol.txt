@@ -3,22 +3,63 @@ EYVA 0.1
 protocol
 
 
-Structure:
+Structure definition:
 
-    The structure of a package following the `eyva' protocol looks like this:
+    +--------------------------------------------------------------------------+
+    | byte   meaning                                                           |
+    |                                                                          |
+    |  0-3   package header                                                    |
+    |  4-*   package body                                                      |
+    +--------------------------------------------------------------------------+
 
-    byte   meaning
-       0   Session ID (doesn't matter for client).
-       1   Message.
-     2-3   Message length (little endian).
-     4-*   Message data. The length is defined by the bytes 2 and 3, thus the
-           length can vary between 0 and 2^16-1 (65535).
+    Package head:
+    +--------------------------------------------------------------------------+
+    | byte   meaning                                                           |
+    |                                                                          |
+    |    0   client/session ID (doesn't matter for client)                     |
+    |    1   fragment size                                                     |
+    |    2   fragment index                                                    |
+    |    3   package body size                                                 |
+    +--------------------------------------------------------------------------+
 
-    This means, an `eyva' conform package has a total length of 4 bytes at least
-    and 65539 bytes at most.
+    Package body:
+    +--------------------------------------------------------------------------+
+    | byte   meaning                                                           |
+    |                                                                          |
+    |    4   message (or "command")                                            |
+    |  5-*   message body                                                      |
+    +--------------------------------------------------------------------------+
 
-    See the sections below for a defintion of all messages.
-    The list is built up as follows:
+    Since the package body size is defined by one byte, it can be 255 bytes at
+    most, thus a complete package (header and body) can get as big as 259 bytes
+    at most and 4 bytes at least (no-message package).
+    As a message may pass the 255 bytes mark, it has to be split up into
+    fragments. Every package holds the information of the number of fragments
+    into which the containing message is split up, plus the index of the
+    fragment that the package represents.
+
+    Example of a package header:
+    +----+----+----+----+
+    | 07 | 04 | 02 | FF |
+    +----+----+----+----+
+    The first byte indicates that we're handling the connection no. 7.
+    The second byte indicates that the message is split up into four fragments
+    in total.
+    The third byte indicates that this package is the second fragment of the
+    four fragments.
+    The fourth byte indicates the size of the package body (without header).
+
+    Further, there is the "non-message package" (package body length 0), which
+    is only sent for connection checks. Typically it will be sent to the client
+    by the server to make sure the client is still out there. Example:
+    +----+----+----+----+
+    | 04 | 01 | 01 | 00 |
+    +----+----+----+----+
+
+
+Message definition:
+
+    Messages are packed into packages and are defined as follows:
 
 
 XX  MESSAGE_NAME - [source]
@@ -33,115 +74,110 @@ XX  MESSAGE_NAME - [source]
     - element (size)
 
 
-Message definition:
+=================
+00-0F: USER LEVEL
+=================
 
 
-===========
-00-0F: meta
-===========
-
-
-00  SHUTDOWN - [internal]
-    This message is not sent over the network, but is used to set the
-    termination signal.
-    Currently implemented server-side.
-
-
-01  CLOSE - [internal]
-    This message is not sent over the network, but is used to tell the server
-    side network handler to close a session (typically sent by the session
-    itself).
-
-
-===============================
-10-1F: connection/session level
-===============================
-
-
-11  CONNECT - [client]
-    This is the first message sent to the server. It's a connection
-    request from the client containing all that is needed in a first step.
+00  REQUEST_SOFTWARE_CHECK - [client]
+    Before logging in, the client and server have to make sure they've got the
+    same software version.
 
     BODY:
-    - server's IP address (4 bytes)
-    - server's TCP port (2 bytes, little endian)
     - version number - major release (1 byte)
     - version number - minor release (1 byte)
-    - version number - patch (1 byte)
+    - version number - major patch (1 byte)
+
+
+01  ACCEPT_SOFTWARE_CHECK - [server]
+    In case the software versions match, this message is sent.
+
+
+02  REJECT_SOFTWARE_CHECK - [server]
+    In case the software version don't match, this message is sent, containing
+    the server's version.
+
+    BODY:
+    - version number - major release (1 byte)
+    - version number - minor release (1 byte)
+    - version number - major patch (1 byte)
+
+
+03  ATTEMPT_AUTHENTICATE - [client]
+
+    BODY:
     - username (* bytes)
+    - password (* bytes)
 
 
-12  ACCEPT_CONNECTION - [server]
-    After a [11 CONNECT], this is the server's answer to assure the client it
-    has correctly been connected.
+04  ACCEPT_AUTHENTICATE - [server]
 
     BODY:
     - message of the day (* bytes)
 
 
-14  KICK - [server]
-    If a server sends this, the client must consider itself "kicked out".
-    This is the `eyva' variant of a zero-byte message.
+05  REJECT_AUTHENTICATE - [server]
+    
+    BODY:
+    - error type (1 byte) (user not found (0) or wrong password (1))
+
+
+06  DISAUTHENTICATE - [client] [server]
+    A message indicating the end of an authenticated connection.
+
+
+07  REQUEST_CHARACTER_LIST - [client]
+    Requests a list of all characters belonging to the user.
+
+
+08  CHARACTER_LIST - [server]
+    A list of all characters belonging to a user.
 
     BODY:
-    - reason (* bytes)
-
-
-15  DISCONNECT - [client]
-    The client will invoke a disconnection process at the server.
-    This is the `eyva' variant of a zero-byte message.
-
-
-16  REQUEST_CHARACTER_LIST - [client]
-    A list of characters belonging to the user is requested.
-
-
-17  CHARACTER_LIST - [server]
-    A list of characters belonging to the user who requested it is sent.
-
-    BODY:
-    - number of characters (1 byte)
-    - repeat:
+    - n = number of characters (1 byte)
+    - repeat n times:
       + character ID (1 byte)
 
 
-===================
-20-3F: ingame level
-===================
-
-
-20  LOGIN - [client]
+09  LOGIN - [client]
     Login as a character to the game.
 
     BODY:
     - character ID
 
 
-21  LOGOUT - [client]
+0A  LOGOUT - [client]
     Logout from the game.
 
 
-22  SEND_MOVE_UP - [client]
-23  SEND_MOVE_DOWN - [client]
-24  SEND_MOVE_LEFT - [client]
-25  SEND_MOVE_RIGHT - [client]
+======================
+10-1F: CHARACTER LEVEL
+======================
+
+
+10  REQUEST_OBJECT_LIST - [client]
+    A list of objects belonging to one's character is requested.
+
+      
+11  OBJECT_LIST - [server]
+
+    BODY:
+    - n = number of objects (1 byte)
+    - repeat n times:
+      + object ID (1 byte)
+
+
+12  SEND_MOVE_UP - [client]
+13  SEND_MOVE_DOWN - [client]
+14  SEND_MOVE_LEFT - [client]
+15  SEND_MOVE_RIGHT - [client]
     Asks the server to move the character one step to north/south/west/east.
 
 
-26  ACTION - [client]
-    Triggers an action on the field the character is placed on.
-
-
-27  REQUEST_MAP_INFORMATION - [client]
-    Asks the server to send all information (map, players, objects, etc.).
-    Usually invoked after logging in or changing region.
-
-
-28  MOVE [server]
-    Broadcasts in the same region that something has been moved.
+16  MOVE_CHARACTER [server]
+    Region-broadcasts that a character has been moved.
 
     BODY:
-    - layer type (1 byte) (character, object, terrain)
     - ID (1 byte)
     - xstart (1 byte)
     - ystart (1 byte)
@@ -149,72 +185,114 @@ Message definition:
     - yend (1 byte)
 
 
-29  MAP_INFORMATION - [server]
-    If a character receives this message, it must consider itself as placed into
-    a new region (e.g. after logging in or changing region).
-    The client should erase all information about the region and replace it by
-    the newly received data.
-
-    BODY:
-    - terrain width (1 byte)
-    - terrain height (1 byte)
-    - terrain layer (bytes according to values above)
-    - number of objects in region (1 byte)
-      + object ID (1 byte)
-      + object x position (1 byte)
-      + object y position (1 byte)
-    - number of characters in region (1 byte)
-    - repeat:
-      + character ID (1 byte)
-      + character x position (1 byte)
-      + character y position (1 byte)
-
-
-2A  REQUEST_OBJECT_LIST - [client]
-    A list of objects belonging to one's character is requested.
-
-      
-2B  OBJECT_LIST - [server]
-
-    BODY:
-    - number of objects (2 bytes)
-    - repeat:
-      + object ID (1 bytes)
-      + object type (1 byte)
-
-
-2C  USE_OBJECT - [client]
-    This will result in the server executing the message linked to that object.
+17  USE_OBJECT - [client]
+    This will result in the server executing the message linked to a target
+    object.
 
     BODY:
     - object ID (1 bytes)
 
-30  GAIN_LIFE - [server]
-    A player will gain an amount of lifepoints.
+
+18  USE_POSSESSED_OBJECT - [client]
+    This will result in the server executing the message linked to an object
+    that is property of the character.
+
+    BODY:
+    - object ID (1 bytes)
+
+
+19  MOVE_OBJECT - [server]
+    Region-broadcasts that an object has been moved.
+
+    BODY:
+    - ID (1 byte)
+    - xstart (1 byte)
+    - ystart (1 byte)
+    - xend (1 byte)
+    - yend (1 byte)
+
+
+1A  CHANGE_LIFE - [server]
+    The lifepoints of a character are changed to a new value.
 
     BODY:
     - lifepoints (1 byte)
 
 
-31  DAMAGE - [server]
-    A player will lose an amount of lifepoints by damage caused by a source.
+1B  DAMAGE - [server]
+    An amount of damage is done to a player.
     
     BODY:
-    - lifepoints (1 byte)
-    - ID of source (1 byte)
+    - damage (1 byte)
+    - damage type (1 byte)
 
 
-32  LOSE_LIFE - [server]
-    A player will lose an amount of lifepoints because of a reason (e.g. fire).
+===================
+20-2F: REGION LEVEL
+===================
+
+
+20  REQUEST_TERRAIN_GROUND - [client]
+    Requests information concerning terrain information in the current region.
+
+
+21  TERRAIN_GROUND - [server]
+    Holds information to the terrain of the current region.
 
     BODY:
-    - lifepoints (1 byte)
-    - reason type (1 byte)
+    - terrain codes (40*20=800 bytes)
 
 
-===============================
-40-4F: social/interaction level
-===============================
+22  REQUEST_TERRAIN_OBJECTS - [client]
+    Requests information concerning terrain objects in the current region.
+
+
+23  TERRAIN_OBJECTS - [server]
+    Holds information to the terrain objects of the current region.
+
+    BODY:
+    - terrain object codes (40*20=800 bytes)
+
+
+24  REQUEST_OBJECT_LIST - [client]
+    Requests a list of informations to objects in the current region.
+
+
+25  OBJECT_LIST - [server]
+    A list of objects in the current region.
+
+    BODY:
+    - n = number of objects (1 byte)
+    - repeat n times:
+      + object ID (1 byte)
+      + type (1 byte) (non-blocking (0) or blocking (0))
+      + x position (1 byte)
+      + y position (1 byte)
+
+
+=========================
+30-3F: GLOBAL WORLD LEVEL
+=========================
+
+
+30  REQUEST_CHARACTER_LIST - [client]
+    Requests a list of all characters currently logged in to the game.
+
+
+31  CHARACTER_LIST - [server]
+    A list of all characters currently logged in to the game.
+
+    BODY:
+    - n = number of characters (1 byte)
+    - repeat n times:
+      + character ID (1 byte)
+      + x position (1 byte)
+      + y position (1 byte)
+
+
+=================================
+40-4F: SOCIAL & INTERACTION LEVEL
+=================================
 
 
 40  SEND_TWITTER - [client]
@@ -248,35 +326,20 @@ Message definition:
     - character tribe (1 byte)
     - character level (1 byte)
     - character name (* bytes)
-    
+
 
 =============
-50-6F: errors
+50-5F: ERRORS
 =============
 
 
-50  ERROR_AUTHENTICATION - [server]
-    The login credentials that were sent by the client are not correct. This
-    message is also sent if any message is sent that requires authentication
-    before.
+50  ERROR_PACKAGE_LEN - [server]
+    The package received from the client did not have the same length as
+    indicated in the package head.
 
 
-51  ERROR_CLIENT_COMPATIBILITY - [server]
-    The login cannot be continiued due to client version incompatibility.
-
-    BODY:
-    - required version number - major release (1 byte)
-    - required version number - minor release (1 byte)
-    - required version number - major patch (1 byte)
-
-
-52  ERROR_MESSAGE_LEN - [server]
-    The message received from the client did not have the same length as
-    indicated in the message.
-
-
-53  ERROR_CHARACTER_NOT_FOUND - [server]
-    If the client requests for character with an invalid ID.
+51  ERROR_PACKAGE_FRAGMENT - [server]
+    Indicating that a fragment was not correctly
 
 
 54  ERROR_INVALID_MESSAGE - [server]
