@@ -23,8 +23,8 @@ class
 CLASS
 {
 	public:
-		CLASS();
-		~CLASS();
+		CLASS(void);
+		~CLASS(void);
 };
 
 #endif
