@@ -75,7 +75,6 @@ Network::poll(void)
 	// read data to buffer:
 	int received = read(sockc, buffer, BUFFER_SIZE);
 
-
 	// if zero bytes where received, the connection has been closed:
 	if(received == 0)
 		return false;
