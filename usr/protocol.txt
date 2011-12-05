@@ -10,6 +10,7 @@ Structure definition:
     |                                                                          |
     |  0-3   package header                                                    |
     |  4-*   package body                                                      |
+    |        magic bytes                                                       |
     +--------------------------------------------------------------------------+
 
     Package head:
@@ -31,8 +32,10 @@ Structure definition:
     +--------------------------------------------------------------------------+
 
     Since the package body size is defined by one byte, it can be 255 bytes at
-    most, thus a complete package (header and body) can get as big as 259 bytes
-    at most and 4 bytes at least (no-message package).
+    most, thus a complete package (header and body) can get as big as 263 bytes
+    at most and 8 bytes at least (no-message package). See below for further
+    information about the magic bytes.
+
     As a message may pass the 255 bytes mark, it has to be split up into
     fragments. Every package holds the information of the number of fragments
     into which the containing message is split up, plus the index of the
@@ -42,18 +45,31 @@ Structure definition:
     +----+----+----+----+
     | 07 | 04 | 02 | FF |
     +----+----+----+----+
-    The first byte indicates that we're handling the connection no. 7.
+    The first byte indicates that we're handling client #7.
     The second byte indicates that the message is split up into four fragments
     in total.
     The third byte indicates that this package is the second fragment of the
     four fragments.
     The fourth byte indicates the size of the package body (without header).
 
-    Further, there is the "non-message package" (package body length 0), which
-    is only sent for connection checks. Typically it will be sent to the client
-    by the server to make sure the client is still out there. Example:
+    Further, there is the non-message package (package body length 0), which is
+    used for connection level purposes. The fragment bytes are both set to 0 to
+    indicate that it's a non-message package, while the size byte will hold the
+    information:
+    - 00: confirmation message
+    - 01: package length error
+    - 02: invalid message error
+
+    Example of a non-message package:
     +----+----+----+----+
-    | 04 | 01 | 01 | 00 |
+    | 04 | 00 | 00 | 02 |
+    +----+----+----+----+
+    This package will be sent to client #4
+
+    The magic bytes are four bytes added to the end of the package, the purpose
+    being to check the correctness of a package (they're always the same):
+    +----+----+----+----+
+    | 45 | 59 | 56 | 41 | (ASCII for 'EYVA')
     +----+----+----+----+
 
 
@@ -167,64 +183,12 @@ XX  MESSAGE_NAME - [source]
       + object ID (1 byte)
 
 
-12  SEND_MOVE_UP - [client]
-13  SEND_MOVE_DOWN - [client]
-14  SEND_MOVE_LEFT - [client]
-15  SEND_MOVE_RIGHT - [client]
-    Asks the server to move the character one step to north/south/west/east.
-
-
-16  MOVE_CHARACTER [server]
-    Region-broadcasts that a character has been moved.
-
-    BODY:
-    - ID (1 byte)
-    - xstart (1 byte)
-    - ystart (1 byte)
-    - xend (1 byte)
-    - yend (1 byte)
-
-
-17  USE_OBJECT - [client]
-    This will result in the server executing the message linked to a target
-    object.
+18  USE_OBJECT - [client]
+    This will result in the server executing the message linked to an object in
+    the character's inventory.
 
     BODY:
     - object ID (1 bytes)
-
-
-18  USE_POSSESSED_OBJECT - [client]
-    This will result in the server executing the message linked to an object
-    that is property of the character.
-
-    BODY:
-    - object ID (1 bytes)
-
-
-19  MOVE_OBJECT - [server]
-    Region-broadcasts that an object has been moved.
-
-    BODY:
-    - ID (1 byte)
-    - xstart (1 byte)
-    - ystart (1 byte)
-    - xend (1 byte)
-    - yend (1 byte)
-
-
-1A  CHANGE_LIFE - [server]
-    The lifepoints of a character are changed to a new value.
-
-    BODY:
-    - lifepoints (1 byte)
-
-
-1B  DAMAGE - [server]
-    An amount of damage is done to a player.
-    
-    BODY:
-    - damage (1 byte)
-    - damage type (1 byte)
 
 
 ===================
@@ -232,33 +196,11 @@ XX  MESSAGE_NAME - [source]
 ===================
 
 
-20  REQUEST_TERRAIN_GROUND - [client]
-    Requests information concerning terrain information in the current region.
-
-
-21  TERRAIN_GROUND - [server]
-    Holds information to the terrain of the current region.
-
-    BODY:
-    - terrain codes (40*20=800 bytes)
-
-
-22  REQUEST_TERRAIN_OBJECTS - [client]
-    Requests information concerning terrain objects in the current region.
-
-
-23  TERRAIN_OBJECTS - [server]
-    Holds information to the terrain objects of the current region.
-
-    BODY:
-    - terrain object codes (40*20=800 bytes)
-
-
-24  REQUEST_OBJECT_LIST - [client]
+20  REQUEST_OBJECT_LIST - [client]
     Requests a list of informations to objects in the current region.
 
 
-25  OBJECT_LIST - [server]
+21  OBJECT_LIST - [server]
     A list of objects in the current region.
 
     BODY:
@@ -270,17 +212,12 @@ XX  MESSAGE_NAME - [source]
       + y position (1 byte)
 
 
-=========================
-30-3F: GLOBAL WORLD LEVEL
-=========================
+22  REQUEST_CHARACTER_LIST - [client]
+    Requests a list of all characters in the region.
 
 
-30  REQUEST_CHARACTER_LIST - [client]
-    Requests a list of all characters currently logged in to the game.
-
-
-31  CHARACTER_LIST - [server]
-    A list of all characters currently logged in to the game.
+23  CHARACTER_LIST - [server]
+    A list of all characters in the region.
 
     BODY:
     - n = number of characters (1 byte)
@@ -290,27 +227,141 @@ XX  MESSAGE_NAME - [source]
       + y position (1 byte)
 
 
+24  ADD_CHARACTER - [server]
+    Region-broadcasts that a character has been created.
+
+    BODY:
+    - character ID (1 byte)
+    - x position (1 byte)
+    - y position (1 byte)
+
+
+25  REMOVE_CHARACTER - [server]
+    Region-broadcasts that a character has left the region.
+
+    BODY:
+    - character ID (1 byte)
+
+
+26  ADD_OBJECT - [server]
+    Region-broadcasts that an object has been created.
+
+    BODY:
+    - object ID (1 byte)
+    - x position (1 byte)
+    - y position (1 byte)
+
+
+27  REMOVE_OBJECT - [server]
+    Region-broadcasts that an object has left the region.
+
+    BODY:
+    - object ID (1 byte)
+
+
+28  SEND_MOVE_UP - [client]
+29  SEND_MOVE_DOWN - [client]
+2A  SEND_MOVE_LEFT - [client]
+2B  SEND_MOVE_RIGHT - [client]
+    Asks the server to move the character one step to north/south/west/east.
+
+
+2C  MOVE_CHARACTER [server]
+    Region-broadcasts that a character has been moved.
+
+    BODY:
+    - ID (1 byte)
+    - xstart (1 byte)
+    - ystart (1 byte)
+    - xend (1 byte)
+    - yend (1 byte)
+
+
+2D  USE_OBJECT - [client]
+    This will result in the server executing the message linked to a target
+    object.
+
+    BODY:
+    - object ID (1 bytes)
+
+
+2E  MOVE_OBJECT - [server]
+    Region-broadcasts that an object has been moved.
+
+    BODY:
+    - ID (1 byte)
+    - xstart (1 byte)
+    - ystart (1 byte)
+    - xend (1 byte)
+    - yend (1 byte)
+
+
+2F  CHANGE_LIFE - [server]
+    The lifepoints of a character are changed to a new value.
+
+    BODY:
+    - lifepoints (1 byte)
+
+
+30  DAMAGE - [server]
+    An amount of damage is done to a player.
+    
+    BODY:
+    - target ID (1 byte)
+    - source ID (1 byte)
+    - damage (1 byte)
+    - damage type (1 byte)
+
+
+=========================
+40-4F: GLOBAL WORLD LEVEL
+=========================
+
+
+40  REQUEST_CHARACTER_LIST - [client]
+    Requests a list of all characters according to search criteria.
+
+    BODY:
+    - search type (1 byte) (region=0, tribe=1, level=2, name=3)
+    - search value (size depending from search type)
+
+
+41  CHARACTER_LIST - [server]
+    A list of all characters currently logged in to the game.
+
+    BODY:
+    - n = number of characters (1 byte)
+    - repeat n times:
+      + character ID (1 byte)
+
+
 =================================
-40-4F: SOCIAL & INTERACTION LEVEL
+50-5F: SOCIAL & INTERACTION LEVEL
 =================================
 
 
-40  SEND_TWITTER - [client]
+50  SEND_TWITTER - [client]
     Send a chat message to all characters in the same region.
 
     BODY:
     - chat message (* bytes)
 
 
-41  SEND_MESSAGE - [client]
+51  SEND_MESSAGE - [client]
     Send a chat message to a specific recepient.
 
     BODY:
     - character ID (2 bytes)
-    - char message (* bytes)
+    - chat message (* bytes)
 
 
-42  REQUEST_CHARACTER_INFO - [client]
+52  MESSAGE - [server]
+    
+    BODY:
+    - message (* bytes)
+
+
+52  REQUEST_CHARACTER_INFO - [client]
     The client requests a message containing all important information about a
     character.
     
@@ -318,31 +369,13 @@ XX  MESSAGE_NAME - [source]
     - character ID (1 byte)
 
 
-43  CHARACTER_INFO - [server]
+53  CHARACTER_INFO - [server]
     A message containing all important information about a character.
 
     BODY:
     - character ID (1 byte)
     - character tribe (1 byte)
     - character level (1 byte)
+    - region ID (4 bytes)
     - character name (* bytes)
-
-
-=============
-50-5F: ERRORS
-=============
-
-
-50  ERROR_PACKAGE_LEN - [server]
-    The package received from the client did not have the same length as
-    indicated in the package head.
-
-
-51  ERROR_PACKAGE_FRAGMENT - [server]
-    Indicating that a fragment was not correctly
-
-
-54  ERROR_INVALID_MESSAGE - [server]
-    If the message received from the client does not make sense (invalid message
-    ID).
 
