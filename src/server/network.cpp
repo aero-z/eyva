@@ -22,88 +22,52 @@ using namespace AyeLog;
 using namespace AyeString;
 
 /**
- * Constructor.
- * The network handler starts listening to a network socket for incoming
- * connections.
+ * @param pipe The pipe to write messages to (alert the controlling game class).
  * @param port The TCP port to listen to.
  */
-Network::Network(int port)
+Network::Network(Pipe* pipe_game, int port)
 {
-	/* These are likely to throw exceptions. If they do, fall through to the
-	 * main function:
-	 */
-	pipe = new Pipe();
-	game = new Game(pipe);
-	user_savefile = new FileHandler("usr/users.db");
+	pipe_network = new Pipe();
+	this->pipe_game = pipe_game;
+	user_savefile = new Savefile("usr/users.db");
 
-	term_signal = false;
-
-	/* Create socket:
-	 * AF_INET:     domain (ARPA, IPv4)
-	 * SOCK_STREAM: type (stream socket)
-	 * IPPROTO_TCP: protocol (TCP)
-	 */
+	// create socket and make it reusable:
 	sockc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if(sockc < 0)
 		throw new Exception("socket() failed");
-	
-	/* Make the socket nonblocking (so if the program crashes the socket will be
-	 * released immediately):
-	 */
 	int option = 1; // TODO find out what this does
 	setsockopt(sockc, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
 
-	/* Prepare information for binding socket to:
-	 */
+	// prepare server side information:
 	struct sockaddr_in server_addr;
 	memset(&server_addr, 0, sizeof(server_addr));    // fill with zero, then:
 	server_addr.sin_family = AF_INET;                // - use IPv4
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY); // - allow all connections
 	server_addr.sin_port = htons(port);              // - port to listen to
 
-	/* Bind socket to information contained by the struct that was just defined:
-	 */
-	if(bind(sockc, (sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+	// try to bind the information defined above to the socket:
+	if(bind(sockc, (sockaddr *)&server_addr, sizeof(server_addr)) < 0)
 		throw new Exception("bind() failed: %s", strerror(errno));
-	}
 
-	/* Start socket as listener:
-	 * sockc:         socket that should start listening
-	 * SESSIONS_MAX:  number of connections to keep in queue and to listen to
-	 */
-	if(listen(sockc, QUEUE_SIZE) < 0) {
+	// listen:
+	if(listen(sockc, QUEUE_SIZE) < 0)
 		throw new Exception("listen() failed: %s", strerror(errno));
-	}
 
 	logf(LOG_NORMAL, "Listening on port %d ...", port);
 }
 
-/**
- * Destructor.
- * All session are correctly closed (savegame, logout) and the network is shut
- * down.
- */
 Network::~Network(void)
 {
 	logf(LOG_NORMAL, "received shutdown signal, closing sockets ...");
 
-	/* Close the connection socket:
-	 */
+	// close sockets and sessions:
 	close(sockc);
-
-	/* Close all session sockets:
-	 */
-	for(it = sessions.begin(); it != sessions.end(); it++) {
+	for(it = sessions.begin(); it != sessions.end(); it++)
 		close(it->first);
-	}
-
-	/* This will remove all elements from the map and call their destructors:
-	 */
 	sessions.clear();
+	delete pipe_network;
 
-	delete game;
-	delete pipe;
-
+	// save user data:
 	user_savefile->save();
 	delete user_savefile;
 }
@@ -113,79 +77,56 @@ Network::~Network(void)
 
 
 /**
- * This method checks the open sockets for data and sends back data.
+ * This method checks for incoming data. The game class should check the pipe
+ * for the results of the polling.
  */
 void
 Network::poll(void)
 {
-	logf(LOG_DEBUG, "handling %d sessions ...", sessions.size());
-	pollIn();
-	pollOut();
-}
-
-/**
- * This method checks the state of the term signal
- * @return True if to shut down, otherwise false.
- */
-bool
-Network::checkTermSignal(void)
-{
-	return term_signal;
-}
-
-
-/* PRIVATE METHODS */
-
-
-/**
- * This method checks the sockets for data. select() is used, that will block
- * until there is data, so as long as there's no data, the program will sleep
- * here.
- */
-void
-Network::pollIn(void)
-{
+	// set up socket set:
 	fd_set socket_set;
-
-	/* Before adding all used sockets to the fd_set, clear it:
-	 */
 	FD_ZERO(&socket_set);
 
-	/* First, add the listening socket (for incoming connections), then cycle
-	 * through the sessions:
-	 */
+	// add sockets to the set:
 	FD_SET(sockc, &socket_set);
 	for(it = sessions.begin(); it != sessions.end(); it++)
 		FD_SET(it->first, &socket_set);
 
-	/* select() checks every socket in the socket_set, if there's some data on
-	 * it (e.g. data received, connection requested, ...)
-	 * This method blocks until there's anything, so as soon as select()
-	 * returns, we should have things to do:
-	 */
+	// check sockets for activity (TODO make non-blocking and thus ignore -1):
 	int selected = select(FD_SETSIZE, &socket_set, NULL, NULL, NULL);
-
-	/* select() should return -1 if something went wrong. As we don't want to
-	 * handle the error yet, just let's crash!
-	 */
 	if(selected < 0)
 		throw new Exception("select() failed");
 
-	/* Check for connection request:
-	 */
+	// in case of new connection ...
 	if(FD_ISSET(sockc, &socket_set)) {
 		logf(LOG_DEBUG, "incoming connection ...");
 		handleConnection();
 	}
 
-	/* Check for data on a session's socket:
-	 */
+	// in case of incoming data ...
 	for(it = sessions.begin(); it != sessions.end(); it++)
 		if(FD_ISSET(it->first, &socket_set)) {
 			logf(LOG_DEBUG, "data on socket %d ...", it->first);
 			handleData(it->first);
 		}
 }
+
+
+/**
+ * Send a message to a client.
+ * @param id  The client ID.
+ * @param msg The message to be sent.
+ */
+bool
+Network::send(int id, char const* msg)
+{
+	// TODO
+	return false;
+}
+
+
+/* PRIVATE METHODS */
+
 
 /**
  * This method handles incoming connections. For each connection accepted, it
@@ -194,25 +135,17 @@ Network::pollIn(void)
 void
 Network::handleConnection(void)
 {
+	// this will hold client information:
 	struct sockaddr_in client_addr;
 	socklen_t client_addr_len = sizeof(client_addr);
 
-	/* Accept the connection, storing client information to the struct that was
-	 * just defined:
-	 */
+	// accept the connection (TODO handle error):
 	int sock_new = accept(sockc, (sockaddr*)&client_addr, &client_addr_len);
-
-	/* accept() should return -1 if something went wrong. As we don't want to
-	 * handle the error yet, crash:
-	 * TODO handle error
-	 */
 	if(sock_new < 0)
 		throw new Exception("accept() failed");
 
-	/* Create a new session, if there's still space for it; otherwise reject the
-	 * client (close the socket):
-	 */
-	if(sessions.size() < QUEUE_SIZE) {
+	// if there's space, create a new session according to the socket:
+	if(sessions.size() < SESSIONS_MAX) {
 		sessions.insert(std::pair<int, Session*>(sock_new,
 				new Session(sock_new, inet_ntoa(client_addr.sin_addr), pipe,
 				game, user_savefile)));
