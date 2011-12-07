@@ -13,11 +13,15 @@ Structure definition:
     |    1   message code                                                      |
     |  2-3   message body size                                                 |
     |  4-*   message body                                                      |
+    |        zero byte                                                         |
     +--------------------------------------------------------------------------+
 
     Since the package body size is defined by two bytes, it can be 65535 bytes
-    at most. Thus a complete message (header and body) can get as big as 4 bytes
-    at least and 65538 bytes at most.
+    at most. Thus a complete message (header, body, zero byte) can get as big as
+    4 bytes at least and 65539 bytes at most.
+
+    The zero-byte serves as a kind of security to check whether a message has
+    been sent over the network correctly.
 
 
 Message code definition:
@@ -39,9 +43,13 @@ XX  MESSAGE_NAME - [source]
 =================
 
 
-00  REQUEST_SOFTWARE_CHECK - [client]
-    Before logging in, the client and server have to make sure they've got the
-    same software version.
+00  REQUEST_SOFTWARE_VERSION - [server]
+    If the client tries to do anything else than sending its software version or
+    an authentication attempt without being synchronized to the server, this
+    message is sent.
+
+
+01  SOFTWARE_VERSION - [client]
 
     BODY:
     - version number - major release (1 byte)
@@ -49,11 +57,11 @@ XX  MESSAGE_NAME - [source]
     - version number - major patch (1 byte)
 
 
-01  ACCEPT_SOFTWARE_CHECK - [server]
+02  SYNCHRONIZED - [server]
     In case the software versions match, this message is sent.
 
 
-02  REJECT_SOFTWARE_CHECK - [server]
+03  UNSYNCHRONIZED - [server]
     In case the software version don't match, this message is sent, containing
     the server's version.
 
@@ -63,34 +71,40 @@ XX  MESSAGE_NAME - [source]
     - version number - major patch (1 byte)
 
 
-03  ATTEMPT_AUTHENTICATE - [client]
+04  REQUEST_USER_LOGIN - [server]
+    If the client tries to do anything else than sending its software version or
+    an authentication attempt without being authenticated, this message is sent.
+
+
+05  USER_LOGIN - [client]
 
     BODY:
     - username (* bytes)
     - password (* bytes)
 
 
-04  ACCEPT_AUTHENTICATE - [server]
+06  AUTHENTICATED - [server]
 
     BODY:
     - message of the day (* bytes)
 
 
-05  REJECT_AUTHENTICATE - [server]
+07  DISAUTHENTICATED - [server]
+    If the authentication fails, this message is sent.
     
     BODY:
     - error type (1 byte) (user not found (0) or wrong password (1))
 
 
-06  DISAUTHENTICATE - [client] [server]
+08  DISAUTHENTICATE - [client] [server]
     A message indicating the end of an authenticated connection.
 
 
-07  REQUEST_CHARACTER_LIST - [client]
+09  REQUEST_CHARACTER_LIST - [client]
     Requests a list of all characters belonging to the user.
 
 
-08  CHARACTER_LIST - [server]
+0A  CHARACTER_LIST - [server]
     A list of all characters belonging to a user.
 
     BODY:
@@ -99,14 +113,14 @@ XX  MESSAGE_NAME - [source]
       + character ID (1 byte)
 
 
-09  LOGIN - [client]
+0B  LOGIN - [client]
     Login as a character to the game.
 
     BODY:
     - character ID
 
 
-0A  LOGOUT - [client]
+0C  LOGOUT - [client]
     Logout from the game.
 
 

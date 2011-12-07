@@ -1,5 +1,5 @@
 /*
- * `eyva' - application-widely used variables
+ * EYVA - application-wide variables
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,20 +19,10 @@
 #ifndef _VARIABLES_H_
 #define _VARIABLES_H_
 
-/* This is the size of a message head following the eyva protocol:
- */
-#define MESSAGE_HEAD_SIZE 4
+// maximum bytes the network class can read from sockets (2^16 - 1 + 5):
+#define NETWORK_BUFFER_SIZE 65539
 
-/* This is the size of the network buffer:
- */
-#define BUFFER_SIZE (MESSAGE_HEAD_SIZE+65335)
-
-/* This is the maximum size of the exception message:
- */
-#define BUFFER_EXCEPTION_MSG 80
-
-/* Release version:
- */
+// release version (for synchronization):
 #define VERSION_MAJOR_RELEASE 0
 #define VERSION_MINOR_RELEASE 1
 #define VERSION_MAJOR_PATCH 0

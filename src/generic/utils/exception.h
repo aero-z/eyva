@@ -19,6 +19,8 @@
 #ifndef _EXCEPTION_H_
 #define _EXCEPTION_H_
 
+#define EXCEPTION_MSG_BUFFER_SIZE 80
+
 #include <hybrid/eyva.h>
 
 #include <cstdio>   // (v)(s)(f)(n)printf
@@ -32,7 +34,7 @@ Exception
 		char const* str(void);
 	
 	private:
-		char message[BUFFER_EXCEPTION_MSG];
+		char message[EXCEPTION_MSG_BUFFER_SIZE];
 };
 
 #endif

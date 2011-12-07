@@ -19,6 +19,7 @@
 #ifndef _SESSION_H_
 #define _SESSION_H_
 
+#include "user.h"
 #include <generic/message_buffer.h>
 #include <generic/pipe.h>
 #include <generic/variables.h>
@@ -27,27 +28,30 @@
 #include <generic/utils/exception.h>
 
 #include <cstring>
+#include <vector>
 
 class
 Session
 {
 	public:
-		Session(int id, Pipe* pipe_game, Pipe* pipe_network,
+		Session(char id, Pipe* pipe_game, Pipe* pipe_network,
 				Savefile* savefile_users);
 		~Session(void);
 		void process(char const* msg, size_t msg_len);
 	
 	private:
-		void handle_CONNECT(char const* msg);
-		void handle_DISCONNECT(char const* msg);
-		void handle_REQUEST_CHARACTER_LIST(char const* msg);
-		void handle_ERROR_AUTHENTICATION(void);
+		void handle_SOFTWARE_VERSION(char const* msg);
+		void handle_USER_LOGIN(char const* msg);
+		void handle_DISAUTHENTICATE(void);
+		void send_REQUEST_SOFTWARE_VERSION(void);
+		void send_REQUEST_USER_LOGIN(void);
 
 		Pipe* pipe_game;
 		Pipe* pipe_network;
 		Savefile* savefile_users;
 		MessageBuffer* message_buffer;
-		int id;
+		User* user;
+		char id;
 		bool authenticated;
 		bool synchronized;
 };

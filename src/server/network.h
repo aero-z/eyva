@@ -52,7 +52,7 @@
 #endif
 
 #define SESSIONS_MAX 255
-#define QUEUE_SIZE 3    // maximum number of connection requests to handle
+#define QUEUE_SIZE 10  // maximum connection requests to handle
 
 class
 Network
@@ -73,7 +73,7 @@ Network
 		std::map<int, Session*> sessions;
 		std::map<int, Session*>::iterator it; // iterator for the sessions map
 		int sockc;                            // connection socket
-		char buffer[BUFFER_SIZE];
+		char buffer[NETWORK_BUFFER_SIZE];
 };
 
 #endif

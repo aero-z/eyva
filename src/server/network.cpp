@@ -109,6 +109,11 @@ Network::poll(void)
 			logf(LOG_DEBUG, "data on %d ...", it->first);
 			handleData(it->first);
 		}
+	
+	// check for data to send by the session handler (somewhat ugly design ...):
+	while(pipe_network->fetch(buffer, NETWORK_BUFFER_SIZE)
+	for(size_t i = 0; i < pipe_network.size(); i++)
+		send(pipe_network[i][0], pipe_network[i]);
 }
 
 
@@ -117,7 +122,7 @@ Network::poll(void)
  * @param id  The client ID.
  * @param msg The message to be sent.
  */
-bool
+void
 Network::send(int id, char const* msg)
 {
 	// prepare message:
@@ -127,7 +132,7 @@ Network::send(int id, char const* msg)
 	prepared[msg_len] = 0;  // check byte
 
 	logf(LOG_DEBUG, "sending %d+1 bytes to %d ...", msg_len, id);
-	int sent = send(id, prepared, msg_len+1, MSG_NOSIGNAL); // <- no crash!
+	int sent = ::send(id, prepared, msg_len+1, MSG_NOSIGNAL); // <- no crash!
 	if(sent <= 0) {
 		logf(LOG_WARNING, "%d: connection lost", id); 
 		close(id);
@@ -168,7 +173,7 @@ void
 Network::handleData(int socket)
 {
 	// get data on socket (TODO handle error):
-	int received = read(socket, buffer, BUFFER_SIZE);
+	int received = read(socket, buffer, NETWORK_BUFFER_SIZE);
 	if(received < 0)
 		throw new Exception("read() failed");
 
@@ -182,7 +187,7 @@ Network::handleData(int socket)
 
 	// if everything is OK, send a confirmation byte:
 	char confirmation_byte = '\n';
-	int sent = send(socket, &confirmation_byte, 1, MSG_NOSIGNAL);
+	int sent = ::send(socket, &confirmation_byte, 1, MSG_NOSIGNAL);
 	if(sent != 1) {
 		logf(LOG_WARNING, "%d: connection lost", socket);
 		close(socket);
@@ -192,5 +197,4 @@ Network::handleData(int socket)
 
 	sessions[socket]->process(buffer, (size_t)received);
 }
-
 
