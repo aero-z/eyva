@@ -27,9 +27,9 @@ using namespace AyeString;
  */
 Network::Network(Pipe* pipe_game, int port)
 {
-	pipe_network = new Pipe();
+	this->pipe_network = new Pipe();
 	this->pipe_game = pipe_game;
-	user_savefile = new Savefile("usr/users.db");
+	this->user_savefile = new Savefile("usr/users.db");
 
 	// create socket and make it reusable:
 	sockc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -77,8 +77,8 @@ Network::~Network(void)
 
 
 /**
- * This method checks for incoming data. The game class should check the pipe
- * for the results of the polling.
+ * Check for incoming data. The game class should check the pipe for the results
+ * of the polling.
  */
 void
 Network::poll(void)
@@ -106,7 +106,7 @@ Network::poll(void)
 	// in case of incoming data ...
 	for(it = sessions.begin(); it != sessions.end(); it++)
 		if(FD_ISSET(it->first, &socket_set)) {
-			logf(LOG_DEBUG, "data on socket %d ...", it->first);
+			logf(LOG_DEBUG, "data on %d ...", it->first);
 			handleData(it->first);
 		}
 }
@@ -120,8 +120,19 @@ Network::poll(void)
 bool
 Network::send(int id, char const* msg)
 {
-	// TODO
-	return false;
+	// prepare message:
+	int message_len = msglen(msg);
+	char* prepared = new char[msg_len+1];
+	memcpy(prepared, msg, msg_len);
+	prepared[msg_len] = 0;  // check byte
+
+	logf(LOG_DEBUG, "sending %d+1 bytes to %d ...", msg_len, id);
+	int sent = send(id, prepared, msg_len+1, MSG_NOSIGNAL); // <- no crash!
+	if(sent <= 0) {
+		logf(LOG_WARNING, "%d: connection lost", id); 
+		close(id);
+		sessions.erase(id);
+	}
 }
 
 
@@ -129,129 +140,57 @@ Network::send(int id, char const* msg)
 
 
 /**
- * This method handles incoming connections. For each connection accepted, it
- * creates a Client object and stores it to the std::vector.
+ * Handle incoming connections. For each connection accepted, add a session
+ * object to the sessions map.
  */
 void
 Network::handleConnection(void)
 {
-	// this will hold client information:
-	struct sockaddr_in client_addr;
-	socklen_t client_addr_len = sizeof(client_addr);
-
 	// accept the connection (TODO handle error):
-	int sock_new = accept(sockc, (sockaddr*)&client_addr, &client_addr_len);
+	int sock_new = accept(sockc, NULL, NULL);
 	if(sock_new < 0)
 		throw new Exception("accept() failed");
 
 	// if there's space, create a new session according to the socket:
 	if(sessions.size() < SESSIONS_MAX) {
 		sessions.insert(std::pair<int, Session*>(sock_new,
-				new Session(sock_new, inet_ntoa(client_addr.sin_addr), pipe,
-				game, user_savefile)));
-		logf(LOG_NORMAL, "> \e[32m%s\e[0m: new connection on socket %d",
-				sessions[sock_new]->getIP(), sock_new);
-	} else {
+				new Session(sock_new, pipe_game,pipe_network, savefile_users)));
+		logf(LOG_NORMAL, "\e[32m%d\e[0m: new connection", sock_new);
+	} else
 		close(sock_new);
-	}
 }
 
 /**
- * This method handles incoming data on a socket.
+ * Handle incoming data on a socket.
  * @param socket The socket which holds the data.
  */
 void
 Network::handleData(int socket)
 {
-	/* Read data to buffer:
-	 */
-	int received = read(socket, buffer_in, BUFFER_SIZE);
-
-	/* read() should return the number of bytes received. If the number is
-	 * negative, there was an error, thus crash:
-	 */
-	logf(LOG_DEBUG, "received %d bytes", received);
+	// get data on socket (TODO handle error):
+	int received = read(socket, buffer, BUFFER_SIZE);
 	if(received < 0)
 		throw new Exception("read() failed");
 
-	/* If the number of bytes received is equal to zero, the connection has been
-	 * closed by the peer:
-	 */
+	// check if the connection has been closed by peer:
 	if(received == 0) {
-		logf(LOG_NORMAL, "\e[33m%s\e[0m: connection closed by peer",
-				sessions[socket]->getIP());
+		logf(LOG_NORMAL, "\e[33%d\e[0m: connection closed by peer", socket);
 		close(socket);
 		sessions.erase(socket);
 		return;
 	}
 
-	/* Send confirmation byte for received data to make sure the client is still
-	 * there:
-	 */
-	char confirmation_byte = 10;
+	// if everything is OK, send a confirmation byte:
+	char confirmation_byte = '\n';
 	int sent = send(socket, &confirmation_byte, 1, MSG_NOSIGNAL);
-
-	/* Check if successfully confirmation byte was successfully sent;
-	 * otherwise close session:
-	 */
-	logf(LOG_DEBUG, "confirmation: sent %d bytes", sent);
 	if(sent != 1) {
-		logf(LOG_WARNING, "%s: connection lost", sessions[socket]->getIP());
+		logf(LOG_WARNING, "%d: connection lost", socket);
 		close(socket);
 		sessions.erase(socket);
 		return;
 	}
 
-	/* If, after all, everything is valid, let the sesssion handler process the
-	 * received data:
-	 */
-	sessions[socket]->process(buffer_in, (size_t)received);
+	sessions[socket]->process(buffer, (size_t)received);
 }
 
-/**
- * After having handled all the incoming data, the internal server system has
- * filled the network handler's pipe with data to be sent to the clients.
- * Thus, this method will check all the messages in the pipe.
- */
-void
-Network::pollOut(void)
-{
-	while(pipe->check()) {
-		size_t message_len = pipe->fetch(buffer_out);
-
-		/* The byte zero holds the session's socket file descriptor:
-		 */
-		int socks = buffer_out[0];
-
-		/* Special case: socket number is zero.
-		 * This can either mean "broadcast", or an internal shutdown command:
-		 */
-		if(buffer_out[0] == 0) {
-			/* Check for shutdown signal:
-			 */
-			if(buffer_out[1] == 0) {
-				term_signal = true;
-				return;
-			}
-
-			/* Broadcast:
-			 */
-			// TODO
-		}
-
-		logf(LOG_DEBUG, "sending data to %s on socket %d",
-				sessions[socks]->getIP(), socks);
-		 
-		int sent = send(socks, buffer_out, message_len, MSG_NOSIGNAL);
-
-		/* If there was an error sending, the client may be assumed as
-		 * disconnected, and thus the session may be closed:
-		 */
-		if(sent <= 0) {
-			logf(LOG_WARNING, "%s: connection lost", sessions[socks]->getIP());
-			close(socks);
-			sessions.erase(socks);
-		}
-	}
-}
 

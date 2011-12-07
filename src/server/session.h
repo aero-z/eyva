@@ -1,5 +1,5 @@
 /*
- * EYVA
+ * `eyva'
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,17 +16,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef _SESSION_H_
+#define _SESSION_H_
 
-#include "gui.h"
-
+#include <generic/message_buffer.h>
+#include <generic/pipe.h>
+#include <generic/variables.h>
+#include <generic/savefile.h>
 #include <generic/utils/ayelog.h>
 #include <generic/utils/exception.h>
 
-GUI* gui;
+#include <cstring>
 
-int main(int argc, char** argv);
+class
+Session
+{
+	public:
+		Session(int id, Pipe* pipe_game, Pipe* pipe_network,
+				Savefile* savefile_users);
+		~Session(void);
+		void process(char const* msg, size_t msg_len);
+	
+	private:
+		void handle_CONNECT(char const* msg);
+		void handle_DISCONNECT(char const* msg);
+		void handle_REQUEST_CHARACTER_LIST(char const* msg);
+		void handle_ERROR_AUTHENTICATION(void);
+
+		Pipe* pipe_game;
+		Pipe* pipe_network;
+		Savefile* savefile_users;
+		MessageBuffer* message_buffer;
+		int id;
+		bool authenticated;
+		bool synchronized;
+};
 
 #endif
 

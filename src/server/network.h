@@ -20,12 +20,12 @@
 #define _NETWORK_H_
 
 #include "session.h"
-#include <shared/pipe.h>
-#include <shared/savefile.h>
-#include <shared/variables.h> 
-#include <shared/utils/ayelog.h>
-#include <shared/utils/exception.h>
-#include <shared/utils/ayestring.h>
+#include <generic/pipe.h>
+#include <generic/savefile.h>
+#include <generic/variables.h> 
+#include <generic/utils/ayelog.h>
+#include <generic/utils/exception.h>
+#include <generic/utils/ayestring.h>
 
 #include <cstring>
 #include <vector>

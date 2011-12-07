@@ -21,8 +21,8 @@
 
 #include "network.h"
 
-#include <shared/pipe.h>
-#include <shared/utils/exception.h>
+#include <generic/pipe.h>
+#include <generic/utils/exception.h>
 
 #include <SDL/SDL.h>
 
