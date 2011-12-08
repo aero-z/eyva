@@ -18,6 +18,8 @@
 
 #include "message_buffer.h"
 
+using namespace AyeString;
+
 MessageBuffer::MessageBuffer(void)
 {
 	buffer = new char[0];
@@ -62,7 +64,7 @@ MessageBuffer::check(std::vector<char*>* dst, char const* msg, size_t len)
 		}
 		// copy message part to destination and update buffer:
 		char* dest = new char[msg_len];
-		memcpy(tmp, buffer, msg_len);
+		memcpy(dest, buffer, msg_len);
 		dst->push_back(dest);
 		buffer_len -= (msg_len + 1); // remove the tailing 0, too
 		buffer_new = new char[buffer_len - msg_len - 1];

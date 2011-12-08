@@ -1,5 +1,5 @@
 /*
- * EYVA - message buffering utility
+ * EYVA - server side user class
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,24 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MESSAGE_BUFFER_H_
-#define _MESSAGE_BUFFER_H_
+#ifndef _USER_H_
+#define _USER_H_
 
-#include "utils/ayestring.h"
-#include <vector>
+#include <generic/savefile.h>
+#include <generic/utils/exception.h>
+
 #include <cstring>
 
 class
-MessageBuffer
+User
 {
 	public:
-		MessageBuffer(void);
-		~MessageBuffer(void);
-		void check(std::vector<char*>* dst, char const* msg, size_t len);
+		User(char const* name, Savefile* savefile);
+		~User(void);
+		size_t getName(char* name, size_t len);
+		int getID(void);
 	
 	private:
-		char* buffer;
-		int buffer_len;
+		Savefile* savefile;
+		char* name;
+		int id;
 };
 
 #endif

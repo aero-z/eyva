@@ -1,5 +1,5 @@
 /*
- * EYVA - message buffering utility
+ * `eyva' (server) - Game manager and handler (implementation).
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,25 +16,53 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MESSAGE_BUFFER_H_
-#define _MESSAGE_BUFFER_H_
+#include "game.h"
 
-#include "utils/ayestring.h"
-#include <vector>
-#include <cstring>
+using namespace AyeLog;
+using namespace AyeString;
 
-class
-MessageBuffer
+/**
+ * @param port The port where the game shall run on.
+ */
+Game::Game(int port)
 {
-	public:
-		MessageBuffer(void);
-		~MessageBuffer(void);
-		void check(std::vector<char*>* dst, char const* msg, size_t len);
-	
-	private:
-		char* buffer;
-		int buffer_len;
-};
+	logf(LOG_NORMAL, "setting up new game ...");
+	pipe = new Pipe();
+	network = new Network(pipe, port);
+	term_signal = false;
+}
 
-#endif
+Game::~Game(void)
+{
+	delete network;
+}
+
+
+/* PUBLIC METHODS */
+
+
+/**
+ * Game loop.
+ */
+void
+Game::run(void)
+{
+	while(!term_signal) {
+		network->poll();
+		process();
+	}
+}
+
+
+/* PRIVATE METHODS */
+
+
+void
+Game::process(void)
+{
+	while(pipe->fetch(buffer, NETWORK_BUFFER_SIZE)) {
+		if(buffer[0] == 0)
+			term_signal = true;
+	}
+}
 

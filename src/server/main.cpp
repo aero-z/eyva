@@ -1,5 +1,5 @@
 /*
- * EYVA - message buffering utility
+ * EYVA - server side main function
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,25 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MESSAGE_BUFFER_H_
-#define _MESSAGE_BUFFER_H_
+#include "main.h"
 
-#include "utils/ayestring.h"
-#include <vector>
-#include <cstring>
-
-class
-MessageBuffer
+/**
+ * @param argc Number of arguments given at program start.
+ * @param argv Array of arguments.
+ * @return     0 if success, otherwise -1.
+ */
+int
+main(int argc, char** argv)
 {
-	public:
-		MessageBuffer(void);
-		~MessageBuffer(void);
-		void check(std::vector<char*>* dst, char const* msg, size_t len);
-	
-	private:
-		char* buffer;
-		int buffer_len;
-};
+	// TODO parse user input
+	int port = 1251;
 
-#endif
+	AyeLog::log_verbosity = 3; // debug log
+
+	try {
+		game = new Game(port);
+		game->run();
+		delete game;
+		return 0;
+	} catch(Exception* e) {
+		AyeLog::logf(LOG_ERROR, "%s", e->str());
+		return -1;
+	}
+}
 

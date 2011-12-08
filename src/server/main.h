@@ -1,5 +1,5 @@
 /*
- * EYVA - message buffering utility
+ * `eyva'
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,25 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MESSAGE_BUFFER_H_
-#define _MESSAGE_BUFFER_H_
+#ifndef _SERVER_MAIN_H_
+#define _SERVER_MAIN_H_
 
-#include "utils/ayestring.h"
-#include <vector>
-#include <cstring>
+#include "game.h"
 
-class
-MessageBuffer
-{
-	public:
-		MessageBuffer(void);
-		~MessageBuffer(void);
-		void check(std::vector<char*>* dst, char const* msg, size_t len);
-	
-	private:
-		char* buffer;
-		int buffer_len;
-};
+#include <generic/utils/exception.h>
+#include <generic/utils/ayelog.h>
+
+Game* game;
+
+int main(int argc, char** argv);
 
 #endif
 

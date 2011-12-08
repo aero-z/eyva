@@ -29,7 +29,7 @@ Network::Network(Pipe* pipe_game, int port)
 {
 	this->pipe_network = new Pipe();
 	this->pipe_game = pipe_game;
-	this->user_savefile = new Savefile("usr/users.db");
+	this->savefile_users = new Savefile("usr/savefiles/users.db");
 
 	// create socket and make it reusable:
 	sockc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -68,8 +68,8 @@ Network::~Network(void)
 	delete pipe_network;
 
 	// save user data:
-	user_savefile->save();
-	delete user_savefile;
+	savefile_users->save();
+	delete savefile_users;
 }
 
 
@@ -111,22 +111,21 @@ Network::poll(void)
 		}
 	
 	// check for data to send by the session handler (somewhat ugly design ...):
-	while(pipe_network->fetch(buffer, NETWORK_BUFFER_SIZE)
-	for(size_t i = 0; i < pipe_network.size(); i++)
-		send(pipe_network[i][0], pipe_network[i]);
+	while(pipe_network->fetch(buffer, NETWORK_BUFFER_SIZE) != 0)
+		send(buffer);
 }
 
 
 /**
  * Send a message to a client.
- * @param id  The client ID.
  * @param msg The message to be sent.
  */
 void
-Network::send(int id, char const* msg)
+Network::send(char const* msg)
 {
 	// prepare message:
-	int message_len = msglen(msg);
+	char id = msg[0];
+	int msg_len = msglen(msg);
 	char* prepared = new char[msg_len+1];
 	memcpy(prepared, msg, msg_len);
 	prepared[msg_len] = 0;  // check byte
@@ -159,7 +158,8 @@ Network::handleConnection(void)
 	// if there's space, create a new session according to the socket:
 	if(sessions.size() < SESSIONS_MAX) {
 		sessions.insert(std::pair<int, Session*>(sock_new,
-				new Session(sock_new, pipe_game,pipe_network, savefile_users)));
+				new Session((char)sock_new, pipe_game, pipe_network,
+				savefile_users)));
 		logf(LOG_NORMAL, "\e[32m%d\e[0m: new connection", sock_new);
 	} else
 		close(sock_new);
@@ -170,7 +170,7 @@ Network::handleConnection(void)
  * @param socket The socket which holds the data.
  */
 void
-Network::handleData(int socket)
+Network::handleData(char socket)
 {
 	// get data on socket (TODO handle error):
 	int received = read(socket, buffer, NETWORK_BUFFER_SIZE);
@@ -179,7 +179,7 @@ Network::handleData(int socket)
 
 	// check if the connection has been closed by peer:
 	if(received == 0) {
-		logf(LOG_NORMAL, "\e[33%d\e[0m: connection closed by peer", socket);
+		logf(LOG_NORMAL, "\e[33m%d\e[0m: connection closed by peer", socket);
 		close(socket);
 		sessions.erase(socket);
 		return;

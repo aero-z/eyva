@@ -1,5 +1,5 @@
 /*
- * EYVA - message buffering utility
+ * EYVA - server side game handler
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,24 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MESSAGE_BUFFER_H_
-#define _MESSAGE_BUFFER_H_
+#ifndef _GAME_H_
+#define _GAME_H_
 
-#include "utils/ayestring.h"
-#include <vector>
-#include <cstring>
+#include "network.h"
+#include <generic/pipe.h>
+#include <generic/utils/ayestring.h>
 
 class
-MessageBuffer
+Game
 {
 	public:
-		MessageBuffer(void);
-		~MessageBuffer(void);
-		void check(std::vector<char*>* dst, char const* msg, size_t len);
+		Game(int port);
+		~Game(void);
+		void run(void);
 	
 	private:
-		char* buffer;
-		int buffer_len;
+		void process();
+
+		Pipe* pipe;
+		Network* network;
+		bool term_signal;
+		char buffer[NETWORK_BUFFER_SIZE];
 };
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA - server side network handler
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -58,18 +58,18 @@ class
 Network
 {
 	public:
-		Network(int port);
+		Network(Pipe* pipe_game, int port);
 		~Network(void);
 		void poll(void);
-		bool send(int id, char const* msg);
+		void send(char const* msg);
 
 	private:
 		void handleConnection(void);
-		void handleData(int id);
+		void handleData(char socket);
 
 		Pipe* pipe_game;
 		Pipe* pipe_network;
-		FileHandler* savefile_users;
+		Savefile* savefile_users;
 		std::map<int, Session*> sessions;
 		std::map<int, Session*>::iterator it; // iterator for the sessions map
 		int sockc;                            // connection socket

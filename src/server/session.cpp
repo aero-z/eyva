@@ -28,11 +28,11 @@ using namespace AyeString;
  * @param pipe_network   A way to communicate to the network object.
  * @param savefile_users Handles the file containing a list of registred users.
  */
-Session::Session(char id, Pipe* pipe_game, Pipe* pipe_game,
+Session::Session(char id, Pipe* pipe_game, Pipe* pipe_network,
 		Savefile* savefile_users)
 {
 	this->id = id;
-	this->pipe_game = pipe;
+	this->pipe_game = pipe_game;
 	this->pipe_network = pipe_network;
 	this->savefile_users = savefile_users;
 	authenticated = false;
@@ -57,6 +57,10 @@ Session::~Session(void)
 void
 Session::process(char const* msg, size_t msg_len)
 {
+	for(size_t i = 0; i < msg_len; i++)
+		printf("[%d]", msg[i]);
+	printf("\n");
+
 	// TODO this is temporary:
 	if(msg_len == 3 && msg[0] == ':' && msg[1] == 'q' && msg[2] == 10) {
 		logf(LOG_DEBUG, ":q");
@@ -84,8 +88,10 @@ Session::process(char const* msg, size_t msg_len)
 					send_REQUEST_SOFTWARE_VERSION();
 				else if(!authenticated)
 					send_REQUEST_USER_LOGIN();
-				else
+				else {
+					messages[i][0] = id;
 					pipe_game->push(messages[i]);
+				}
 				break;
 		}
 	}
@@ -106,42 +112,50 @@ Session::handle_SOFTWARE_VERSION(char const* msg)
 
 	// if valid:
 	if(msg[4] == VERSION_MAJOR_RELEASE && msg[5] == VERSION_MINOR_RELEASE
-			&& msg[6] == MSG_MAJOR_PATCH) {
-		char response[] = {id, 0x02, 0x00, 0x00};
-		synchronized = true;
+			&& msg[6] == VERSION_MAJOR_PATCH) {
 		logf(LOG_DEBUG, "[02 SYNCHRONIZED]");
+		synchronized = true;
+		char response[] = {id, 0x02, 0x00, 0x00};
+		pipe_network->push(response);
 	}
 
 	// if invalid:
 	else {
+		logf(LOG_DEBUG, "[03 UNSYNCHRONIZED]");
+		synchronized = false;
 		char response[] = {id, 0x03, 0x03, 0x00, VERSION_MAJOR_RELEASE,
 				VERSION_MINOR_RELEASE, VERSION_MAJOR_PATCH};
-		synchronized = false;
-		logf(LOG_DEBUG, "[03 UNSYNCHRONIZED]");
+		pipe_network->push(response);
 	}
-	pipe_network->push(response);
 }
 
 /**
  * Check user login data.
  * @param msg The message received from the client.
  * // TODO password check
+ * // TODO message of the day
  */
 void
 Session::handle_USER_LOGIN(char const* msg)
 {
+	// if valid:
 	try {
-		user = new User(msg+4, user_savefile);
-		char response[] = {id, 0x06, 0x00, 0x00, "Welcome to `eyva'!"};
-		authenticated = true;
 		logf(LOG_DEBUG, "[06 AUTHENTICATED]");
-	} catch(Exception* e) {
-		char response[] = {id, 0x07, 0x01, 0x00, 0x00};
-		authenticated = false;
+		authenticated = true;
+		user = new User(msg+4, savefile_users);
+		char response[] = {id, 0x06, 0x00, 0x00,
+			'W','e','l','c','o','m','e',' ','t','o',' ','E','Y','V','A',0};
+		pipe_network->push(response);
+	}
+	
+	// if invalid:
+	catch(Exception* e) {
 		logf(LOG_DEBUG, "[07 DISAUTHENTICATED] (user not found: %s)", msg+4);
+		authenticated = false;
+		char response[] = {id, 0x07, 0x01, 0x00, 0x00};
+		pipe_network->push(response);
 	}
 
-	pipe_network->push(response);
 }
 
 /**
