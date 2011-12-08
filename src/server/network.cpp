@@ -22,90 +22,54 @@ using namespace AyeLog;
 using namespace AyeString;
 
 /**
- * Constructor.
- * The network handler starts listening to a network socket for incoming
- * connections.
+ * @param pipe The pipe to write messages to (alert the controlling game class).
  * @param port The TCP port to listen to.
  */
-Network::Network(int port)
+Network::Network(Pipe* pipe_game, int port)
 {
-	/* These are likely to throw exceptions. If they do, fall through to the
-	 * main function:
-	 */
-	pipe = new Pipe();
-	game = new Game(pipe);
-	user_savefile = new FileHandler("usr/users.db");
+	this->pipe_network = new Pipe();
+	this->pipe_game = pipe_game;
+	this->savefile_users = new Savefile("usr/savefiles/users.db");
 
-	term_signal = false;
-
-	/* Create socket:
-	 * AF_INET:     domain (ARPA, IPv4)
-	 * SOCK_STREAM: type (stream socket)
-	 * IPPROTO_TCP: protocol (TCP)
-	 */
+	// create socket and make it reusable:
 	sockc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if(sockc < 0)
 		throw new Exception("socket() failed");
-	
-	/* Make the socket nonblocking (so if the program crashes the socket will be
-	 * released immediately):
-	 */
 	int option = 1; // TODO find out what this does
 	setsockopt(sockc, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
 
-	/* Prepare information for binding socket to:
-	 */
+	// prepare server side information:
 	struct sockaddr_in server_addr;
 	memset(&server_addr, 0, sizeof(server_addr));    // fill with zero, then:
 	server_addr.sin_family = AF_INET;                // - use IPv4
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY); // - allow all connections
 	server_addr.sin_port = htons(port);              // - port to listen to
 
-	/* Bind socket to information contained by the struct that was just defined:
-	 */
-	if(bind(sockc, (sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+	// try to bind the information defined above to the socket:
+	if(bind(sockc, (sockaddr *)&server_addr, sizeof(server_addr)) < 0)
 		throw new Exception("bind() failed: %s", strerror(errno));
-	}
 
-	/* Start socket as listener:
-	 * sockc:         socket that should start listening
-	 * SESSIONS_MAX:  number of connections to keep in queue and to listen to
-	 */
-	if(listen(sockc, QUEUE_SIZE) < 0) {
+	// listen:
+	if(listen(sockc, QUEUE_SIZE) < 0)
 		throw new Exception("listen() failed: %s", strerror(errno));
-	}
 
 	logf(LOG_NORMAL, "Listening on port %d ...", port);
 }
 
-/**
- * Destructor.
- * All session are correctly closed (savegame, logout) and the network is shut
- * down.
- */
 Network::~Network(void)
 {
 	logf(LOG_NORMAL, "received shutdown signal, closing sockets ...");
 
-	/* Close the connection socket:
-	 */
+	// close sockets and sessions:
 	close(sockc);
-
-	/* Close all session sockets:
-	 */
-	for(it = sessions.begin(); it != sessions.end(); it++) {
+	for(it = sessions.begin(); it != sessions.end(); it++)
 		close(it->first);
-	}
-
-	/* This will remove all elements from the map and call their destructors:
-	 */
 	sessions.clear();
+	delete pipe_network;
 
-	delete game;
-	delete pipe;
-
-	user_savefile->save();
-	delete user_savefile;
+	// save user data:
+	savefile_users->save();
+	delete savefile_users;
 }
 
 
@@ -113,24 +77,68 @@ Network::~Network(void)
 
 
 /**
- * This method checks the open sockets for data and sends back data.
+ * Check for incoming data. The game class should check the pipe for the results
+ * of the polling.
  */
 void
 Network::poll(void)
 {
-	logf(LOG_DEBUG, "handling %d sessions ...", sessions.size());
-	pollIn();
-	pollOut();
+	// set up socket set:
+	fd_set socket_set;
+	FD_ZERO(&socket_set);
+
+	// add sockets to the set:
+	FD_SET(sockc, &socket_set);
+	for(it = sessions.begin(); it != sessions.end(); it++)
+		FD_SET(it->first, &socket_set);
+
+	// check sockets for activity (TODO make non-blocking and thus ignore -1):
+	int selected = select(FD_SETSIZE, &socket_set, NULL, NULL, NULL);
+	if(selected < 0)
+		throw new Exception("select() failed");
+
+	// in case of new connection ...
+	if(FD_ISSET(sockc, &socket_set)) {
+		logf(LOG_DEBUG, "incoming connection ...");
+		handleConnection();
+	}
+
+	// in case of incoming data ...
+	for(it = sessions.begin(); it != sessions.end(); it++)
+		if(FD_ISSET(it->first, &socket_set)) {
+			logf(LOG_DEBUG, "data on %d ...", it->first);
+			handleData(it->first);
+		}
+	
+	// check for data to send by the session handler (somewhat ugly design ...):
+	while(pipe_network->fetch(buffer, NETWORK_BUFFER_SIZE) != 0)
+		send(buffer);
 }
 
+
 /**
- * This method checks the state of the term signal
- * @return True if to shut down, otherwise false.
+ * Send a message to a client.
+ * @param msg The message to be sent.
  */
-bool
-Network::checkTermSignal(void)
+void
+Network::send(char const* msg)
 {
-	return term_signal;
+	// prepare message:
+	char id = msg[0];
+	int msg_len = msglen(msg);
+	char* prepared = new char[msg_len+1];
+	memcpy(prepared, msg, msg_len);
+	prepared[msg_len] = 0;  // check byte
+
+	// send:
+	logf(LOG_DEBUG, "sending %d+1 bytes to %d ...", msg_len, id);
+	int sent = ::send(id, prepared, msg_len+1, MSG_NOSIGNAL); // <- no crash!
+	delete[] prepared;
+	if(sent <= 0) {
+		logf(LOG_WARNING, "%d: connection lost", id); 
+		close(id);
+		sessions.erase(id);
+	}
 }
 
 
@@ -138,187 +146,57 @@ Network::checkTermSignal(void)
 
 
 /**
- * This method checks the sockets for data. select() is used, that will block
- * until there is data, so as long as there's no data, the program will sleep
- * here.
- */
-void
-Network::pollIn(void)
-{
-	fd_set socket_set;
-
-	/* Before adding all used sockets to the fd_set, clear it:
-	 */
-	FD_ZERO(&socket_set);
-
-	/* First, add the listening socket (for incoming connections), then cycle
-	 * through the sessions:
-	 */
-	FD_SET(sockc, &socket_set);
-	for(it = sessions.begin(); it != sessions.end(); it++)
-		FD_SET(it->first, &socket_set);
-
-	/* select() checks every socket in the socket_set, if there's some data on
-	 * it (e.g. data received, connection requested, ...)
-	 * This method blocks until there's anything, so as soon as select()
-	 * returns, we should have things to do:
-	 */
-	int selected = select(FD_SETSIZE, &socket_set, NULL, NULL, NULL);
-
-	/* select() should return -1 if something went wrong. As we don't want to
-	 * handle the error yet, just let's crash!
-	 */
-	if(selected < 0)
-		throw new Exception("select() failed");
-
-	/* Check for connection request:
-	 */
-	if(FD_ISSET(sockc, &socket_set)) {
-		logf(LOG_DEBUG, "incoming connection ...");
-		handleConnection();
-	}
-
-	/* Check for data on a session's socket:
-	 */
-	for(it = sessions.begin(); it != sessions.end(); it++)
-		if(FD_ISSET(it->first, &socket_set)) {
-			logf(LOG_DEBUG, "data on socket %d ...", it->first);
-			handleData(it->first);
-		}
-}
-
-/**
- * This method handles incoming connections. For each connection accepted, it
- * creates a Client object and stores it to the std::vector.
+ * Handle incoming connections. For each connection accepted, add a session
+ * object to the sessions map.
  */
 void
 Network::handleConnection(void)
 {
-	struct sockaddr_in client_addr;
-	socklen_t client_addr_len = sizeof(client_addr);
-
-	/* Accept the connection, storing client information to the struct that was
-	 * just defined:
-	 */
-	int sock_new = accept(sockc, (sockaddr*)&client_addr, &client_addr_len);
-
-	/* accept() should return -1 if something went wrong. As we don't want to
-	 * handle the error yet, crash:
-	 * TODO handle error
-	 */
+	// accept the connection (TODO handle error):
+	int sock_new = accept(sockc, NULL, NULL);
 	if(sock_new < 0)
 		throw new Exception("accept() failed");
 
-	/* Create a new session, if there's still space for it; otherwise reject the
-	 * client (close the socket):
-	 */
-	if(sessions.size() < QUEUE_SIZE) {
+	// if there's space, create a new session according to the socket:
+	if(sessions.size() < SESSIONS_MAX) {
 		sessions.insert(std::pair<int, Session*>(sock_new,
-				new Session(sock_new, inet_ntoa(client_addr.sin_addr), pipe,
-				game, user_savefile)));
-		logf(LOG_NORMAL, "> \e[32m%s\e[0m: new connection on socket %d",
-				sessions[sock_new]->getIP(), sock_new);
-	} else {
+				new Session((char)sock_new, pipe_game, pipe_network,
+				savefile_users)));
+		logf(LOG_NORMAL, "\e[32m%d\e[0m: new connection", sock_new);
+	} else
 		close(sock_new);
-	}
 }
 
 /**
- * This method handles incoming data on a socket.
+ * Handle incoming data on a socket.
  * @param socket The socket which holds the data.
  */
 void
-Network::handleData(int socket)
+Network::handleData(char socket)
 {
-	/* Read data to buffer:
-	 */
-	int received = read(socket, buffer_in, BUFFER_SIZE);
-
-	/* read() should return the number of bytes received. If the number is
-	 * negative, there was an error, thus crash:
-	 */
-	logf(LOG_DEBUG, "received %d bytes", received);
+	// get data on socket (TODO handle error):
+	int received = read(socket, buffer, NETWORK_BUFFER_SIZE);
 	if(received < 0)
 		throw new Exception("read() failed");
 
-	/* If the number of bytes received is equal to zero, the connection has been
-	 * closed by the peer:
-	 */
+	// check if the connection has been closed by peer:
 	if(received == 0) {
-		logf(LOG_NORMAL, "\e[33m%s\e[0m: connection closed by peer",
-				sessions[socket]->getIP());
+		logf(LOG_NORMAL, "\e[33m%d\e[0m: connection closed by peer", socket);
 		close(socket);
 		sessions.erase(socket);
 		return;
 	}
 
-	/* Send confirmation byte for received data to make sure the client is still
-	 * there:
-	 */
-	char confirmation_byte = 10;
-	int sent = send(socket, &confirmation_byte, 1, MSG_NOSIGNAL);
-
-	/* Check if successfully confirmation byte was successfully sent;
-	 * otherwise close session:
-	 */
-	logf(LOG_DEBUG, "confirmation: sent %d bytes", sent);
+	// if everything is OK, send a confirmation byte:
+	char confirmation_byte = '\n';
+	int sent = ::send(socket, &confirmation_byte, 1, MSG_NOSIGNAL);
 	if(sent != 1) {
-		logf(LOG_WARNING, "%s: connection lost", sessions[socket]->getIP());
+		logf(LOG_WARNING, "%d: connection lost", socket);
 		close(socket);
 		sessions.erase(socket);
 		return;
 	}
 
-	/* If, after all, everything is valid, let the sesssion handler process the
-	 * received data:
-	 */
-	sessions[socket]->process(buffer_in, (size_t)received);
-}
-
-/**
- * After having handled all the incoming data, the internal server system has
- * filled the network handler's pipe with data to be sent to the clients.
- * Thus, this method will check all the messages in the pipe.
- */
-void
-Network::pollOut(void)
-{
-	while(pipe->check()) {
-		size_t message_len = pipe->fetch(buffer_out);
-
-		/* The byte zero holds the session's socket file descriptor:
-		 */
-		int socks = buffer_out[0];
-
-		/* Special case: socket number is zero.
-		 * This can either mean "broadcast", or an internal shutdown command:
-		 */
-		if(buffer_out[0] == 0) {
-			/* Check for shutdown signal:
-			 */
-			if(buffer_out[1] == 0) {
-				term_signal = true;
-				return;
-			}
-
-			/* Broadcast:
-			 */
-			// TODO
-		}
-
-		logf(LOG_DEBUG, "sending data to %s on socket %d",
-				sessions[socks]->getIP(), socks);
-		 
-		int sent = send(socks, buffer_out, message_len, MSG_NOSIGNAL);
-
-		/* If there was an error sending, the client may be assumed as
-		 * disconnected, and thus the session may be closed:
-		 */
-		if(sent <= 0) {
-			logf(LOG_WARNING, "%s: connection lost", sessions[socks]->getIP());
-			close(socks);
-			sessions.erase(socks);
-		}
-	}
+	sessions[socket]->process(buffer, (size_t)received);
 }
 

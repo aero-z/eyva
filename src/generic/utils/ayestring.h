@@ -1,5 +1,5 @@
 /*
- * EYVA
+ * `eyva' - String manipulation collection.
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,17 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef _AYESTRING_H_
+#define _AYESTRING_H_
 
-#include "gui/gui.h"
+// Hybrid:
+#include <generic/variables.h>
 
-#include <generic/utils/ayelog.h>
-#include <generic/utils/exception.h>
+// Others:
+#include <cstring>
+#include <cstdio>
+#include <vector>
 
-GUI* gui;
-
-int main(int argc, char** argv);
+namespace
+AyeString
+{
+	size_t msglen(char const* msg);
+	size_t iptoa(char* str, char const* ipv4);
+	int porttoi(char* port);
+	int aton(char const* str, int base);
+	int pow(int base, int exp);
+	int cton(char const chr, int base);
+}
 
 #endif
 

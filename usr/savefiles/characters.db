@@ -1,0 +1,16 @@
+# List of characters saved on this server.
+
+# This is the highest ID. Anything above this will be read, but won't be
+# accessible through the file handler.
+.max:1
+
+{
+id:1
+name:"Eriya"
+tribe:1  #southern
+level:1
+value:13
+inventory:1:3:8:8:6
+user:1
+}
+

@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA - client side network handler
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,25 +22,45 @@ using namespace AyeLog;
 using namespace AyeString;
 
 /**
- * Constructor
- * @param game Class to handle and store game data.
- * @param ui   User interface that will display stuff.
- * @param pipe Network's "postbox".
+ * @param pipe The GUI's "postbox". It's required to communicate to the GUI.
+ * @param ip   The IP of the server to connect to.
+ * @param port The TCP port of the server to connect to.
  */
-Network::Network(Game* game, UI* ui, Pipe* pipe)
+Network::Network(Pipe* pipe, char const* ip, int port)
 {
-	this->game = game;
-	this->ui = ui;
 	this->pipe = pipe;
-	connected = false;
+	message_buffer = new MessageBuffer();
+	for(int i = 0; i < NETWORK_BUFFER_SIZE; i++)
+		buffer[i] = 0;
+
+	// create socket:
+	sockc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if(sockc < 0)
+		throw new Exception("creating socket failed");
+	
+	// set socket non-blocking, as we also need to poll the UI:
+	fcntl(sockc, F_SETFL, O_NONBLOCK);
+
+	// prepare server information for use with connect():
+	struct sockaddr_in server_addr;
+	memset(&server_addr, 0, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;            // use IPv4
+	server_addr.sin_addr.s_addr = inet_addr(ip); // connect to given IP
+	server_addr.sin_port = htons(port);          // ... and given port
+
+	// connect to server according to the struct above:
+	logf(LOG_DEBUG, "connecting to %s:%d ...", ip, port);
+	if(::connect(sockc, (sockaddr*)&server_addr, sizeof(server_addr)) < 0)
+		throw new Exception("connect() failed: %s", strerror(errno));
+
+	logf(LOG_NORMAL, "connection established to %s:%d", ip, port);
 }
 
-/**
- * Destructor.
- */
 Network::~Network(void)
 {
-	// VOID
+	// zero byte message to close the connection, then close socket:
+	::send(sockc, NULL, 0, MSG_NOSIGNAL);
+	close(sockc);
 }
 
 
@@ -48,148 +68,46 @@ Network::~Network(void)
 
 
 /**
- * This method checks the network socket if there is data on it, and it checks
- * the data handler if this object has been alerted by the UI, so there is data
- * to be sent to the server.
- */
-void
-Network::poll(void)
-{
-	if(connected)
-		pollIn();
-	pollOut();
-}
-
-
-/* PRIVATE METHODS */
-
-
-/**
- * This method connects the client to a server.
- * @param ip The server's IP address.
- * @param port The port on which the server is running on.
+ * Checks incoming network data and forwards them to the UI.
+ * @return False if the connection has been closed by the server.
  */
 bool
-Network::connect(char const* ip, int port)
+Network::poll(void)
 {
-	/* Create socket:
-	 * AF_INET:     domain (ARPA, IPv4)
-	 * SOCK_STREAM: type (stream socket)
-	 * IPPROTO_TCP: protocol (TCP)
-	 */
-	logf(LOG_DEBUG, "creating socket ...");
-	sockc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if(sockc < 0) {
-		logf(LOG_ERROR, "creating socket failed");
-		return false;
-	}
-	
-	/* The socket shall just be polled, so set it to non-blocking mode, which
-	 * allows to go on if there's no data on the socket (remember, there's also
-	 * a UI I/O going on):
-	 */
-	fcntl(sockc, F_SETFL, O_NONBLOCK);
-
-	/* Prepare the server information for use with connect().
-	 */
-	struct sockaddr_in server_addr;
-	memset(&server_addr, 0, sizeof(server_addr));
-	server_addr.sin_family = AF_INET;            // use IPv4
-	server_addr.sin_addr.s_addr = inet_addr(ip); // connect to given IP
-	server_addr.sin_port = htons(port);          // ... and given port
-
-	/* Connect to the server according to the information contained by the
-	 * struct that was just defined:
-	 */
-	logf(LOG_DEBUG, "connecting to %s:%d ...", ip, port);
-	if(::connect(sockc, (sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-		logf(LOG_ERROR, "connect() failed: %s", strerror(errno));
-		return false;
-	}
-
-	logf(LOG_NORMAL, "connection established to %s:%d", ip, port);
-	return(connected = true);
-}
-
-/**
- * This method closes the connection to the server.
- */
-void
-Network::disconnect(void)
-{
-	/* Send a zero-byte message, which will close the connection.
-	 */
-	send(sockc, NULL, 0, MSG_NOSIGNAL);
-
-	/* Close the socket:
-	 */
-	close(sockc);
-	connected = false;
-}
-
-/**
- * This method checks incoming network data and forwards them to the UI.
- */
-void
-Network::pollIn(void)
-{
-	/* Read data to buffer:
-	 */
-	int received = read(sockc, buffer_in, BUFFER_SIZE);
-
-	/* If the number of bytes received is equal to zero, the connection has been
-	 * closed by the server:
-	 */
+	// read data to buffer:
+	int received = read(sockc, buffer, NETWORK_BUFFER_SIZE);
 	if(received == 0)
-		disconnect();
+		return false;
 	
-	/* read() should return the number of bytes received. If there was an error,
-	 * -1 is returned.
-	 * Since the socket is in non-blocking mode, this is likely to happen, so
-	 * just ignore it.
-	 * Process the received bytes if the number is positive:
-	 */
+	// if a positive number of bytes have been received, handle them:
 	if(received > 0) {
-		game->process(buffer_in);
-		ui->process(buffer_in);
+		std::vector<char*> prepared;
+		message_buffer->check(&prepared, buffer, received);
+		for(size_t i = 0; i < prepared.size(); i++)
+			pipe->push(prepared[i]);
 	}
+
+	// as non-blocking, -1 is likely to happen, so treat it as success, too:
+	return true;
 }
 
 /**
- * This method checks the postmaster for new messages and processes them.
+ * Send data to the server.
+ * @param msg The message to be sent.
+ * @return    True if successful, otherwise false.
  */
-void
-Network::pollOut(void)
+bool
+Network::send(char const* msg)
 {
-	/* Check for new messages in the postbox. The message will be stored to
-	 * buffer_out, the length of the data will be returned:
-	 */
-	for(size_t msg_len = pipe->fetch(buffer_out); msg_len > 0; ) {
+	// prepare message:
+	size_t msg_len = msglen(msg);
+	char* prepared = new char[msg_len+1];
+	memcpy(prepared, msg, msg_len);
+	prepared[msg_len] = 0; // check byte
 
-		/* Command [01 CONNECT] requires additional action:
-		 */
-		if(buffer_out[1] == 1) {
-			/* Prepare required data and connect:
-			 */
-			iptoa(buffer_in, buffer_out+4);   // IP address
-			int port = porttoi(buffer_out+8); // TCP port
-
-			/* If there was an error, don't go on to sending data.
-			 * TODO notify UI that connection failed
-			 */
-			if(!connect(buffer_in, port)) {
-				continue;
-			}
-		}
-	
-		int sent = send(sockc, buffer_out, msg_len, MSG_NOSIGNAL);
-
-		/* send() should return the number of bytes sent. If the number is
-		 * negative or equal to zero, there must have been an error, so close
-		 * the connection:
-		 */
-		if(sent <= 0)
-			disconnect();
-	}
+	// send:
+	int sent = ::send(sockc, prepared, msg_len+1, MSG_NOSIGNAL);
+	delete[] prepared;
+	return(sent <= 0);
 }
 

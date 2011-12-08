@@ -1,5 +1,5 @@
 /*
- * EYVA
+ * `eyva'
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,17 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef _EXCEPTION_H_
+#define _EXCEPTION_H_
 
-#include "gui/gui.h"
+#define EXCEPTION_MSG_BUFFER_SIZE 80
 
-#include <generic/utils/ayelog.h>
-#include <generic/utils/exception.h>
+#include <generic/variables.h>
 
-GUI* gui;
+#include <cstdio>   // (v)(s)(f)(n)printf
+#include <cstdarg>  // va_list
 
-int main(int argc, char** argv);
+class
+Exception
+{
+	public:
+		Exception(char const* format, ...);
+		char const* str(void);
+	
+	private:
+		char message[EXCEPTION_MSG_BUFFER_SIZE];
+};
 
 #endif
 

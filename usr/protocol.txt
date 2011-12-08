@@ -1,0 +1,339 @@
+EYVA 0.1
+========
+protocol
+
+
+Structure definition:
+
+    Message head:
+    +--------------------------------------------------------------------------+
+    | byte   meaning                                                           |
+    |                                                                          |
+    |    0   client/session ID (doesn't matter for client)                     |
+    |    1   message code                                                      |
+    |  2-3   message body size                                                 |
+    |  4-*   message body                                                      |
+    |        zero byte                                                         |
+    +--------------------------------------------------------------------------+
+
+    Since the package body size is defined by two bytes, it can be 65535 bytes
+    at most. Thus a complete message (header, body, zero byte) can get as big as
+    4 bytes at least and 65539 bytes at most.
+
+    The zero-byte serves as a kind of security to check whether a message has
+    been sent over the network correctly.
+
+
+Message code definition:
+
+XX  MESSAGE_NAME - [source]
+    This is the message description. XX is the message's code number (in hex), 
+    the source (in brackets) indicates if a message is sent by the server or the
+    client (or both).
+    The part below describes the message body. * bytes for an element's size
+    means that it is a zero-byte terminated string.
+
+    MESSAGE BODY:
+    - element (size)
+    - element (size)
+
+
+=================
+00-0F: USER LEVEL
+=================
+
+
+00  REQUEST_SOFTWARE_VERSION - [server]
+    If the client tries to do anything else than sending its software version or
+    an authentication attempt without being synchronized to the server, this
+    message is sent.
+
+
+01  SOFTWARE_VERSION - [client]
+
+    BODY:
+    - version number - major release (1 byte)
+    - version number - minor release (1 byte)
+    - version number - major patch (1 byte)
+
+
+02  SYNCHRONIZED - [server]
+    In case the software versions match, this message is sent.
+
+
+03  UNSYNCHRONIZED - [server]
+    In case the software version don't match, this message is sent, containing
+    the server's version.
+
+    BODY:
+    - version number - major release (1 byte)
+    - version number - minor release (1 byte)
+    - version number - major patch (1 byte)
+
+
+04  REQUEST_USER_LOGIN - [server]
+    If the client tries to do anything else than sending its software version or
+    an authentication attempt without being authenticated, this message is sent.
+
+
+05  USER_LOGIN - [client]
+
+    BODY:
+    - username (* bytes)
+    - password (* bytes)
+
+
+06  AUTHENTICATED - [server]
+
+    BODY:
+    - message of the day (* bytes)
+
+
+07  DISAUTHENTICATED - [server]
+    If the authentication fails, this message is sent.
+    
+    BODY:
+    - error type (1 byte) (user not found (0) or wrong password (1))
+
+
+08  DISAUTHENTICATE - [client] [server]
+    A message indicating the end of an authenticated connection.
+
+
+09  REQUEST_CHARACTER_LIST - [client]
+    Requests a list of all characters belonging to the user.
+
+
+0A  CHARACTER_LIST - [server]
+    A list of all characters belonging to a user.
+
+    BODY:
+    - n = number of characters (1 byte)
+    - repeat n times:
+      + character ID (1 byte)
+
+
+0B  LOGIN - [client]
+    Login as a character to the game.
+
+    BODY:
+    - character ID
+
+
+0C  LOGOUT - [client]
+    Logout from the game.
+
+
+======================
+10-1F: CHARACTER LEVEL
+======================
+
+
+10  REQUEST_OBJECT_LIST - [client]
+    A list of objects belonging to one's character is requested.
+
+      
+11  OBJECT_LIST - [server]
+
+    BODY:
+    - n = number of objects (1 byte)
+    - repeat n times:
+      + object ID (1 byte)
+
+
+12  USE_OBJECT - [client]
+    This will result in the server executing the message linked to an object in
+    the character's inventory.
+
+    BODY:
+    - object ID (1 bytes)
+
+
+===================
+20-2F: REGION LEVEL
+===================
+
+
+20  REQUEST_OBJECT_LIST - [client]
+    Requests a list of informations to objects in the current region.
+
+
+21  OBJECT_LIST - [server]
+    A list of objects in the current region.
+
+    BODY:
+    - n = number of objects (1 byte)
+    - repeat n times:
+      + object ID (1 byte)
+      + type (1 byte) (non-blocking (0) or blocking (0))
+      + x position (1 byte)
+      + y position (1 byte)
+
+
+22  REQUEST_CHARACTER_LIST - [client]
+    Requests a list of all characters in the region.
+
+
+23  CHARACTER_LIST - [server]
+    A list of all characters in the region.
+
+    BODY:
+    - n = number of characters (1 byte)
+    - repeat n times:
+      + character ID (1 byte)
+      + x position (1 byte)
+      + y position (1 byte)
+
+
+24  ADD_CHARACTER - [server]
+    Region-broadcasts that a character has been created.
+
+    BODY:
+    - character ID (1 byte)
+    - x position (1 byte)
+    - y position (1 byte)
+
+
+25  REMOVE_CHARACTER - [server]
+    Region-broadcasts that a character has left the region.
+
+    BODY:
+    - character ID (1 byte)
+
+
+26  ADD_OBJECT - [server]
+    Region-broadcasts that an object has been created.
+
+    BODY:
+    - object ID (1 byte)
+    - x position (1 byte)
+    - y position (1 byte)
+
+
+27  REMOVE_OBJECT - [server]
+    Region-broadcasts that an object has left the region.
+
+    BODY:
+    - object ID (1 byte)
+
+
+28  SEND_MOVE_UP - [client]
+29  SEND_MOVE_DOWN - [client]
+2A  SEND_MOVE_LEFT - [client]
+2B  SEND_MOVE_RIGHT - [client]
+    Asks the server to move the character one step to north/south/west/east.
+
+
+2C  MOVE_CHARACTER [server]
+    Region-broadcasts that a character has been moved.
+
+    BODY:
+    - ID (1 byte)
+    - xstart (1 byte)
+    - ystart (1 byte)
+    - xend (1 byte)
+    - yend (1 byte)
+
+
+2D  USE_OBJECT - [client]
+    This will result in the server executing the message linked to a target
+    object.
+
+    BODY:
+    - object ID (1 bytes)
+
+
+2E  MOVE_OBJECT - [server]
+    Region-broadcasts that an object has been moved.
+
+    BODY:
+    - ID (1 byte)
+    - xstart (1 byte)
+    - ystart (1 byte)
+    - xend (1 byte)
+    - yend (1 byte)
+
+
+2F  CHANGE_LIFE - [server]
+    The lifepoints of a character are changed to a new value.
+
+    BODY:
+    - lifepoints (1 byte)
+
+
+30  DAMAGE - [server]
+    An amount of damage is done to a player.
+    
+    BODY:
+    - target ID (1 byte)
+    - source ID (1 byte)
+    - damage (1 byte)
+    - damage type (1 byte)
+
+
+=========================
+40-4F: GLOBAL WORLD LEVEL
+=========================
+
+
+40  REQUEST_CHARACTER_LIST - [client]
+    Requests a list of all characters according to search criteria.
+
+    BODY:
+    - search type (1 byte) (region=0, tribe=1, level=2, name=3)
+    - search value (size depending from search type)
+
+
+41  CHARACTER_LIST - [server]
+    A list of all characters currently logged in to the game.
+
+    BODY:
+    - n = number of characters (1 byte)
+    - repeat n times:
+      + character ID (1 byte)
+
+
+=================================
+50-5F: SOCIAL & INTERACTION LEVEL
+=================================
+
+
+50  SEND_TWITTER - [client]
+    Send a chat message to all characters in the same region.
+
+    BODY:
+    - chat message (* bytes)
+
+
+51  SEND_MESSAGE - [client]
+    Send a chat message to a specific recepient.
+
+    BODY:
+    - character ID (2 bytes)
+    - chat message (* bytes)
+
+
+52  MESSAGE - [server]
+    
+    BODY:
+    - message (* bytes)
+
+
+52  REQUEST_CHARACTER_INFO - [client]
+    The client requests a message containing all important information about a
+    character.
+    
+    BODY:
+    - character ID (1 byte)
+
+
+53  CHARACTER_INFO - [server]
+    A message containing all important information about a character.
+
+    BODY:
+    - character ID (1 byte)
+    - character tribe (1 byte)
+    - character level (1 byte)
+    - region ID (4 bytes)
+    - character name (* bytes)
+

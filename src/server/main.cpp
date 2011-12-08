@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA - server side main function
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,44 +19,26 @@
 #include "main.h"
 
 /**
- * The main function.
- * @param argc The number of arguments given.
- * @param argv A list of arguments given.
- * @return     Error code:
- *              0: SUCCESS
- *             -1: FAIL
+ * @param argc Number of arguments given at program start.
+ * @param argv Array of arguments.
+ * @return     0 if success, otherwise -1.
  */
 int
 main(int argc, char** argv)
 {
-	/* TODO parse user input
-	 */
+	// TODO parse user input
 	int port = 1251;
 
 	AyeLog::log_verbosity = 3; // debug log
 
 	try {
-		AyeLog::logf(LOG_NORMAL, "creating socket on port %d ...", port);
-		network = new Network(port);
+		game = new Game(port);
+		game->run();
+		delete game;
+		return 0;
 	} catch(Exception* e) {
 		AyeLog::logf(LOG_ERROR, "%s", e->str());
 		return -1;
 	}
-	AyeLog::logf(LOG_NORMAL, "running");
-
-	/* Loop:
-	 */
-	for(bool term_signal = false; !term_signal; ) {
-		try {
-			network->poll();
-			term_signal = network->checkTermSignal();
-		} catch(Exception* e) {
-			AyeLog::logf(LOG_ERROR, "%s", e->str());
-			return -1;
-		}
-	}
-
-	delete network;
-	return 0;
 }
 

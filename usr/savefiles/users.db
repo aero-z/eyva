@@ -1,0 +1,21 @@
+# List of users registred on this server.
+
+# This is the highest ID. Anything above this will be read, but won't be
+# accessible through the file handler.
+.max:3
+
+{
+id:1
+name:"admin"
+}
+
+{
+id:2
+name:"ayekat"
+}
+
+{
+id:3
+name:"kowalski"
+}
+

@@ -5,35 +5,32 @@ Readme file
 
 Introduction:
 
-    `eyva' is an attempt to create a `Rogue'-like game for the CLI.
+    EYVA is an attempt to create a network-capable role playing game in 2D.
 
 
 Requirements:
 
-    * ncurses
+    <none>
 
 
 Build:
 
-    Run `make' in the project's root directory. This will create server and
-    client binaries. Options are:
+    Run make in the project's root directory. This will create server and client
+    binaries.
 
-    * eserver: This will compile the server component.
-    * eclient: This will compile the client component.
-    * all:     This will build the client and server component [default].
-    * keymap:  This will compile a helper program to find out values
-               corresponding to a key. It can be stopped by hitting 'c'.
-    * clean:   This will remove all object files in the source directories.
-    * purge:   This will remove all object files in the source directories and
-               built binaries.
-   
 
 Execute:
    
-    * `eserver' will listen to port 1251. You may use `netcat' to send and
-      receive data. The server can be stopped by sending ":q\n".
-    * `eclient' is currently just a UI without any functionality. It can be
-      stopped by the command ":q".
+    'eserver' will listen to port 1251. You may use netcat to send and
+    receive data. The server can be stopped by receiving ":q\n".
+
+    'eclient' doesn't do anything.
+
+
+Bugs:
+
+    Please report bugs to the project site:
+    https://github.com/ayekat/eyva
 
 
 Licence:
@@ -52,10 +49,4 @@ Licence:
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
-Bugs:
-
-    Please report bugs to the project site:
-    https://github.com/ayekat/eyva
 

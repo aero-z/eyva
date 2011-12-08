@@ -1,5 +1,5 @@
 /*
- * EYVA
+ * EYVA - basic GUI element
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,17 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef _GUI_ELEMENT_H_
+#define _GUI_ELEMENT_H_
 
-#include "gui/gui.h"
+#include <SDL/SDL.h>
 
-#include <generic/utils/ayelog.h>
-#include <generic/utils/exception.h>
+class
+GUIElement
+{
+	public:
+		GUIElement(int x, int y, int width, int height, SDL_Surface* dst);
+		virtual ~GUIElement(void);
+	
+	protected:
+		SDL_Surface* newSurface(Uint32 flags, int w, int h,
+				const SDL_Surface* dst);
 
-GUI* gui;
-
-int main(int argc, char** argv);
+		SDL_Rect* rectangle;
+		SDL_Surface* surface;
+		SDL_Surface* dst;
+};
 
 #endif
 

@@ -1,5 +1,5 @@
 /*
- * EYVA
+ * `eyva'
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,17 +16,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef _AYELOG_H_
+#define _AYELOG_H_
 
-#include "gui/gui.h"
+#include <cstdio>   // (v)(s)(f)(n)printf
+#include <cstdarg>  // va_list
+#include <ctime>    // struct tm
 
-#include <generic/utils/ayelog.h>
-#include <generic/utils/exception.h>
+#define LOG_BUFFER_SIZE 100
 
-GUI* gui;
+/**
+ * These enums will be used to define the type of the log message.
+ */
+enum
+log_type
+{
+	LOG_NORMAL,
+	LOG_DEBUG,
+	LOG_WARNING,
+	LOG_ERROR
+};
 
-int main(int argc, char** argv);
+namespace
+AyeLog
+{
+	extern void logf(log_type type, char const* format, ...);
+	extern int log_verbosity;
+};
 
 #endif
 

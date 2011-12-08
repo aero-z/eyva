@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA - client side main function
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,35 +19,25 @@
 #include "main.h"
 
 /**
- * The main function.
- * The program loop is running in here.
- * @param argc Number of arguments passed on program invoke.
- * @param argv String array containing the arguments.
+ * Create graphical user interface and start its game loop.
+ * @param argc Number of arguments given at program start.
+ * @param argv Array of arguments.
+ * @return     0 if success, otherwise -1.
  */
 int
 main(int argc, char** argv)
 {
-	AyeLog::log_verbosity = 3;   // debug log output
+	AyeLog::log_verbosity = 3;
 
-	game = new Game();
-	network_pipe = new Pipe();
-	ui = new UI(network_pipe, game);
-	network = new Network(game, ui, network_pipe);
-
-	/* Loop: Check for activitiy on the network layer, then for activity on
-	 * userspace level.
-	 */
-	for(bool term_signal = false; !term_signal; ) {
-		network->poll();
-		ui->poll(1.0);
-		term_signal = ui->checkTermSignal();
+	try {
+		gui = new GUI();
+		gui->run();
+		delete gui;
+		return 0;
+	} catch(Exception* e) {
+		AyeLog::logf(LOG_ERROR, "%s", e->str());
+		return -1;
 	}
 
-	delete game;
-	delete ui;
-	AyeLog::logf(LOG_NORMAL, "shutting down eyva client ...");
-	delete network;
-	delete network_pipe;
-	return 0;
 }
 

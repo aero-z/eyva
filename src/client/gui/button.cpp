@@ -1,5 +1,5 @@
 /*
- * EYVA
+ * EYVA - clickable button
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,17 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#include "button.h"
 
-#include "gui/gui.h"
+/**
+ * @param x     X position.
+ * @param y     Y position.
+ * @param w     Width.
+ * @param h     Height.
+ * @param dst   Surface on which will be drawn.
+ * @param label Label.
+ */
+Button::Button(int x, int y, int w, int h, SDL_Surface* dst,
+		char const* label)
+		: GUIElement(x, y, w, h, dst)
+{
+	this->label = new char[strlen(label)+1]; // +1 for \0
+	strcpy(this->label, label);
 
-#include <generic/utils/ayelog.h>
-#include <generic/utils/exception.h>
+	// TODO print text on button:
+	SDL_FillRect(dst, rectangle, SDL_MapRGB(dst->format, 255, 255, 255));
+}
 
-GUI* gui;
-
-int main(int argc, char** argv);
-
-#endif
+Button::~Button(void)
+{
+	delete[] label;
+}
 

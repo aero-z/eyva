@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA - 
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,16 +18,10 @@
 
 #include "CLASS.h"
 
-/**
- * Constructor.
- */
 CLASS::CLASS(void)
 {
 }
 
-/**
- * Destructor.
- */
 CLASS::~CLASS(void)
 {
 }

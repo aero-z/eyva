@@ -1,5 +1,5 @@
 /*
- * `eyva' (server) - Game manager and handler (implementation).
+ * EYVA - graphical user interface
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,25 +16,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "game.h"
+#include "gui.h"
 
 using namespace AyeLog;
-using namespace AyeString;
 
-/**
- * @param port The port where the game shall run on.
- */
-Game::Game(int port)
+GUI::GUI(void)
 {
-	logf(LOG_NORMAL, "setting up new game ...");
 	pipe = new Pipe();
-	network = new Network(pipe, port);
+	network = NULL;
 	term_signal = false;
+
+	// set up SDL:
+	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+		throw new Exception("SDL_Init() failed");
+	
+	// set up events and layers:
+	event = new SDL_Event();
+	surface = SDL_SetVideoMode(800, 600, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	if(surface == NULL)
+		throw new Exception("surface initialization failed");
+	
+	login_screen = new Login(0, 0, 800, 600, surface);
+	SDL_Flip(surface);
 }
 
-Game::~Game(void)
+GUI::~GUI(void)
 {
-	delete network;
+	delete pipe;
+	if(network != NULL)
+		delete network;
+	
+	SDL_Quit();
 }
 
 
@@ -42,15 +54,17 @@ Game::~Game(void)
 
 
 /**
- * Game loop.
+ * Initiate the game loop.
  */
 void
-Game::run(void)
+GUI::run(void)
 {
 	while(!term_signal) {
-		network->poll();
-		process();
+		while(SDL_PollEvent(event)) {
+			handleEvents();
+		}
 	}
+	SDL_Delay(100);
 }
 
 
@@ -58,11 +72,14 @@ Game::run(void)
 
 
 void
-Game::process(void)
+GUI::handleEvents(void)
 {
-	while(pipe->fetch(buffer, NETWORK_BUFFER_SIZE)) {
-		if(buffer[0] == 0)
+	switch(event->type) {
+		case SDL_QUIT:
 			term_signal = true;
+			break;
+		default:
+			break;
 	}
 }
 

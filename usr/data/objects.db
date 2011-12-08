@@ -1,0 +1,13 @@
+# Object database.
+
+# This is the highest ID. Anything above this will be read, but won't be
+# accessible through the file handler.
+.max:1
+
+{
+id:1
+name:"Amulet of Water"
+rules:"You are able to swim, without inventory and/or gear."
+persistent:1
+}
+

@@ -16,17 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef _PIPE_H_
+#define _PIPE_H_
 
-#include "gui/gui.h"
+#include "utils/ayestring.h"
 
-#include <generic/utils/ayelog.h>
-#include <generic/utils/exception.h>
+#include <cstring>
+#include <vector>
 
-GUI* gui;
-
-int main(int argc, char** argv);
+class
+Pipe
+{
+	public:
+		~Pipe(void);
+		void push(char const* msg);
+		bool check(void);
+		size_t fetch(char* buffer, size_t len);
+	
+	private:
+		std::vector<char*> pipe;
+};
 
 #endif
 

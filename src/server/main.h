@@ -19,14 +19,12 @@
 #ifndef _SERVER_MAIN_H_
 #define _SERVER_MAIN_H_
 
-#include "network.h"
+#include "game.h"
 
-#include <utils/exception.h>
-#include <utils/ayelog.h>
+#include <generic/utils/exception.h>
+#include <generic/utils/ayelog.h>
 
-#include <cstdio>
-
-Network* network;
+Game* game;
 
 int main(int argc, char** argv);
 

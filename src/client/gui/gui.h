@@ -1,5 +1,5 @@
 /*
- * EYVA
+ * EYVA - graphical user interface
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,17 +16,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef _GUI_H_
+#define _GUI_H_
 
-#include "gui/gui.h"
-
-#include <generic/utils/ayelog.h>
+#include "login.h"
+#include <client/network.h>
+#include <generic/pipe.h>
 #include <generic/utils/exception.h>
+#include <generic/utils/ayelog.h>
 
-GUI* gui;
+#include <SDL/SDL.h>
 
-int main(int argc, char** argv);
+class
+GUI
+{
+	public:
+		GUI(void);
+		~GUI(void);
+		void run(void);
+	
+	private:
+		void handleEvents(void);
+
+		SDL_Event* event;
+		SDL_Surface* surface;
+		Login* login_screen;
+		Network* network;
+		Pipe* pipe;
+		bool term_signal;
+};
 
 #endif
 

@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA - server side user class
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,24 +19,22 @@
 #ifndef _USER_H_
 #define _USER_H_
 
-// Utils:
-#include <utils/file_handler.h>
-#include <utils/exception.h>
+#include <generic/savefile.h>
+#include <generic/utils/exception.h>
 
-// Others:
 #include <cstring>
 
 class
 User
 {
 	public:
-		User(char const* name, FileHandler* file_handler);
+		User(char const* name, Savefile* savefile);
 		~User(void);
 		size_t getName(char* name, size_t len);
 		int getID(void);
 	
 	private:
-		FileHandler* file_handler;
+		Savefile* savefile;
 		char* name;
 		int id;
 };

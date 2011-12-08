@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA -
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,8 +23,8 @@ class
 CLASS
 {
 	public:
-		CLASS();
-		~CLASS();
+		CLASS(void);
+		~CLASS(void);
 };
 
 #endif

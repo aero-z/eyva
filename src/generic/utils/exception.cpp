@@ -1,5 +1,5 @@
 /*
- * EYVA
+ * `eyva' - Exception class of which instances are thrown.
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,17 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#include "exception.h"
 
-#include "gui/gui.h"
+/**
+ * Constructor.
+ * @param format The format string. See docs for `printf()' and the like.
+ * @param ...    The format string arguments.
+ */
+Exception::Exception(char const* format, ...)
+{
+	va_list args;           // access handler
+	va_start(args, format); // prepare access
+	vsnprintf(message, EXCEPTION_MSG_BUFFER_SIZE, format, args);
+	va_end(args);           // end access
+}
 
-#include <generic/utils/ayelog.h>
-#include <generic/utils/exception.h>
 
-GUI* gui;
+/* PUBLIC METHODS */
 
-int main(int argc, char** argv);
 
-#endif
+/**
+ * @return The exception message.
+ */
+char const*
+Exception::str(void)
+{
+	return message;
+}
 

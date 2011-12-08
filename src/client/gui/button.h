@@ -1,5 +1,5 @@
 /*
- * EYVA
+ * EYVA - clickable button
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,17 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef _GUI_BUTTON_H_
+#define _GUI_BUTTON_H_
 
-#include "gui/gui.h"
+#include "gui_element.h"
 
-#include <generic/utils/ayelog.h>
-#include <generic/utils/exception.h>
-
-GUI* gui;
-
-int main(int argc, char** argv);
+class
+Button : public GUIElement
+{
+	public:
+		Button(int x, int y, int w, int h, SDL_Surface* dst, char const* label);
+		~Button(void);
+	
+	private:
+		char* label;
+};
 
 #endif
 
