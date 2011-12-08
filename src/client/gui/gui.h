@@ -1,5 +1,5 @@
 /*
- * EYVA
+ * EYVA - graphical user interface
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,12 +19,11 @@
 #ifndef _GUI_H_
 #define _GUI_H_
 
-#include "network.h"
-
+#include <client/network.h>
 #include <generic/pipe.h>
 #include <generic/utils/exception.h>
 
-//#include <SDL/SDL.h>
+#include <SDL/SDL.h>
 
 class
 GUI
@@ -35,8 +34,13 @@ GUI
 		void run(void);
 	
 	private:
+		void handleEvents(void);
+
+		SDL_Event* event;
+		SDL_Surface* screen;
 		Network* network;
 		Pipe* pipe;
+		bool term_signal;
 };
 
 #endif

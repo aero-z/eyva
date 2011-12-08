@@ -18,14 +18,10 @@
 
 #include "CLASS.h"
 
-/**
- */
 CLASS::CLASS(void)
 {
 }
 
-/**
- */
 CLASS::~CLASS(void)
 {
 }

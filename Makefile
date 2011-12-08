@@ -2,9 +2,9 @@
 # -I means: headers being in that directory can be included with <blabla>
 # -g means: binaries are stuffed with additional information, for debugging
 CC = g++
-CFLAGS = -c -g -Wall -Isrc
+CFLAGS = -c -g -Wall -I/usr/include/SDL -Isrc -D_GNU_SOURCE=1 -D_REENTRANT
 SERVER_LDFLAGS = 
-CLIENT_LDFLAGS = -lncurses
+CLIENT_LDFLAGS = -L/usr/lib -lSDL -lpthread
 
 GENERIC_SOURCES = $(wildcard src/generic/*.cpp) $(wildcard src/generic/*/*.cpp)
 SERVER_SOURCES = $(wildcard src/server/*.cpp)

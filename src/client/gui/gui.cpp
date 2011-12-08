@@ -22,8 +22,17 @@ GUI::GUI(void)
 {
 	pipe = new Pipe();
 	network = NULL;
+	term_signal = false;
 
-	// TODO
+	// set up SDL:
+	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+		throw new Exception("SDL_Init() failed");
+	
+	// set up events and layers:
+	event = new SDL_Event();
+	screen = SDL_SetVideoMode(800, 600, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	if(screen == NULL)
+		throw new Exception("surface initialization failed");
 }
 
 GUI::~GUI(void)
@@ -31,6 +40,8 @@ GUI::~GUI(void)
 	delete pipe;
 	if(network != NULL)
 		delete network;
+	
+	SDL_Quit();
 }
 
 
@@ -43,6 +54,26 @@ GUI::~GUI(void)
 void
 GUI::run(void)
 {
-	// TODO
+	while(!term_signal) {
+		while(SDL_PollEvent(event)) {
+			handleEvents();
+		}
+	}
+}
+
+
+/* PRIVATE METHODS */
+
+
+void
+GUI::handleEvents(void)
+{
+	switch(event->type) {
+		case SDL_QUIT:
+			term_signal = true;
+			break;
+		default:
+			break;
+	}
 }
 
