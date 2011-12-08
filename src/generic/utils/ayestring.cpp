@@ -1,5 +1,5 @@
 /*
- * `eyva' - String manipulation collection (implementation).
+ * EYVA - data manipulation collection
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,24 +19,22 @@
 #include "ayestring.h"
 
 /**
- * This function determines the length of a message according to the eyva
- * protocol.
- * NOTE: It will return the length of the message, not the length of the message
- *       body. It's intended as a replacement for strlen().
+ * Determine the length of a message according to the eyva protocol. Note that
+ * this method won't count the trailing 0, and note as well that it will not
+ * return the size of the message _body_ but of the _complete_ message (it's
+ * a replacement for strlen()).
  * @param msg The message of which the line shall be determined.
  * @return    The size of the message.
  */
 size_t
 AyeString::msglen(char const* msg)
 {
-	/* little endian:
-	 */
-	return (256*msg[MESSAGE_HEAD_SIZE-1] + msg[MESSAGE_HEAD_SIZE-2]
-			+ MESSAGE_HEAD_SIZE);
+	// little endian:
+	return (256*msg[3] + msg[2] + 4);
 }
 
 /**
- * This function will create a string representation of an IPv4 address.
+ * Create a string representation of an IPv4 address.
  * @param str  The C string where the string representation of the IPv4 address
  *             will be written to.
  * @param ipv4 A pointer to the first byte where the IPv4 address is stored.
@@ -56,7 +54,7 @@ AyeString::iptoa(char* str, char const* ip)
 }
 
 /**
- * This function will turn a little endian value into an integer value.
+ * Turn a little endian value into an integer value.
  * @param port The port (little endian).
  * @return     The port as integer.
  */
@@ -67,7 +65,7 @@ AyeString::porttoi(char* port)
 }
 
 /**
- * This function extracts the numeric value from a string.
+ * Extract the numeric value from a string.
  * @param str  The string containing the value.
  * @param base The base in which the number is represented. It must be >1 and
  *             <36. In all bases, preceding whitespaces (space, tab,
@@ -85,14 +83,11 @@ AyeString::aton(char const* str, int base)
 	bool negative = false;
 	bool preceding = true;
 	for(size_t i = 0; i < strlen(str); i++) {
-		/* If there's a whitespace and we're still preceding, ignore:
-		 */
+		// ignore whitespaces if preceding:
 		if((str[i] == 32 || str[i] == 9 || str[i] == 10) && preceding)
 			continue;
 
-		/* If there's a "-" or "+", take it as the start of a number and set the
-		 * negative flag appropriately:
-		 */
+		// adjust negative flag if preceding and stop preceding:
 		if((str[i] == 45 || str[i] == 43) && preceding) {
 			preceding = false;
 			start = i+1;
@@ -111,9 +106,7 @@ AyeString::aton(char const* str, int base)
 			continue;
 		}
 
-		/* Otherwise, check the value of the current sign and "register" it, if
-		 * it's valid, or break if invalid:
-		 */
+		// get the one-byte-value and store if valid:
 		buffer = cton(str[i], base);
 		if(buffer == -1)
 			break;
@@ -125,13 +118,11 @@ AyeString::aton(char const* str, int base)
 		length++;
 	}
 
-	/* If the number length is zero, the string must be malformed:
-	 */
+	// after copying, check number size (supposed to be malformed if negative):
 	if(length == 0)
 		return 0;
 	
-	/* Otherwise sum up:
-	 */
+	// sum up and adjust negative flag:
 	int sum = 0;
 	for(int i = start+length-1; i >= start; i--)
 		sum += (cton(str[i], base))*pow(base, start+length-1-i);
@@ -139,14 +130,13 @@ AyeString::aton(char const* str, int base)
 }
 
 /**
- * This function implements the power function.
  * @param base The number to be powered up.
  * @param exp  The exponent.
+ * TODO negative exponents
  */
 int
 AyeString::pow(int base, int exp)
 {
-	// TODO negative exponents
 	int result = 1;
 	for(int i = 0; i < exp; i++)
 		result *= base;
@@ -155,8 +145,7 @@ AyeString::pow(int base, int exp)
 }
 
 /**
- * This function gets the value of a character in a given base. Not to be
- * confused with aton(), that gets the value of a STRING in a given base.
+ * Extract the numeric value from a character (don't confuse with aton!).
  * @param chr  The character for which the value is required.
  * @param base The base.
  * @return     The character's value. If the character is not defined for the
@@ -167,32 +156,17 @@ AyeString::cton(char const chr, int base)
 {
 	int val;
 
-	/* Ciphers:
-	 */
-	if(chr >= 48 && chr <= 59) {
+	// get symbol values:
+	if(chr >= 48 && chr <= 59)       // ciphers
 		val = chr-48;
-	}
-	
-	/* Uppercase letters:
-	 */
-	else if(chr >= 65 && chr <= 90) {
+	else if(chr >= 65 && chr <= 90)  // uppercase letters
 		val = chr-55;
-	}
-
-	/* Lowercase letters:
-	 */
-	else if(chr >= 97 && chr <= 122) {
+	else if(chr >= 97 && chr <= 122) // lowercase letters
 		val = chr-87;
-	}
-
-	/* Anything else:
-	 */
-	else {
+	else                             // invalid
 		val = -1;
-	}
 
-	/* Check if in base range:
-	 */
+	// check if in base range:
 	if(val < 0 || val >= base)
 		val = -1;
 	

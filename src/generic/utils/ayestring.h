@@ -20,7 +20,7 @@
 #define _AYESTRING_H_
 
 // Hybrid:
-#include <hybrid/eyva.h>
+#include <generic/variables.h>
 
 // Others:
 #include <cstring>

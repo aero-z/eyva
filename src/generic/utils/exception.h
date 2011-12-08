@@ -21,7 +21,7 @@
 
 #define EXCEPTION_MSG_BUFFER_SIZE 80
 
-#include <hybrid/eyva.h>
+#include <generic/variables.h>
 
 #include <cstdio>   // (v)(s)(f)(n)printf
 #include <cstdarg>  // va_list

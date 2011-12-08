@@ -59,12 +59,15 @@ AyeLog::logf(log_type type, char const* format, ...)
 			break;
 	}
 
+	/* TODO find a way to avoid valgrind errors on this
 	// add timestamp:
 	char b3[LOG_BUFFER_SIZE];
-	time_t x = time(NULL);
-	tm* timestamp = localtime(&x);
+	time_t rawtime;
+	time(&rawtime);
+	struct tm* timestamp = localtime(&rawtime);
 	snprintf(b3, LOG_BUFFER_SIZE, "\e[36m[%02d:%02d:%02d]\e[0m %s",
 			timestamp->tm_hour, timestamp->tm_min, timestamp->tm_sec, b2);
+	*/
 
 	// TODO write to log file
 
@@ -73,6 +76,6 @@ AyeLog::logf(log_type type, char const* format, ...)
 			|| (type == LOG_NORMAL && log_verbosity >= 2)
 			|| (type == LOG_WARNING && log_verbosity >= 1)
 			|| (type == LOG_ERROR))
-		printf("%s\r\n", b3);
+		printf("%s\r\n", b2);
 }
 

@@ -19,19 +19,21 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
+#include <generic/variables.h>
+#include <generic/message_buffer.h>
 #include <generic/pipe.h>
 #include <generic/variables.h>
 #include <generic/utils/ayelog.h>
 #include <generic/utils/exception.h>
 
-// Network:
+// network:
 #include <sys/types.h>   // socket types
 #include <sys/socket.h>  // sockets
 #include <arpa/inet.h>   // inet (3) functions
 #include <unistd.h>      // for write, read
 #include <fcntl.h>       // for non-blocking socket
 
-// Others:
+// others:
 #include <cerrno>
 #include <cstring>
 
@@ -53,12 +55,13 @@ Network
 	public:
 		Network(Pipe* pipe, char const* ip, int port);
 		~Network(void);
-		void send(char const* msg);
+		bool send(char const* msg);
 		bool poll(void);
 
 	private:
+		MessageBuffer* message_buffer;
 		Pipe* pipe;
-		char buffer[BUFFER_SIZE];
+		char buffer[NETWORK_BUFFER_SIZE];
 		int sockc;
 };
 

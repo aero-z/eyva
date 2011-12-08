@@ -19,6 +19,7 @@
 #include "network.h"
 
 using namespace AyeLog;
+using namespace AyeString;
 
 /**
  * @param pipe The GUI's "postbox". It's required to communicate to the GUI.
@@ -28,7 +29,8 @@ using namespace AyeLog;
 Network::Network(Pipe* pipe, char const* ip, int port)
 {
 	this->pipe = pipe;
-	for(int i = 0; i < BUFFER_SIZE; i++)
+	message_buffer = new MessageBuffer();
+	for(int i = 0; i < NETWORK_BUFFER_SIZE; i++)
 		buffer[i] = 0;
 
 	// create socket:
@@ -73,34 +75,39 @@ bool
 Network::poll(void)
 {
 	// read data to buffer:
-	int received = read(sockc, buffer, BUFFER_SIZE);
-
-	// if zero bytes where received, the connection has been closed:
+	int received = read(sockc, buffer, NETWORK_BUFFER_SIZE);
 	if(received == 0)
 		return false;
 	
 	// if a positive number of bytes have been received, handle them:
 	if(received > 0) {
-		// TODO received -> package handler -> gui
+		std::vector<char*> prepared;
+		message_buffer->check(&prepared, buffer, received);
+		for(size_t i = 0; i < prepared.size(); i++)
+			pipe->push(prepared[i]);
 	}
+
+	// as non-blocking, -1 is likely to happen, so treat it as success, too:
+	return true;
 }
 
 /**
- * This method sends data to the server.
+ * Send data to the server.
  * @param msg The message to be sent.
+ * @return    True if successful, otherwise false.
  */
-void
+bool
 Network::send(char const* msg)
 {
-	// TODO msg -> package handler -> send
+	// prepare message:
+	size_t msg_len = msglen(msg);
+	char* prepared = new char[msg_len+1];
+	memcpy(prepared, msg, msg_len);
+	prepared[msg_len] = 0; // check byte
 
-	//int sent = ::send(sockc, msg, msglen(msg), MSG_NOSIGNAL);
-
-	/* send() should return the number of bytes sent. If the number is
-	 * negative or equal to zero, there must have been an error, so close
-	 * the connection:
-	 */
-	//if(sent <= 0)
-		//disconnect();
+	// send:
+	int sent = ::send(sockc, prepared, msg_len+1, MSG_NOSIGNAL);
+	delete[] prepared;
+	return(sent <= 0);
 }
 

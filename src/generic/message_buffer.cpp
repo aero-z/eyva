@@ -53,9 +53,13 @@ MessageBuffer::check(std::vector<char*>* dst, char const* msg, size_t len)
 	buffer_len += len;
 	buffer = buffer_new;
 
-	// check for complete message:
-	int msg_len = msglen(buffer);
-	if(buffer_len > msg_len) {
+	// check for complete message if the buffer has at least 5 bytes (with \0):
+	int msg_len = 0;
+	if(buffer_len > 4)
+		msg_len = msglen(buffer);
+	
+	// return value if the message is valid:
+	if(msg_len >= 4 && buffer_len > msg_len) {
 		// if message is invalid, clear buffer (tabula rasa):
 		if(buffer[msg_len] != 0) {
 			delete[] buffer;

@@ -57,10 +57,6 @@ Session::~Session(void)
 void
 Session::process(char const* msg, size_t msg_len)
 {
-	for(size_t i = 0; i < msg_len; i++)
-		printf("[%d]", msg[i]);
-	printf("\n");
-
 	// TODO this is temporary:
 	if(msg_len == 3 && msg[0] == ':' && msg[1] == 'q' && msg[2] == 10) {
 		logf(LOG_DEBUG, ":q");

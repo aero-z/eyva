@@ -130,8 +130,10 @@ Network::send(char const* msg)
 	memcpy(prepared, msg, msg_len);
 	prepared[msg_len] = 0;  // check byte
 
+	// send:
 	logf(LOG_DEBUG, "sending %d+1 bytes to %d ...", msg_len, id);
 	int sent = ::send(id, prepared, msg_len+1, MSG_NOSIGNAL); // <- no crash!
+	delete[] prepared;
 	if(sent <= 0) {
 		logf(LOG_WARNING, "%d: connection lost", id); 
 		close(id);
