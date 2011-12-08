@@ -21,8 +21,8 @@
 
 #include "gui.h"
 
-#include <utils/ayelog.h>
-#include <utils/exception.h>
+#include <generic/utils/ayelog.h>
+#include <generic/utils/exception.h>
 
 GUI* gui;
 

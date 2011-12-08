@@ -5,78 +5,26 @@ protocol
 
 Structure definition:
 
-    +--------------------------------------------------------------------------+
-    | byte   meaning                                                           |
-    |                                                                          |
-    |  0-3   package header                                                    |
-    |  4-*   package body                                                      |
-    |        magic bytes                                                       |
-    +--------------------------------------------------------------------------+
-
-    Package head:
+    Message head:
     +--------------------------------------------------------------------------+
     | byte   meaning                                                           |
     |                                                                          |
     |    0   client/session ID (doesn't matter for client)                     |
-    |    1   fragment size                                                     |
-    |    2   fragment index                                                    |
-    |    3   package body size                                                 |
+    |    1   message code                                                      |
+    |  2-3   message body size                                                 |
+    |  4-*   message body                                                      |
+    |        zero byte                                                         |
     +--------------------------------------------------------------------------+
 
-    Package body:
-    +--------------------------------------------------------------------------+
-    | byte   meaning                                                           |
-    |                                                                          |
-    |    4   message (or "command")                                            |
-    |  5-*   message body                                                      |
-    +--------------------------------------------------------------------------+
+    Since the package body size is defined by two bytes, it can be 65535 bytes
+    at most. Thus a complete message (header, body, zero byte) can get as big as
+    4 bytes at least and 65539 bytes at most.
 
-    Since the package body size is defined by one byte, it can be 255 bytes at
-    most, thus a complete package (header and body) can get as big as 263 bytes
-    at most and 8 bytes at least (no-message package). See below for further
-    information about the magic bytes.
-
-    As a message may pass the 255 bytes mark, it has to be split up into
-    fragments. Every package holds the information of the number of fragments
-    into which the containing message is split up, plus the index of the
-    fragment that the package represents.
-
-    Example of a package header:
-    +----+----+----+----+
-    | 07 | 04 | 02 | FF |
-    +----+----+----+----+
-    The first byte indicates that we're handling client #7.
-    The second byte indicates that the message is split up into four fragments
-    in total.
-    The third byte indicates that this package is the second fragment of the
-    four fragments.
-    The fourth byte indicates the size of the package body (without header).
-
-    Further, there is the non-message package (package body length 0), which is
-    used for connection level purposes. The fragment bytes are both set to 0 to
-    indicate that it's a non-message package, while the size byte will hold the
-    information:
-    - 00: confirmation message
-    - 01: package length error
-    - 02: invalid message error
-
-    Example of a non-message package:
-    +----+----+----+----+
-    | 04 | 00 | 00 | 02 |
-    +----+----+----+----+
-    This package will be sent to client #4
-
-    The magic bytes are four bytes added to the end of the package, the purpose
-    being to check the correctness of a package (they're always the same):
-    +----+----+----+----+
-    | 45 | 59 | 56 | 41 | (ASCII for 'EYVA')
-    +----+----+----+----+
+    The zero-byte serves as a kind of security to check whether a message has
+    been sent over the network correctly.
 
 
-Message definition:
-
-    Messages are packed into packages and are defined as follows:
-
+Message code definition:
 
 XX  MESSAGE_NAME - [source]
     This is the message description. XX is the message's code number (in hex), 
@@ -95,9 +43,13 @@ XX  MESSAGE_NAME - [source]
 =================
 
 
-00  REQUEST_SOFTWARE_CHECK - [client]
-    Before logging in, the client and server have to make sure they've got the
-    same software version.
+00  REQUEST_SOFTWARE_VERSION - [server]
+    If the client tries to do anything else than sending its software version or
+    an authentication attempt without being synchronized to the server, this
+    message is sent.
+
+
+01  SOFTWARE_VERSION - [client]
 
     BODY:
     - version number - major release (1 byte)
@@ -105,11 +57,11 @@ XX  MESSAGE_NAME - [source]
     - version number - major patch (1 byte)
 
 
-01  ACCEPT_SOFTWARE_CHECK - [server]
+02  SYNCHRONIZED - [server]
     In case the software versions match, this message is sent.
 
 
-02  REJECT_SOFTWARE_CHECK - [server]
+03  UNSYNCHRONIZED - [server]
     In case the software version don't match, this message is sent, containing
     the server's version.
 
@@ -119,34 +71,40 @@ XX  MESSAGE_NAME - [source]
     - version number - major patch (1 byte)
 
 
-03  ATTEMPT_AUTHENTICATE - [client]
+04  REQUEST_USER_LOGIN - [server]
+    If the client tries to do anything else than sending its software version or
+    an authentication attempt without being authenticated, this message is sent.
+
+
+05  USER_LOGIN - [client]
 
     BODY:
     - username (* bytes)
     - password (* bytes)
 
 
-04  ACCEPT_AUTHENTICATE - [server]
+06  AUTHENTICATED - [server]
 
     BODY:
     - message of the day (* bytes)
 
 
-05  REJECT_AUTHENTICATE - [server]
+07  DISAUTHENTICATED - [server]
+    If the authentication fails, this message is sent.
     
     BODY:
     - error type (1 byte) (user not found (0) or wrong password (1))
 
 
-06  DISAUTHENTICATE - [client] [server]
+08  DISAUTHENTICATE - [client] [server]
     A message indicating the end of an authenticated connection.
 
 
-07  REQUEST_CHARACTER_LIST - [client]
+09  REQUEST_CHARACTER_LIST - [client]
     Requests a list of all characters belonging to the user.
 
 
-08  CHARACTER_LIST - [server]
+0A  CHARACTER_LIST - [server]
     A list of all characters belonging to a user.
 
     BODY:
@@ -155,14 +113,14 @@ XX  MESSAGE_NAME - [source]
       + character ID (1 byte)
 
 
-09  LOGIN - [client]
+0B  LOGIN - [client]
     Login as a character to the game.
 
     BODY:
     - character ID
 
 
-0A  LOGOUT - [client]
+0C  LOGOUT - [client]
     Logout from the game.
 
 
@@ -183,7 +141,7 @@ XX  MESSAGE_NAME - [source]
       + object ID (1 byte)
 
 
-18  USE_OBJECT - [client]
+12  USE_OBJECT - [client]
     This will result in the server executing the message linked to an object in
     the character's inventory.
 

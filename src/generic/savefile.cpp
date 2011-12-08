@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA - savefile handler
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "file_handler.h"
+#include "savefile.h"
 
 using namespace AyeString;
 
@@ -25,7 +25,7 @@ using namespace AyeString;
  * Gets the content of a given file.
  * @param path The path to the file that shall be read.
  */
-FileHandler::FileHandler(char const* path)
+Savefile::Savefile(char const* path)
 {
 	this->path = new char[strlen(path)+1]; // +1 for \0
 	strcpy(this->path, path);
@@ -81,7 +81,7 @@ FileHandler::FileHandler(char const* path)
 /**
  * Destructor.
  */
-FileHandler::~FileHandler(void)
+Savefile::~Savefile(void)
 {
 	save();
 }
@@ -94,7 +94,7 @@ FileHandler::~FileHandler(void)
  * This method writes the buffer to the file.
  */
 void
-FileHandler::save(void)
+Savefile::save(void)
 {
 	// TODO
 }
@@ -105,7 +105,7 @@ FileHandler::save(void)
  * @return     The ID according to the name.
  */
 int
-FileHandler::getUserID(char const* name)
+Savefile::getUserID(char const* name)
 {
 	/* Go through all entries and check if the name corresponds to the provided
 	 * one:
@@ -135,7 +135,7 @@ FileHandler::getUserID(char const* name)
  *               if the buffer was too small). 0 if not found.
  */
 size_t
-FileHandler::getString(char* buffer, int id, char const* key, size_t len)
+Savefile::getString(char* buffer, int id, char const* key, size_t len)
 {
 	if(key != NULL && tokenize(key, id) > 1) {
 		if(buffer != NULL) {
@@ -154,7 +154,7 @@ FileHandler::getString(char* buffer, int id, char const* key, size_t len)
  * @return    The value of the field. 0 if not found.
  */
 int
-FileHandler::getValue(int id, char const* key)
+Savefile::getValue(int id, char const* key)
 {
 	if(key != NULL && tokenize(key, id) > 1) {
 		return aton(line_buffer[1], 10);
@@ -170,7 +170,7 @@ FileHandler::getValue(int id, char const* key)
  * @return       The number of values found. 0 if not found.
  */
 size_t
-FileHandler::getList(std::vector<int>* buffer, int id, char const* key)
+Savefile::getList(std::vector<int>* buffer, int id, char const* key)
 {
 	if(key != NULL && tokenize(key, id) > 1) {
 		if(buffer != NULL) {
@@ -184,21 +184,21 @@ FileHandler::getList(std::vector<int>* buffer, int id, char const* key)
 }
 
 bool
-FileHandler::setString(int id, char const* key, char const* string)
+Savefile::setString(int id, char const* key, char const* string)
 {
 	// TODO
 	return false;
 }
 
 bool
-FileHandler::setValue(int id, char const* key, int value)
+Savefile::setValue(int id, char const* key, int value)
 {
 	// TODO
 	return false;
 }
 
 bool
-FileHandler::setList(int id, char const* key, std::vector<int>* list)
+Savefile::setList(int id, char const* key, std::vector<int>* list)
 {
 	// TODO
 	return false;
@@ -209,7 +209,7 @@ FileHandler::setList(int id, char const* key, std::vector<int>* list)
  * @return The new entry's ID.
  */
 int
-FileHandler::addEntry(void)
+Savefile::addEntry(void)
 {
 	// TODO
 	return 0;
@@ -225,7 +225,7 @@ FileHandler::addEntry(void)
  * @return The number of lines copied, 0 if the entry has not been found.
  */
 size_t
-FileHandler::updateEntry(int id)
+Savefile::updateEntry(int id)
 {
 	/* If the requested ID is already loaded, don't continue here:
 	 */
@@ -291,7 +291,7 @@ FileHandler::updateEntry(int id)
  * @return    The number of tokens generated. 0 if not found.
  */
 size_t
-FileHandler::tokenize(char const* key, int id)
+Savefile::tokenize(char const* key, int id)
 {
 	/* Update the content of the entry buffer to make sure we're handling the
 	 * right data:
@@ -367,7 +367,7 @@ FileHandler::tokenize(char const* key, int id)
  * TODO make it dynamic (without .max entry)
  */
 void
-FileHandler::updateIDMax(void)
+Savefile::updateIDMax(void)
 {
 	/* Go through every line to check if the ".max" entry is here:
 	 */

@@ -6,28 +6,28 @@ CFLAGS = -c -g -Wall -Isrc
 SERVER_LDFLAGS = 
 CLIENT_LDFLAGS = -lncurses
 
-SHARED_SOURCES = $(wildcard src/shared/*.cpp) $(wildcard src/shared/*/*.cpp)
+GENERIC_SOURCES = $(wildcard src/generic/*.cpp) $(wildcard src/generic/*/*.cpp)
 SERVER_SOURCES = $(wildcard src/server/*.cpp)
 CLIENT_SOURCES = $(wildcard src/client/*.cpp) $(wildcard src/client/*/*.cpp)
 
-SHARED_HEADERS = $(wildcard src/shared/*.h) $(wildcard src/shared/*/*.h)
+GENERIC_HEADERS = $(wildcard src/shared/*.h) $(wildcard src/shared/*/*.h)
 SERVER_HEADERS = $(wildcard src/server/*.h)
 CLIENT_HEADERS = $(wildcard src/client/*.h) $(wildcard src/client/*/*.h)
 
-SERVER_OBJECTS = $(SERVER_SOURCES:.cpp=.o) $(SHARED_SOURCES:.cpp=.o)
-CLIENT_OBJECTS = $(CLIENT_SOURCES:.cpp=.o) $(SHARED_SOURCES:.cpp=.o)
+SERVER_OBJECTS = $(SERVER_SOURCES:.cpp=.o) $(GENERIC_SOURCES:.cpp=.o)
+CLIENT_OBJECTS = $(CLIENT_SOURCES:.cpp=.o) $(GENERIC_SOURCES:.cpp=.o)
 
 SERVER_EXECUTABLE = eserver
 CLIENT_EXECUTABLE = eclient
 
 SHELL = /bin/bash
 
-all: $(SHARED_SOURCES) $(SERVER_SOURCES) $(CLIENT_SOURCES) $(SHARED_HEADERS) $(SERVER_HEADERS) $(CLIENT_HEADERS) $(SERVER_EXECUTABLE) $(CLIENT_EXECUTABLE)
+all: $(GENERIC_SOURCES) $(SERVER_SOURCES) $(CLIENT_SOURCES) $(GENERIC_HEADERS) $(SERVER_HEADERS) $(CLIENT_HEADERS) $(SERVER_EXECUTABLE) $(CLIENT_EXECUTABLE)
                 
-$(SERVER_EXECUTABLE): $(SHARED_HEADERS) $(SERVER_HEADERS) $(SERVER_OBJECTS)
+$(SERVER_EXECUTABLE): $(GENERIC_HEADERS) $(SERVER_HEADERS) $(SERVER_OBJECTS)
 	$(CC) $(SERVER_LDFLAGS) $(SERVER_OBJECTS) -o $@
 
-$(CLIENT_EXECUTABLE): $(SHARED_HEADERS) $(CLIENT_HEADERS) $(CLIENT_OBJECTS)
+$(CLIENT_EXECUTABLE): $(GENERIC_HEADERS) $(CLIENT_HEADERS) $(CLIENT_OBJECTS)
 	$(CC) $(CLIENT_LDFLAGS) $(CLIENT_OBJECTS) -o $@
 
 .cpp.o:

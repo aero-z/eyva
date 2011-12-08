@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA - application-wide variables
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,28 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _CHARACTER_H_
-#define _CHARACTER_H_
+#ifndef _VARIABLES_H_
+#define _VARIABLES_H_
 
-class
-Character
-{
-	public:
-		Character(int session_id, int character_id);
-		~Character(void);
-		int getSessionID(void);
-		int getCharacterID(void);
-		unsigned int getLevel(void);
-		char const* getName(void);
-	
-	private:
-		char* name;
-		unsigned int session_id;
-		unsigned int character_id;
-		unsigned int level;
-		unsigned int tribe;
-		unsigned int value;
-};
+// maximum bytes the network class can read from sockets (2^16 - 1 + 5):
+#define NETWORK_BUFFER_SIZE 65539
+
+// release version (for synchronization):
+#define VERSION_MAJOR_RELEASE 0
+#define VERSION_MINOR_RELEASE 1
+#define VERSION_MAJOR_PATCH 0
+#define VERSION_MINOR_PATCH 0
 
 #endif
 

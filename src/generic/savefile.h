@@ -1,5 +1,5 @@
 /*
- * `eyva'
+ * EYVA - savefile handler
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,32 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _FILE_HANDLER_H_
-#define _FILE_HANDLER_H_
+#ifndef _SAVEFILE_H_
+#define _SAVEFILE_H_
 
-/* We may read files up to 64 KiB of size. That should be fairly enough:
- */
+// files up to 64 KiB should be OK:
 #define FILE_SIZE 65536
 
-// Utils:
-#include "ayestring.h"
-#include "exception.h"
+#include "utils/ayestring.h"
+#include "utils/exception.h"
 
-// Others:
 #include <vector>
 #include <cstring>
 #include <cstdio>
 
-/**
- * This class is responsible for reading data out of and writing data to
- * savefiles in the `Ayson' format.
- */
 class
-FileHandler
+Savefile
 {
 	public:
-		FileHandler(char const* path);
-		~FileHandler(void);
+		Savefile(char const* path);
+		~Savefile(void);
 		void save(void);
 	
 		int getUserID(char const* name);

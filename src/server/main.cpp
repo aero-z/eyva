@@ -32,26 +32,13 @@ main(int argc, char** argv)
 	AyeLog::log_verbosity = 3; // debug log
 
 	try {
-		AyeLog::logf(LOG_NORMAL, "creating socket on port %d ...", port);
-		network = new Network(port);
+		game = new Game(port);
+		game->run();
+		delete game;
+		return 0;
 	} catch(Exception* e) {
 		AyeLog::logf(LOG_ERROR, "%s", e->str());
 		return -1;
 	}
-	AyeLog::logf(LOG_NORMAL, "running");
-
-	// loop:
-	for(bool term_signal = false; !term_signal; ) {
-		try {
-			network->poll();
-			term_signal = network->checkTermSignal();
-		} catch(Exception* e) {
-			AyeLog::logf(LOG_ERROR, "%s", e->str());
-			return -1;
-		}
-	}
-
-	delete network;
-	return 0;
 }
 

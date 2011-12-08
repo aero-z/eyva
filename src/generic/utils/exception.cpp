@@ -1,5 +1,5 @@
 /*
- * `eyva' - application-widely used variables
+ * `eyva' - Exception class of which instances are thrown.
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,27 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _VARIABLES_H_
-#define _VARIABLES_H_
+#include "exception.h"
 
-/* This is the size of a message head following the eyva protocol:
+/**
+ * Constructor.
+ * @param format The format string. See docs for `printf()' and the like.
+ * @param ...    The format string arguments.
  */
-#define MESSAGE_HEAD_SIZE 4
+Exception::Exception(char const* format, ...)
+{
+	va_list args;           // access handler
+	va_start(args, format); // prepare access
+	vsnprintf(message, EXCEPTION_MSG_BUFFER_SIZE, format, args);
+	va_end(args);           // end access
+}
 
-/* This is the size of the network buffer:
+
+/* PUBLIC METHODS */
+
+
+/**
+ * @return The exception message.
  */
-#define BUFFER_SIZE (MESSAGE_HEAD_SIZE+65335)
-
-/* This is the maximum size of the exception message:
- */
-#define BUFFER_EXCEPTION_MSG 80
-
-/* Release version:
- */
-#define VERSION_MAJOR_RELEASE 0
-#define VERSION_MINOR_RELEASE 1
-#define VERSION_MAJOR_PATCH 0
-#define VERSION_MINOR_PATCH 0
-
-#endif
+char const*
+Exception::str(void)
+{
+	return message;
+}
 

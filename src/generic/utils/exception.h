@@ -1,5 +1,5 @@
 /*
- * `eyva' - Exception class of which instances are thrown.
+ * `eyva'
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,31 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exception.h"
+#ifndef _EXCEPTION_H_
+#define _EXCEPTION_H_
 
-/**
- * Constructor.
- * @param format The format string. See docs for `printf()' and the like.
- * @param ...    The format string arguments.
- */
-Exception::Exception(char const* format, ...)
+#define EXCEPTION_MSG_BUFFER_SIZE 80
+
+#include <hybrid/eyva.h>
+
+#include <cstdio>   // (v)(s)(f)(n)printf
+#include <cstdarg>  // va_list
+
+class
+Exception
 {
-	va_list args;           // access handler
-	va_start(args, format); // prepare access
-	vsnprintf(message, BUFFER_EXCEPTION_MSG, format, args);
-	va_end(args);           // end access
-}
+	public:
+		Exception(char const* format, ...);
+		char const* str(void);
+	
+	private:
+		char message[EXCEPTION_MSG_BUFFER_SIZE];
+};
 
-
-/* PUBLIC METHODS */
-
-
-/**
- * @return The exception message.
- */
-char const*
-Exception::str(void)
-{
-	return message;
-}
+#endif
 

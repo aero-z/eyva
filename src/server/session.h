@@ -19,46 +19,41 @@
 #ifndef _SESSION_H_
 #define _SESSION_H_
 
-// Game:
 #include "user.h"
-#include "pipe.h"
-#include "game.h"
+#include <generic/message_buffer.h>
+#include <generic/pipe.h>
+#include <generic/variables.h>
+#include <generic/savefile.h>
+#include <generic/utils/ayelog.h>
+#include <generic/utils/exception.h>
 
-// Hybrid:
-#include <hybrid/eyva.h>
-
-// Utils:
-#include <utils/ayelog.h>
-#include <utils/file_handler.h>
-#include <utils/exception.h>
-
-// Others:
 #include <cstring>
+#include <vector>
 
 class
 Session
 {
 	public:
-		Session(int session_id, char const* ip, Pipe* pipe, Game* game,
-				FileHandler* file_handler);
+		Session(char id, Pipe* pipe_game, Pipe* pipe_network,
+				Savefile* savefile_users);
 		~Session(void);
 		void process(char const* msg, size_t msg_len);
-		char const* getIP(void);
-		int getSessionID(void);
 	
 	private:
-		void handle_CONNECT(char const* msg);
-		void handle_DISCONNECT(char const* msg);
-		void handle_REQUEST_CHARACTER_LIST(char const* msg);
-		void handle_ERROR_AUTHENTICATION(void);
+		void handle_SOFTWARE_VERSION(char const* msg);
+		void handle_USER_LOGIN(char const* msg);
+		void handle_DISAUTHENTICATE(void);
+		void send_REQUEST_SOFTWARE_VERSION(void);
+		void send_REQUEST_USER_LOGIN(void);
 
-		Pipe* pipe;
-		Game* game;
+		Pipe* pipe_game;
+		Pipe* pipe_network;
+		Savefile* savefile_users;
+		MessageBuffer* message_buffer;
 		User* user;
-		FileHandler* user_savefile;
-		int session_id;
-		char* ip;
+		char id;
 		bool authenticated;
+		bool synchronized;
 };
 
 #endif

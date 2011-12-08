@@ -1,5 +1,5 @@
 /*
- * `eyva' (server) - Game manager and handler.
+ * EYVA - server side game handler
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,30 +19,25 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
-// Server:
-#include "character.h"
-#include "pipe.h"
-
-// Utils:
-#include <utils/file_handler.h>
+#include "network.h"
+#include <generic/pipe.h>
+#include <generic/utils/ayestring.h>
 
 class
 Game
 {
 	public:
-		Game(Pipe* pipe);
+		Game(int port);
 		~Game(void);
-		void process(char const* msg);
-		void logout(int session_id);
+		void run(void);
 	
 	private:
-		void handle_REQUEST_CHARACTER_INFO(char const* msg);
-		void handle_ERROR_INVALID_MESSAGE(char const* msg);
+		void process();
 
 		Pipe* pipe;
-		std::vector<Character*> characters;
-		FileHandler* character_savefile;
-		FileHandler* object_database;
+		Network* network;
+		bool term_signal;
+		char buffer[NETWORK_BUFFER_SIZE];
 };
 
 #endif

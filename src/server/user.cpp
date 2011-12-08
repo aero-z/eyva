@@ -23,14 +23,14 @@
  * @param name The user's name that will be used to get the necessary
  * information from the users' savefile.
  */
-User::User(char const* name, FileHandler* file_handler)
+User::User(char const* name, Savefile* savefile)
 {
-	this->file_handler = file_handler;
+	this->savefile = savefile;
 
 	/* Get the ID according to the name:
 	 */
 	printf("determinating ID ...\n");
-	if((id = file_handler->getID(name)) == 0)
+	if((id = savefile->getUserID(name)) == 0)
 		throw new Exception("no user named '%s'", name);
 	
 	/* If the user exists, generate the data:
@@ -44,12 +44,13 @@ User::User(char const* name, FileHandler* file_handler)
  */
 User::~User(void)
 {
-	file_handler->save();
+	// TODO update savefile
 	delete name;
 }
 
 
 /* PUBLIC METHODS */
+
 
 /**
  * This method provides the user's name.

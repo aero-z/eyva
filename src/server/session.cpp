@@ -22,45 +22,27 @@ using namespace AyeLog;
 using namespace AyeString;
 
 /**
- * Constructor.
- * @param id            The session ID (= socket file descriptor for this
- *                      connection).
- * @param ip            The client's IP address.
- * @param pipe          A pointer to where answer messages shall be stored to.
- * @param game          The game that holds and handles all game data.
- * @param user_savefile Handles the file containing the list of registred users.
+ * @param id             The session ID (= socket file descriptor for this
+ *                       connection).
+ * @param pipe_game      A way to communicate to the game.
+ * @param pipe_network   A way to communicate to the network object.
+ * @param savefile_users Handles the file containing a list of registred users.
  */
-Session::Session(int session_id, char const* ip, Pipe* pipe, Game* game,
-		FileHandler* user_savefile)
+Session::Session(char id, Pipe* pipe_game, Pipe* pipe_network,
+		Savefile* savefile_users)
 {
-	this->pipe = pipe;
-	this->session_id = session_id;
-	this->game = game;
-	this->user_savefile = user_savefile;
+	this->id = id;
+	this->pipe_game = pipe_game;
+	this->pipe_network = pipe_network;
+	this->savefile_users = savefile_users;
 	authenticated = false;
-
-	this->ip = new char[strlen(ip)+1]; // +1 for \0
-	strcpy(this->ip, ip);
+	synchronized = false;
+	message_buffer = new MessageBuffer();
 }
 
-/**
- * Destructor.
- */
 Session::~Session(void)
 {
-	/* In case the user is still logged in, log out:
-	 */
-	game->logout(session_id);
-
-	/* In case the user is still connected, disconnect:
-	 */
-	if(authenticated)
-		delete user;
-	authenticated = false;
-
-	/* Clean up:
-	 */
-	delete[] ip;
+	// TODO log out from game
 }
 
 
@@ -68,173 +50,144 @@ Session::~Session(void)
 
 
 /**
- * This method handles a message received by the client.
- * @param msg     The received message.
- * @param msg_len The received message's length.
+ * Handle data received over the network.
+ * @param msg     Received data.
+ * @param msg_len Size of the received data.
  */
 void
 Session::process(char const* msg, size_t msg_len)
 {
-	/* TODO
-	 * This is temporary, until we've got an admin client:
-	 */
+	for(size_t i = 0; i < msg_len; i++)
+		printf("[%d]", msg[i]);
+	printf("\n");
+
+	// TODO this is temporary:
 	if(msg_len == 3 && msg[0] == ':' && msg[1] == 'q' && msg[2] == 10) {
 		logf(LOG_DEBUG, ":q");
 		char response[] = {0x00, 0x00, 0x00, 0x00};
-		pipe->push(response);
+		pipe_game->push(response);
 		return;
 	}
 
-	/* Check message length:
-	 */
-	if(msg_len < 4 || msglen(msg) != msg_len) {
-		logf(LOG_DEBUG, "[52 ERROR_MESSAGE_LEN] (%u instead of %u)",
-				msg_len, msg_len >= 4 ? msglen(msg) : 0);
-		char response[] = {session_id, 0x52, 0x00, 0x00};
-		pipe->push(response);
-		return;
+	// check message validity and process complete messages:
+	std::vector<char*> messages;
+	message_buffer->check(&messages, msg, msg_len);
+	for(size_t i = 0; i < messages.size(); i++) {
+		switch(messages[i][1]) {
+			case 0x01:
+				handle_SOFTWARE_VERSION(messages[i]);
+				break;
+			case 0x05:
+				handle_USER_LOGIN(messages[i]);
+				break;
+			case 0x08:
+				handle_DISAUTHENTICATE();
+				break;
+			default:
+				if(!synchronized)
+					send_REQUEST_SOFTWARE_VERSION();
+				else if(!authenticated)
+					send_REQUEST_USER_LOGIN();
+				else {
+					messages[i][0] = id;
+					pipe_game->push(messages[i]);
+				}
+				break;
+		}
 	}
-
-	/* This is the part where the messages are checked and processed:
-	 */
-	switch(msg[1]) {
-		case 0x11:
-			handle_CONNECT(msg);
-			break;
-		case 0x15:
-			handle_DISCONNECT(msg);
-			break;
-		case 0x16:
-			authenticated ?
-					handle_REQUEST_CHARACTER_LIST(msg) :
-					handle_ERROR_AUTHENTICATION();
-			break;
-		default:
-			authenticated ?
-					game->process(msg) :
-					handle_ERROR_AUTHENTICATION();
-			break;
-	}
-}
-
-/**
- * @return The IP of this session's client.
- */
-char const*
-Session::getIP(void)
-{
-	return ip;
-}
-
-/**
- * @return The session ID (and also socket file descriptor).
- */
-int
-Session::getSessionID(void)
-{
-	return session_id;
 }
 
 
 /* PRIVATE METHODS */
 
 
-/* This method handles the [11 CONNECT] message.
- * That's the first message to be received by the client. It contains the
- * client's software version on bytes 10-12, plus the username on bytes 13+
- * (zero terminated).
+/**
+ * Check if the client has got the right software version.
  * @param msg The message received from the client.
  */
 void
-Session::handle_CONNECT(char const* msg)
+Session::handle_SOFTWARE_VERSION(char const* msg)
 {
-	logf(LOG_DEBUG, "[11 CONNECT]");
-	bool valid = true;
+	logf(LOG_DEBUG, "[01 SOFTWARE_VERSION]");
 
-	/* Check client software version:
-	 */
-	valid = valid && (msg[10] == VERSION_MAJOR_RELEASE);
-	valid = valid && (msg[11] == VERSION_MINOR_RELEASE);
-	valid = valid && (msg[12] == VERSION_PATCH);
-	if(!valid) { // [51 ERROR_CLIENT_COMPATIBILITY]
-		logf(LOG_DEBUG, "[51 ERROR_CLIENT_COMPATIBILITY]");
-		char response[] = {session_id, 0x51, 0x03, 0x00,
-				VERSION_MAJOR_RELEASE, VERSION_MINOR_RELEASE,
-				VERSION_PATCH};
-		pipe->push(response);
-		return;
+	// if valid:
+	if(msg[4] == VERSION_MAJOR_RELEASE && msg[5] == VERSION_MINOR_RELEASE
+			&& msg[6] == VERSION_MAJOR_PATCH) {
+		logf(LOG_DEBUG, "[02 SYNCHRONIZED]");
+		synchronized = true;
+		char response[] = {id, 0x02, 0x00, 0x00};
+		pipe_network->push(response);
 	}
 
-	/* Check login credentials:
-	 */
-	try {
-		user = new User(msg+13, user_savefile);
-	} catch(Exception* e) {
-		logf(LOG_WARNING, "%s", e->str());
-		valid = false;
+	// if invalid:
+	else {
+		logf(LOG_DEBUG, "[03 UNSYNCHRONIZED]");
+		synchronized = false;
+		char response[] = {id, 0x03, 0x03, 0x00, VERSION_MAJOR_RELEASE,
+				VERSION_MINOR_RELEASE, VERSION_MAJOR_PATCH};
+		pipe_network->push(response);
 	}
-	// TODO check password
-	if(!valid) { // [50 ERROR_AUTHENTICATION]
-		logf(LOG_DEBUG, "[51 ERROR_AUTHENTICATION]");
-		char response[] = {session_id, 0x50, 0x00, 0x00};
-		pipe->push(response);
-		return;
-	}
-
-	// [12 ACCEPT_CONNECTION]
-	logf(LOG_DEBUG, "[12 ACCEPT_CONNECTION]: %s", msg+13);
-	authenticated = true;
-	char response[] = {session_id, 0x12,0x05,0x00,'d','a','d','a','\n'};
-	//TODO message of the day
-	pipe->push(response);
-}
-
-/* This method handles the [15 DISCONNECT] message.
- * Its purpose is to disconnect the client. It's the `eyva' variant of the
- * zero-byte message to close a connection.
- * NOTE: This method actually doesn't do anything, but instead alerts the
- *       network handler to destroy this object (so the session handler's
- *       destructor will do the necessary stuff).
- * @param msg The message received from the client.
- */
-void
-Session::handle_DISCONNECT(char const* msg)
-{
-	logf(LOG_DEBUG, "[15 DISCONNECT]");
-	char response[] = {session_id, 0x01, 0x00, 0x00};
-	pipe->push(response);
-}
-
-/* This method handles the [16 REQUEST_CHARACTER_LIST] message.
- * It's a request for all characters belonging to a user. First check if the
- * client is correctly logged in before answering on that one:
- * @param msg The message received from the client.
- */
-void
-Session::handle_REQUEST_CHARACTER_LIST(char const* msg)
-{
-	logf(LOG_DEBUG, "[16 REQUEST_CHARACTER_LIST]");
-	std::vector<int> characters;
-	user_savefile->getCharacters(&characters, session_id);
-	char response[characters.size()+4];
-
-	// [17 CHARACTER_LIST]
-	response[0] = session_id;
-	response[1] = 0x17;
-	response[2] = characters.size();
-	response[3] = 0;
-	for(size_t i = 0; i < characters.size(); i++)
-		response[i+4] = characters[i];
-	pipe->push(response);
 }
 
 /**
- * This method sends the [50 ERROR_AUTHENTICATION] message to the client.
+ * Check user login data.
+ * @param msg The message received from the client.
+ * // TODO password check
+ * // TODO message of the day
  */
 void
-Session::handle_ERROR_AUTHENTICATION(void)
+Session::handle_USER_LOGIN(char const* msg)
 {
-	char response[] = {session_id, 0x50, 0x00, 0x00};
-	pipe->push(response);
+	// if valid:
+	try {
+		logf(LOG_DEBUG, "[06 AUTHENTICATED]");
+		authenticated = true;
+		user = new User(msg+4, savefile_users);
+		char response[] = {id, 0x06, 0x00, 0x00,
+			'W','e','l','c','o','m','e',' ','t','o',' ','E','Y','V','A',0};
+		pipe_network->push(response);
+	}
+	
+	// if invalid:
+	catch(Exception* e) {
+		logf(LOG_DEBUG, "[07 DISAUTHENTICATED] (user not found: %s)", msg+4);
+		authenticated = false;
+		char response[] = {id, 0x07, 0x01, 0x00, 0x00};
+		pipe_network->push(response);
+	}
+
+}
+
+/**
+ * Handle disauthentication message by client.
+ */
+void
+Session::handle_DISAUTHENTICATE(void)
+{
+	authenticated = false;
+	synchronized = false;
+	logf(LOG_DEBUG, "[08 DISAUTHENTICATE]");
+}
+
+/**
+ * Send a synchronization request.
+ */
+void
+Session::send_REQUEST_SOFTWARE_VERSION(void)
+{
+	char response[] = {id, 0x00, 0x00, 0x00};
+	logf(LOG_DEBUG, "[00 REQUEST_SOFTWARE_VERSION]");
+	pipe_network->push(response);
+}
+
+/**
+ * Send an authentication request.
+ */
+void
+Session::send_REQUEST_USER_LOGIN(void)
+{
+	char response[] = {id, 0x04, 0x00, 0x00};
+	logf(LOG_DEBUG, "[04 REQUEST_USER_LOGIN]");
+	pipe_network->push(response);
 }
 

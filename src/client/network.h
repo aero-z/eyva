@@ -19,10 +19,10 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
-#include <shared/pipe.h>
-#include <shared/variables.h>
-#include <shared/utils/ayelog.h>
-#include <shared/utils/exception.h>
+#include <generic/pipe.h>
+#include <generic/variables.h>
+#include <generic/utils/ayelog.h>
+#include <generic/utils/exception.h>
 
 // Network:
 #include <sys/types.h>   // socket types
