@@ -24,7 +24,7 @@
 #include <generic/pipe.h>
 #include <generic/utils/exception.h>
 
-#include <SDL/SDL.h>
+//#include <SDL/SDL.h>
 
 class
 GUI
