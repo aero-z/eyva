@@ -27,15 +27,17 @@
 int
 main(int argc, char** argv)
 {
+	AyeLog::log_verbosity = 3;
+
 	try {
 		gui = new GUI();
+		gui->run();
+		delete gui;
+		return 0;
 	} catch(Exception* e) {
 		AyeLog::logf(LOG_ERROR, "%s", e->str());
 		return -1;
 	}
-	gui->run();
-	delete gui;
 
-	return 0;
 }
 

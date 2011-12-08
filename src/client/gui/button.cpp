@@ -18,11 +18,27 @@
 
 #include "button.h"
 
-Button::Button(void)
+/**
+ * @param x     X position.
+ * @param y     Y position.
+ * @param w     Width.
+ * @param h     Height.
+ * @param dst   Surface on which will be drawn.
+ * @param label Label.
+ */
+Button::Button(int x, int y, int w, int h, SDL_Surface* dst,
+		char const* label)
+		: GUIElement(x, y, w, h, dst)
 {
+	this->label = new char[strlen(label)+1]; // +1 for \0
+	strcpy(this->label, label);
+
+	// TODO print text on button:
+	SDL_FillRect(dst, rectangle, SDL_MapRGB(dst->format, 255, 255, 255));
 }
 
 Button::~Button(void)
 {
+	delete[] label;
 }
 

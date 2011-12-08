@@ -1,5 +1,5 @@
 /*
- * EYVA - clickable button
+ * EYVA - basic GUI element
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,20 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GUI_BUTTON_H_
-#define _GUI_BUTTON_H_
+#ifndef _GUI_ELEMENT_H_
+#define _GUI_ELEMENT_H_
 
-#include "gui_element.h"
+#include <SDL/SDL.h>
 
 class
-Button : public GUIElement
+GUIElement
 {
 	public:
-		Button(int x, int y, int w, int h, SDL_Surface* dst, char const* label);
-		~Button(void);
+		GUIElement(int x, int y, int width, int height, SDL_Surface* dst);
+		virtual ~GUIElement(void);
 	
-	private:
-		char* label;
+	protected:
+		SDL_Surface* newSurface(Uint32 flags, int w, int h,
+				const SDL_Surface* dst);
+
+		SDL_Rect* rectangle;
+		SDL_Surface* surface;
+		SDL_Surface* dst;
 };
 
 #endif

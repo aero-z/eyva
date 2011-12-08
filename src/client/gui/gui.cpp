@@ -18,6 +18,8 @@
 
 #include "gui.h"
 
+using namespace AyeLog;
+
 GUI::GUI(void)
 {
 	pipe = new Pipe();
@@ -30,9 +32,12 @@ GUI::GUI(void)
 	
 	// set up events and layers:
 	event = new SDL_Event();
-	screen = SDL_SetVideoMode(800, 600, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
-	if(screen == NULL)
+	surface = SDL_SetVideoMode(800, 600, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	if(surface == NULL)
 		throw new Exception("surface initialization failed");
+	
+	login_screen = new Login(0, 0, 800, 600, surface);
+	SDL_Flip(surface);
 }
 
 GUI::~GUI(void)
@@ -59,6 +64,7 @@ GUI::run(void)
 			handleEvents();
 		}
 	}
+	SDL_Delay(100);
 }
 
 

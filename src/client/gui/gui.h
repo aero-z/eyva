@@ -19,9 +19,11 @@
 #ifndef _GUI_H_
 #define _GUI_H_
 
+#include "login.h"
 #include <client/network.h>
 #include <generic/pipe.h>
 #include <generic/utils/exception.h>
+#include <generic/utils/ayelog.h>
 
 #include <SDL/SDL.h>
 
@@ -37,7 +39,8 @@ GUI
 		void handleEvents(void);
 
 		SDL_Event* event;
-		SDL_Surface* screen;
+		SDL_Surface* surface;
+		Login* login_screen;
 		Network* network;
 		Pipe* pipe;
 		bool term_signal;

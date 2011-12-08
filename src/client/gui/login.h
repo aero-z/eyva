@@ -19,18 +19,20 @@
 #ifndef _GUI_LOGIN_H_
 #define _GUI_LOGIN_H_
 
+#include "gui_element.h"
 #include "button.h"
-#include <SDL/SDL.h>
 
 class
-Login
+Login : public GUIElement
 {
 	public:
-		Login(void);
+		Login(int x, int y, int w, int h, SDL_Surface* dst);
 		~Login(void);
 	
 	private:
-		Button* submit;
+		Button* button_submit;
+		//Textbox* textbox_name;
+		//Textbox* textbox_password;
 };
 
 #endif

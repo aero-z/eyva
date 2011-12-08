@@ -18,11 +18,22 @@
 
 #include "login.h"
 
-Login::Login(void)
+/**
+ * @param x   X position.
+ * @param y   Y position.
+ * @param w   Width.
+ * @param h   Height.
+ * @param dst Surface on which will be drawn.
+ */
+Login::Login(int x, int y, int w, int h, SDL_Surface* dst)
+		: GUIElement(x, y, w, h, dst)
 {
+	SDL_FillRect(dst, NULL, SDL_MapRGB(dst->format, 200, 200, 200));
+	button_submit = new Button(350, 280, 100, 40, dst, "login"); // login button
 }
 
 Login::~Login(void)
 {
+	//delete button_submit;
 }
 
