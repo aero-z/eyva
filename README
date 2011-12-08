@@ -10,7 +10,7 @@ Introduction:
 
 Requirements:
 
-    <none>
+    * SDL
 
 
 Build:
@@ -22,7 +22,7 @@ Build:
 Execute:
    
     'eserver' will listen to port 1251. You may use netcat to send and
-    receive data. The server can be stopped by receiving ":q\n".
+    receive data. The server stops when receiving the byte sequence [:][q][\n].
 
     'eclient' doesn't do anything.
 
