@@ -42,9 +42,11 @@ GUI::GUI(void)
 
 GUI::~GUI(void)
 {
-	delete pipe;
 	if(network != NULL)
 		delete network;
+	delete pipe;
+	delete event;
+	delete surface;
 	
 	SDL_Quit();
 }

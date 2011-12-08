@@ -40,6 +40,7 @@ GUIElement::GUIElement(int x, int y, int w, int h, SDL_Surface* dst)
 GUIElement::~GUIElement(void)
 {
 	SDL_FreeSurface(surface);
+	delete rectangle;
 }
 
 
