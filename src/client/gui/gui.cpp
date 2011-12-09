@@ -19,6 +19,7 @@
 #include "gui.h"
 
 using namespace AyeLog;
+using namespace GUIUtils;
 
 GUI::GUI(void)
 {
@@ -50,10 +51,9 @@ GUI::~GUI(void)
 		delete network;
 	delete pipe;
 	delete event;
-	delete surface;
+	SDL_FreeSurface(surface);
 	
-	if(TTF_WasInit())
-		TTF_Quit();
+	TTF_Quit();
 	SDL_Quit();
 }
 

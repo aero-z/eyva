@@ -30,13 +30,13 @@
 namespace
 AyeString
 {
-	size_t msglen(char const* msg);
-	size_t iptoa(char* str, char const* ipv4);
-	int porttoi(char* port);
-	int aton(char const* str, int base);
-	int pow(int base, int exp);
-	int cton(char const chr, int base);
-}
+	extern size_t msglen(char const* msg);
+	extern size_t iptoa(char* str, char const* ipv4);
+	extern int porttoi(char* port);
+	extern int aton(char const* str, int base);
+	extern int pow(int base, int exp);
+	extern int cton(char const chr, int base);
+};
 
 #endif
 

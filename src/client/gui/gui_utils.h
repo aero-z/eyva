@@ -1,5 +1,5 @@
 /*
- * EYVA - graphical user interface
+ * EYVA - various SDL related functionalities
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,36 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GUI_H_
-#define _GUI_H_
+#ifndef _GUI_UTILS_H_
+#define _GUI_UTILS_H_
 
-#include "login.h"
-#include "gui_utils.h"
-#include <client/network.h>
-#include <generic/pipe.h>
 #include <generic/utils/exception.h>
-#include <generic/utils/ayelog.h>
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_ttf.h>
 
-class
-GUI
+namespace
+GUIUtils
 {
-	public:
-		GUI(void);
-		~GUI(void);
-		void run(void);
-	
-	private:
-		void handleEvents(void);
-
-		SDL_Event* event;
-		SDL_Surface* surface;
-		Login* login_screen;
-		Network* network;
-		Pipe* pipe;
-		bool term_signal;
+	extern SDL_Surface* printText(char const* text, int size);
+	extern TTF_Font* font_FreeSans;
 };
 
 #endif
