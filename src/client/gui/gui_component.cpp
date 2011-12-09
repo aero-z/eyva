@@ -1,5 +1,5 @@
 /*
- * EYVA - login screen
+ * EYVA - basic GUI element
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "login.h"
+#include "gui_component.h"
+
+using namespace GUIUtils;
 
 /**
  * @param x    X position.
@@ -25,28 +27,43 @@
  * @param h    Height.
  * @param root Surface on which will be drawn.
  */
-Login::Login(int x, int y, int w, int h, SDL_Surface* root)
-		: GUIComponent(x, y, w, h, root)
+GUIComponent::GUIComponent(int x, int y, int w, int h, SDL_Surface* root)
 {
-	SDL_FillRect(root, NULL, SDL_MapRGB(root->format, 200, 200, 200));
-	components.insert(std::pair<GUIComponentName, GUIComponent*>(
-			GUI_COMPONENT_BUTTON_LOGIN_SUBMIT, new Button(350, 280, 100, 40,
-			root, "login")));
+	this->root = root;
+	rectangle = new SDL_Rect();
+	rectangle->x = x;
+	rectangle->y = y;
+	rectangle->h = h;
+	rectangle->w = w;
 }
 
-Login::~Login(void)
+GUIComponent::~GUIComponent(void)
 {
-	//delete button_submit;
+	components.clear();
+	delete rectangle;
+}
+
+
+/* PUBLIC METHODS */
+
+
+/**
+ * Trigger action on mouse motion (to be overwritten by derived class).
+ * @param x X position of mouse.
+ * @param y Y position of mouse.
+ */
+void
+GUIComponent::handleMouseMotion(int x, int y)
+{
+	// VOID
 }
 
 /**
- * Handle mouse motion.
- * @param x X position of the mouse.
- * @param y Y position of the mouse.
+ * Trigger action on pressed key (to be overwritten by derived class).
  */
 void
-Login::handleMouseMotion(int x, int y)
+GUIComponent::handleKeyPressed(void)
 {
-	components[GUI_COMPONENT_BUTTON_LOGIN_SUBMIT]->handleMouseMotion(x, y);
+	// VOID
 }
 

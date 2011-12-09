@@ -23,22 +23,39 @@
  * @param y     Y position.
  * @param w     Width.
  * @param h     Height.
- * @param dst   Surface on which will be drawn.
+ * @param root  Surface on which will be drawn.
  * @param label Label.
  */
-Button::Button(int x, int y, int w, int h, SDL_Surface* dst,
+Button::Button(int x, int y, int w, int h, SDL_Surface* root,
 		char const* label)
-		: GUIElement(x, y, w, h, dst)
+		: GUIComponent(x, y, w, h, root)
 {
 	this->label = new char[strlen(label)+1]; // +1 for \0
 	strcpy(this->label, label);
 
 	// TODO print text on button:
-	SDL_FillRect(dst, rectangle, SDL_MapRGB(dst->format, 255, 255, 255));
+	SDL_FillRect(root, rectangle, SDL_MapRGB(root->format, 80, 80, 80));
 }
 
 Button::~Button(void)
 {
 	delete[] label;
+}
+
+/**
+ * Handle mouse motion.
+ * @param x X position of mouse.
+ * @param y Y position of mouse.
+ */
+void
+Button::handleMouseMotion(int x, int y)
+{
+	bool hover = x > rectangle->x && x < rectangle->x+rectangle->w
+			&& y > rectangle->y && y < rectangle->y+rectangle->h;
+
+	if(hover == true)
+		SDL_FillRect(root, rectangle, SDL_MapRGB(root->format, 0, 0, 0));
+	else
+		SDL_FillRect(root, rectangle, SDL_MapRGB(root->format, 80, 80, 80));
 }
 

@@ -28,6 +28,8 @@
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_ttf.h>
+#include <map>
+#include <utility>
 
 class
 GUI
@@ -41,8 +43,9 @@ GUI
 		void handleEvents(void);
 
 		SDL_Event* event;
-		SDL_Surface* surface;
-		Login* login_screen;
+		SDL_Surface* root;
+		std::map<GUIComponentName, GUIComponent*> components;
+		std::map<GUIComponentName, GUIComponent*>::iterator it;
 		Network* network;
 		Pipe* pipe;
 		bool term_signal;

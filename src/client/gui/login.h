@@ -19,15 +19,16 @@
 #ifndef _GUI_LOGIN_H_
 #define _GUI_LOGIN_H_
 
-#include "gui_element.h"
+#include "gui_component.h"
 #include "button.h"
 
 class
-Login : public GUIElement
+Login : public GUIComponent
 {
 	public:
-		Login(int x, int y, int w, int h, SDL_Surface* dst);
+		Login(int x, int y, int w, int h, SDL_Surface* root);
 		~Login(void);
+		void handleMouseMotion(int x, int y); // overrides
 	
 	private:
 		Button* button_submit;

@@ -37,12 +37,15 @@ GUI::GUI(void)
 	}
 	
 	// set up surface and event handling:
-	surface = SDL_SetVideoMode(800, 600, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
 	event = new SDL_Event();
+	root = SDL_SetVideoMode(800, 600, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	if(root == NULL)
+		throw new Exception("SDL_SetVideoMode() failed");
 	
 	// TODO temporary: login screen
-	login_screen = new Login(0, 0, 800, 600, surface);
-	SDL_Flip(surface);
+	components.insert(std::pair<GUIComponentName, GUIComponent*>(
+			GUI_COMPONENT_SCREEN_LOGIN, new Login(0, 0, 800, 600, root)));
+	SDL_Flip(root);
 }
 
 GUI::~GUI(void)
@@ -51,7 +54,8 @@ GUI::~GUI(void)
 		delete network;
 	delete pipe;
 	delete event;
-	SDL_FreeSurface(surface);
+	components.clear();
+	SDL_FreeSurface(root);
 	
 	TTF_Quit();
 	SDL_Quit();
@@ -71,8 +75,9 @@ GUI::run(void)
 		while(SDL_PollEvent(event)) {
 			handleEvents();
 		}
+		SDL_Flip(root);
 	}
-	SDL_Delay(100);
+	SDL_Delay(30);
 }
 
 
@@ -86,6 +91,15 @@ GUI::handleEvents(void)
 		case SDL_QUIT:
 			term_signal = true;
 			break;
+		case SDL_KEYDOWN:
+			break;
+		case SDL_MOUSEMOTION: {
+			int x, y;
+			SDL_GetMouseState(&x, &y);
+			for(it = components.begin(); it != components.end(); it++) {
+				it->second->handleMouseMotion(x, y);
+			}
+		}
 		default:
 			break;
 	}

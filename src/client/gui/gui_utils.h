@@ -24,11 +24,21 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_ttf.h>
 
+enum
+GUIComponentName
+{
+	// main menu:
+	GUI_COMPONENT_SCREEN_LOGIN,
+	GUI_COMPONENT_BUTTON_LOGIN_SUBMIT
+};
+
 namespace
 GUIUtils
 {
 	extern SDL_Surface* printText(char const* text, int size);
 	extern TTF_Font* font_FreeSans;
+	extern SDL_Surface* newSurface(Uint32 flags, int w, int h,
+			const SDL_Surface* dst);
 };
 
 #endif

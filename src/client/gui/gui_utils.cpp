@@ -41,3 +41,19 @@ GUIUtils::printText(char const* text, int size)
 	return NULL;
 }
 
+/**
+ * Create a new SDL surface.
+ * @param flags Flags to be given to the surface.
+ * @param w     Width.
+ * @param h     Height.
+ * @param dst   The surface whose format shall be matched.
+ */
+SDL_Surface*
+GUIUtils::newSurface(Uint32 flags, int w, int h, const SDL_Surface* dst)
+{
+	// use the same format as the destination, to avoid conversion time:
+	const SDL_PixelFormat* f = dst->format;
+	return SDL_CreateRGBSurface(flags, w, h,
+			f->BitsPerPixel, f->Rmask, f->Gmask, f->Bmask, f->Amask);
+}
+

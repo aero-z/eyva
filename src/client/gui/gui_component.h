@@ -16,25 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GUI_ELEMENT_H_
-#define _GUI_ELEMENT_H_
+#ifndef _GUI_COMPONENT_H_
+#define _GUI_COMPONENT_H_
+
+#include "gui_utils.h"
 
 #include <SDL/SDL.h>
+#include <map>
+#include <utility>
 
 class
-GUIElement
+GUIComponent
 {
 	public:
-		GUIElement(int x, int y, int width, int height, SDL_Surface* dst);
-		virtual ~GUIElement(void);
+		GUIComponent(int x, int y, int width, int height, SDL_Surface* root);
+		virtual ~GUIComponent(void);
+		virtual void handleMouseMotion(int x, int y);
+		virtual void handleKeyPressed(void);
 	
 	protected:
-		SDL_Surface* newSurface(Uint32 flags, int w, int h,
-				const SDL_Surface* dst);
-
 		SDL_Rect* rectangle;
-		SDL_Surface* surface;
-		SDL_Surface* dst;
+		SDL_Surface* root;
+		std::map<GUIComponentName, GUIComponent*> components;
+		std::map<GUIComponentName, GUIComponent*>::iterator it;
 };
 
 #endif
