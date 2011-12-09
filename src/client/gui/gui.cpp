@@ -30,12 +30,16 @@ GUI::GUI(void)
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 		throw new Exception("SDL_Init() failed");
 	
-	// set up events and layers:
-	event = new SDL_Event();
-	surface = SDL_SetVideoMode(800, 600, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
-	if(surface == NULL)
-		throw new Exception("surface initialization failed");
+	// set up TTF:
+	if(!TTF_WasInit() && TTF_Init() < 0) {
+		throw new Exception("TTF_Init() failed");
+	}
 	
+	// set up surface and event handling:
+	surface = SDL_SetVideoMode(800, 600, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	event = new SDL_Event();
+	
+	// TODO temporary: login screen
 	login_screen = new Login(0, 0, 800, 600, surface);
 	SDL_Flip(surface);
 }
@@ -48,6 +52,8 @@ GUI::~GUI(void)
 	delete event;
 	delete surface;
 	
+	if(TTF_WasInit())
+		TTF_Quit();
 	SDL_Quit();
 }
 

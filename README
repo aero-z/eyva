@@ -11,6 +11,7 @@ Introduction:
 Requirements:
 
     * SDL
+    * SDL_ttf
 
 
 Build:

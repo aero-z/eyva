@@ -26,6 +26,7 @@
 #include <generic/utils/ayelog.h>
 
 #include <SDL/SDL.h>
+#include <SDL/SDL_ttf.h>
 
 class
 GUI
