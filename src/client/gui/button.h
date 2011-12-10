@@ -20,19 +20,20 @@
 #define _GUI_BUTTON_H_
 
 #include "gui_component.h"
+#include "textlabel.h"
 #include <generic/utils/ayelog.h>
 
 class
 Button : public GUIComponent
 {
 	public:
-		Button(int x, int y, int w, int h, SDL_Surface* root,
+		Button(SDL_Surface* root, int x, int y, int w, int h,
 				char const* label);
 		~Button(void);
 		void handleMouseMotion(int x, int y); // overrides
 	
 	private:
-		char* label;
+		Textlabel* textlabel;
 		bool hover;
 		bool active;
 };

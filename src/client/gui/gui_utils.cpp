@@ -18,28 +18,9 @@
 
 #include "gui_utils.h"
 
-TTF_Font* GUIUtils::font_FreeSans = NULL;
-
 
 /* PUBLIC METHODS */
 
-
-/**
- * Get get a text on a surface.
- * @param text Text to be printed.
- * @param size Size of the text.
- */
-SDL_Surface*
-GUIUtils::printText(char const* text, int size)
-{
-	if(font_FreeSans == NULL) {
-		font_FreeSans = TTF_OpenFont("usr/fonts/FreeSans.ttf", size);
-		if(font_FreeSans == NULL)
-			return NULL;
-	}
-	// TODO
-	return NULL;
-}
 
 /**
  * Create a new SDL surface.

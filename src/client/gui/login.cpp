@@ -19,19 +19,19 @@
 #include "login.h"
 
 /**
+ * @param root Surface on which will be drawn.
  * @param x    X position.
  * @param y    Y position.
  * @param w    Width.
  * @param h    Height.
- * @param root Surface on which will be drawn.
  */
-Login::Login(int x, int y, int w, int h, SDL_Surface* root)
-		: GUIComponent(x, y, w, h, root)
+Login::Login(SDL_Surface* root, int x, int y, int w, int h)
+		: GUIComponent(root, x, y, w, h)
 {
 	SDL_FillRect(root, NULL, SDL_MapRGB(root->format, 200, 200, 200));
 	components.insert(std::pair<GUIComponentName, GUIComponent*>(
-			GUI_COMPONENT_BUTTON_LOGIN_SUBMIT, new Button(350, 280, 100, 40,
-			root, "login")));
+			GUI_COMPONENT_BUTTON_LOGIN_SUBMIT, new Button(root,
+					350, 280, 100, 40, "login")));
 }
 
 Login::~Login(void)

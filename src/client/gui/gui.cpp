@@ -44,7 +44,7 @@ GUI::GUI(void)
 	
 	// TODO temporary: login screen
 	components.insert(std::pair<GUIComponentName, GUIComponent*>(
-			GUI_COMPONENT_SCREEN_LOGIN, new Login(0, 0, 800, 600, root)));
+			GUI_COMPONENT_SCREEN_LOGIN, new Login(root, 0, 0, 800, 600)));
 	SDL_Flip(root);
 }
 
@@ -77,7 +77,7 @@ GUI::run(void)
 		}
 		SDL_Flip(root);
 	}
-	SDL_Delay(30);
+	SDL_Delay(50);
 }
 
 

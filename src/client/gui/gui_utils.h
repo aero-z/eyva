@@ -35,8 +35,6 @@ GUIComponentName
 namespace
 GUIUtils
 {
-	extern SDL_Surface* printText(char const* text, int size);
-	extern TTF_Font* font_FreeSans;
 	extern SDL_Surface* newSurface(Uint32 flags, int w, int h,
 			const SDL_Surface* dst);
 };

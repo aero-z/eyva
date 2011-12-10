@@ -21,13 +21,13 @@
 using namespace GUIUtils;
 
 /**
+ * @param root Surface on which will be drawn.
  * @param x    X position.
  * @param y    Y position.
  * @param w    Width.
  * @param h    Height.
- * @param root Surface on which will be drawn.
  */
-GUIComponent::GUIComponent(int x, int y, int w, int h, SDL_Surface* root)
+GUIComponent::GUIComponent(SDL_Surface* root, int x, int y, int w, int h)
 {
 	this->root = root;
 	rectangle = new SDL_Rect();

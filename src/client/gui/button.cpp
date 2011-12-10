@@ -19,27 +19,28 @@
 #include "button.h"
 
 /**
+ * @param root  Surface on which will be drawn.
  * @param x     X position.
  * @param y     Y position.
  * @param w     Width.
  * @param h     Height.
- * @param root  Surface on which will be drawn.
  * @param label Label.
  */
-Button::Button(int x, int y, int w, int h, SDL_Surface* root,
-		char const* label)
-		: GUIComponent(x, y, w, h, root)
+Button::Button(SDL_Surface* root, int x, int y, int w, int h, char const* label)
+		: GUIComponent(root, x, y, w, h)
 {
-	this->label = new char[strlen(label)+1]; // +1 for \0
-	strcpy(this->label, label);
+	hover = false;
+	active = false;
 
-	// TODO print text on button:
+	textlabel = new Textlabel(root, MIDDLE_CENTER, x+w/2, y+h/2, label, 16,
+			255, 255, 255, 255);
 	SDL_FillRect(root, rectangle, SDL_MapRGB(root->format, 80, 80, 80));
+	textlabel->print();
 }
 
 Button::~Button(void)
 {
-	delete[] label;
+	delete textlabel;
 }
 
 /**
@@ -50,12 +51,17 @@ Button::~Button(void)
 void
 Button::handleMouseMotion(int x, int y)
 {
-	bool hover = x > rectangle->x && x < rectangle->x+rectangle->w
-			&& y > rectangle->y && y < rectangle->y+rectangle->h;
+	bool old_hover = hover;
+	hover = x >= rectangle->x && x <= rectangle->x+rectangle->w
+			&& y >= rectangle->y && y <= rectangle->y+rectangle->h;
 
-	if(hover == true)
-		SDL_FillRect(root, rectangle, SDL_MapRGB(root->format, 0, 0, 0));
-	else
-		SDL_FillRect(root, rectangle, SDL_MapRGB(root->format, 80, 80, 80));
+	// if we don't change the hover state, don't draw:
+	if(old_hover != hover) {
+		if(hover == true)
+			SDL_FillRect(root, rectangle, SDL_MapRGB(root->format, 0, 0, 0));
+		else
+			SDL_FillRect(root, rectangle, SDL_MapRGB(root->format, 80, 80, 80));
+		textlabel->print();
+	}
 }
 

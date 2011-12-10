@@ -1,5 +1,5 @@
 /*
- * EYVA - basic GUI element
+ * EYVA - textlabel element
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,30 +16,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GUI_COMPONENT_H_
-#define _GUI_COMPONENT_H_
+#ifndef _TEXTLABEL_H_
+#define _TEXTLABEL_H_
 
-#include "gui_utils.h"
+#include <generic/utils/exception.h>
 
 #include <SDL/SDL.h>
-#include <map>
-#include <utility>
+#include <SDL/SDL_ttf.h>
+
+enum
+Alignment
+{
+	TOP_LEFT,
+	TOP_CENTER,
+	TOP_RIGHT,
+	MIDDLE_LEFT,
+	MIDDLE_CENTER,
+	MIDDLE_RIGHT,
+	BOTTOM_LEFT,
+	BOTTOM_CENTER,
+	BOTTOM_RIGHT
+};
 
 class
-GUIComponent
+Textlabel
 {
 	public:
-		GUIComponent(SDL_Surface* root, int x, int y, int width, int height);
-		virtual ~GUIComponent(void);
-		virtual void handleMouseMotion(int x, int y);
-		virtual void handleKeyPressed(void);
+		Textlabel(SDL_Surface* root, Alignment alignment, int x, int y,
+				char const* label, int size, char r, char g, char b, char a);
+		~Textlabel(void);
+		void print(void);
 	
-	protected:
+	private:
 		SDL_Rect* rectangle;
 		SDL_Surface* root;
 		SDL_Surface* local;
-		std::map<GUIComponentName, GUIComponent*> components;
-		std::map<GUIComponentName, GUIComponent*>::iterator it;
 };
 
 #endif
