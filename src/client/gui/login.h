@@ -29,11 +29,6 @@ Login : public GUIComponent
 		Login(SDL_Surface* root, int x, int y, int w, int h);
 		~Login(void);
 		void handleMouseMotion(int x, int y); // overrides
-	
-	private:
-		Button* button_submit;
-		//Textbox* textbox_name;
-		//Textbox* textbox_password;
 };
 
 #endif

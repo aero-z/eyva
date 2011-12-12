@@ -33,12 +33,22 @@
 Textlabel::Textlabel(SDL_Surface* root, Alignment alignment, int x, int y,
 		char const* label, int size, char r, char g, char b, char a)
 {
+	if(root == NULL)
+		throw new Exception("no root surface specified");
 	this->root = root;
-	SDL_Color color = {r, g, b, a};
+	this->label = new char[strlen(label)+1]; // +1 for \0
+	strcpy(this->label, label);
+	color.r = r;
+	color.g = g;
+	color.b = b;
+	color.unused = a;
 
-	TTF_Font* font = TTF_OpenFont("usr/fonts/FreeSans.ttf", size);
-	if(font == NULL)
+	font = TTF_OpenFont("usr/fonts/FreeSans.ttf", size);
+	if(font == NULL) {
+		delete[] label;
 		throw new Exception("%s", TTF_GetError());
+	}
+
 	local = TTF_RenderText_Blended(font, label, color);
 
 	rectangle = new SDL_Rect();
@@ -82,18 +92,35 @@ Textlabel::Textlabel(SDL_Surface* root, Alignment alignment, int x, int y,
 			rectangle->y = y-local->h;
 			break;
 	}
-	TTF_CloseFont(font);
 }
 
 Textlabel::~Textlabel(void)
 {
+	TTF_CloseFont(font);
 	delete rectangle;
+	delete[] label;
 }
 
 
 /* PUBLIC METHODS */
 
 
+/**
+ * Set a new label.
+ * @param label The new label.
+ */
+void
+Textlabel::updateLabel(char const* label)
+{
+	delete[] this->label;
+	this->label = new char[strlen(label)];
+	strcpy(this->label, label);
+	local = TTF_RenderText_Blended(font, label, color);
+}
+
+/**
+ * Print the text to the root surface.
+ */
 void
 Textlabel::print(void)
 {

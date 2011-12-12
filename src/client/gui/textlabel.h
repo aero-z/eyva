@@ -45,12 +45,16 @@ Textlabel
 		Textlabel(SDL_Surface* root, Alignment alignment, int x, int y,
 				char const* label, int size, char r, char g, char b, char a);
 		~Textlabel(void);
+		void updateLabel(char const* label);
 		void print(void);
 	
 	private:
 		SDL_Rect* rectangle;
 		SDL_Surface* root;
 		SDL_Surface* local;
+		TTF_Font* font;
+		SDL_Color color;
+		char* label;
 };
 
 #endif

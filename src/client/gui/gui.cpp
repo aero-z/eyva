@@ -24,7 +24,6 @@ using namespace GUIUtils;
 GUI::GUI(void)
 {
 	pipe = new Pipe();
-	network = NULL;
 	term_signal = false;
 
 	// set up SDL:
@@ -50,8 +49,7 @@ GUI::GUI(void)
 
 GUI::~GUI(void)
 {
-	if(network != NULL)
-		delete network;
+	Network::disconnect();
 	delete pipe;
 	delete event;
 	components.clear();
@@ -76,8 +74,8 @@ GUI::run(void)
 			handleEvents();
 		}
 		SDL_Flip(root);
+		SDL_Delay(50);
 	}
-	SDL_Delay(50);
 }
 
 
@@ -92,13 +90,22 @@ GUI::handleEvents(void)
 			term_signal = true;
 			break;
 		case SDL_KEYDOWN:
+			for(it = components.begin(); it != components.end(); it++)
+				it->second->handleKeyPress(SDL_GetKeyState(NULL));
 			break;
 		case SDL_MOUSEMOTION: {
 			int x, y;
 			SDL_GetMouseState(&x, &y);
-			for(it = components.begin(); it != components.end(); it++) {
+			for(it = components.begin(); it != components.end(); it++)
 				it->second->handleMouseMotion(x, y);
-			}
+			break;
+		}
+		case SDL_MOUSEBUTTONDOWN: {
+			int x, y;
+			Uint8 button = SDL_GetMouseState(&x, &y);
+			for(it = components.begin(); it != components.end(); it++)
+				it->second->handleMouseClick(button, x, y);
+			break;
 		}
 		default:
 			break;
