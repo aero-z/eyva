@@ -46,7 +46,6 @@ GUI
 		SDL_Surface* root;
 		std::map<GUIComponentName, GUIComponent*> components;
 		std::map<GUIComponentName, GUIComponent*>::iterator it;
-		Network* network;
 		Pipe* pipe;
 		bool term_signal;
 };

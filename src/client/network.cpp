@@ -1,5 +1,5 @@
 /*
- * EYVA - client side network handler
+ * EYVA - client side static network handler
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,14 +21,27 @@
 using namespace AyeLog;
 using namespace AyeString;
 
+// static:
+Pipe* Network::pipe = NULL;
+MessageBuffer* Network::message_buffer = NULL;
+char Network::buffer[NETWORK_BUFFER_SIZE];
+int Network::sockc;
+bool Network::connected = false;
+
+
+/* PUBLIC METHODS */
+
+
 /**
+ * Connect to the server.
  * @param pipe The GUI's "postbox". It's required to communicate to the GUI.
  * @param ip   The IP of the server to connect to.
  * @param port The TCP port of the server to connect to.
  */
-Network::Network(Pipe* pipe, char const* ip, int port)
+void
+Network::connect(Pipe* pipe, char const* ip, int port)
 {
-	this->pipe = pipe;
+	Network::pipe = pipe;
 	message_buffer = new MessageBuffer();
 	for(int i = 0; i < NETWORK_BUFFER_SIZE; i++)
 		buffer[i] = 0;
@@ -53,18 +66,25 @@ Network::Network(Pipe* pipe, char const* ip, int port)
 	if(::connect(sockc, (sockaddr*)&server_addr, sizeof(server_addr)) < 0)
 		throw new Exception("connect() failed: %s", strerror(errno));
 
+	connected = true;
 	logf(LOG_NORMAL, "connection established to %s:%d", ip, port);
 }
 
-Network::~Network(void)
+/**
+ * Disconnect from the server.
+ */
+void
+Network::disconnect(void)
 {
-	// zero byte message to close the connection, then close socket:
-	::send(sockc, NULL, 0, MSG_NOSIGNAL);
-	close(sockc);
+	if(connected) {
+		// zero byte message to close the connection, then close socket:
+		::send(sockc, NULL, 0, MSG_NOSIGNAL);
+		close(sockc);
+
+		delete message_buffer;
+		connected = false;
+	}
 }
-
-
-/* PUBLIC METHODS */
 
 
 /**

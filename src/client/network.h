@@ -1,5 +1,5 @@
 /*
- * EYVA - client side network handler
+ * EYVA - client side static network handler
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -53,16 +53,17 @@ class
 Network
 {
 	public:
-		Network(Pipe* pipe, char const* ip, int port);
-		~Network(void);
-		bool send(char const* msg);
-		bool poll(void);
+		static void connect(Pipe* pipe, char const* ip, int port);
+		static void disconnect(void);
+		static bool send(char const* msg);
+		static bool poll(void);
 
 	private:
-		MessageBuffer* message_buffer;
-		Pipe* pipe;
-		char buffer[NETWORK_BUFFER_SIZE];
-		int sockc;
+		static MessageBuffer* message_buffer;
+		static Pipe* pipe;
+		static char buffer[NETWORK_BUFFER_SIZE];
+		static int sockc;
+		static bool connected;
 };
 
 #endif

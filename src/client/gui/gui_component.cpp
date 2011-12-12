@@ -48,22 +48,38 @@ GUIComponent::~GUIComponent(void)
 
 
 /**
- * Trigger action on mouse motion (to be overwritten by derived class).
+ * Trigger action on mouse motion.
  * @param x X position of mouse.
  * @param y Y position of mouse.
  */
 void
 GUIComponent::handleMouseMotion(int x, int y)
 {
-	// VOID
+	for(it = components.begin(); it != components.end(); it++)
+		it->second->handleMouseMotion(x, y);
 }
 
 /**
- * Trigger action on pressed key (to be overwritten by derived class).
+ * Trigger action on mouse click.
+ * @param button Mouse button bytemask.
+ * @param x      X position of mouse.
+ * @param y      Y position of mouse.
  */
 void
-GUIComponent::handleKeyPressed(void)
+GUIComponent::handleMouseClick(Uint8 button, int x, int y)
 {
-	// VOID
+	for(it = components.begin(); it != components.end(); it++)
+		it->second->handleMouseClick(button, x, y);
+}
+
+/**
+ * Trigger action on pressed key.
+ * @param keys The pressed key.
+ */
+void
+GUIComponent::handleKeyPress(Uint8* keys)
+{
+	for(it = components.begin(); it != components.end(); it++)
+		it->second->handleKeyPress(keys);
 }
 

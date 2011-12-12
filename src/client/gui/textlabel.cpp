@@ -33,12 +33,17 @@
 Textlabel::Textlabel(SDL_Surface* root, Alignment alignment, int x, int y,
 		char const* label, int size, char r, char g, char b, char a)
 {
-	this->root = root;
-	SDL_Color color = {r, g, b, a};
+	// TODO handle zero length strings:
+	font = TTF_OpenFont("usr/fonts/FreeSans.ttf", size);
+	if(font == NULL || root == NULL || strlen(label) == 0)
+		throw new Exception("textlabel: invalid data");
 
-	TTF_Font* font = TTF_OpenFont("usr/fonts/FreeSans.ttf", size);
-	if(font == NULL)
-		throw new Exception("%s", TTF_GetError());
+	this->label = new char[strlen(label)+1]; // +1 for \0
+	strcpy(this->label, label);
+
+	updateColor(r, g, b, a);
+
+	// render with the information above:
 	local = TTF_RenderText_Blended(font, label, color);
 
 	rectangle = new SDL_Rect();
@@ -82,18 +87,55 @@ Textlabel::Textlabel(SDL_Surface* root, Alignment alignment, int x, int y,
 			rectangle->y = y-local->h;
 			break;
 	}
-	TTF_CloseFont(font);
+
+	// here we draw:
+	this->root = root;
 }
 
 Textlabel::~Textlabel(void)
 {
+	TTF_CloseFont(font);
 	delete rectangle;
+	delete[] label;
 }
 
 
 /* PUBLIC METHODS */
 
 
+/**
+ * Set a new label.
+ * @param label The new label.
+ */
+void
+Textlabel::updateLabel(char const* label)
+{
+	delete[] this->label;
+	this->label = new char[strlen(label)];
+	strcpy(this->label, label);
+	local = TTF_RenderText_Blended(font, label, color);
+}
+
+/**
+ * Set a new color.
+ * @param r Red component.
+ * @param g Green component.
+ * @param b Blue component.
+ * @param a Alpha component.
+ */
+void
+Textlabel::updateColor(char const r, char const g, char const b, char const a)
+{
+	color.r = r;
+	color.g = g;
+	color.b = b;
+	color.unused = a;
+	local = TTF_RenderText_Blended(font, label, color);
+}
+
+/**
+ * Print the text to the root surface.
+ */
 void
 Textlabel::print(void)
 {

@@ -19,8 +19,9 @@
 #ifndef _GUI_LOGIN_H_
 #define _GUI_LOGIN_H_
 
-#include "gui_component.h"
+#include "gui_component.h" // defines following:
 #include "button.h"
+#include "textbox.h"
 
 class
 Login : public GUIComponent
@@ -29,11 +30,6 @@ Login : public GUIComponent
 		Login(SDL_Surface* root, int x, int y, int w, int h);
 		~Login(void);
 		void handleMouseMotion(int x, int y); // overrides
-	
-	private:
-		Button* button_submit;
-		//Textbox* textbox_name;
-		//Textbox* textbox_password;
 };
 
 #endif

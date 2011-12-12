@@ -32,7 +32,8 @@ GUIComponent
 		GUIComponent(SDL_Surface* root, int x, int y, int width, int height);
 		virtual ~GUIComponent(void);
 		virtual void handleMouseMotion(int x, int y);
-		virtual void handleKeyPressed(void);
+		virtual void handleMouseClick(Uint8 button, int x, int y);
+		virtual void handleKeyPress(Uint8* keys);
 	
 	protected:
 		SDL_Rect* rectangle;
