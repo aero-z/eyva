@@ -1,5 +1,5 @@
 /*
- * EYVA - various SDL related functionalities
+ * EYVA - element representing a character in a textbox
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,28 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GUI_UTILS_H_
-#define _GUI_UTILS_H_
+#ifndef _TEXTBOX_CHARACTER_H_
+#define _TEXTBOX_CHARACTER_H_
 
-#include <generic/utils/exception.h>
-
-#include <SDL/SDL.h>
-#include <SDL/SDL_ttf.h>
-
-enum
-GUIComponentName
+class
+TextboxCharacter
 {
-	// main menu:
-	GUI_COMPONENT_SCREEN_LOGIN,
-	GUI_COMPONENT_INPUT_LOGIN_NAME,
-	GUI_COMPONENT_BUTTON_LOGIN_SUBMIT
-};
-
-namespace
-GUIUtils
-{
-	extern SDL_Surface* newSurface(Uint32 flags, int w, int h,
-			const SDL_Surface* dst);
+	public:
+		TextboxCharacter(char c);
+		~TextboxCharacter(void);
+		char getCharacter(void);
+		void toggleSelected(void);
+		bool isSelected(void);
+	
+	private:
+		char c;
+		bool selected;
 };
 
 #endif

@@ -55,9 +55,9 @@ Button::handleMouseMotion(int x, int y)
 	hover = x >= rectangle->x && x <= rectangle->x+rectangle->w
 			&& y >= rectangle->y && y <= rectangle->y+rectangle->h;
 
-	// if we don't change the hover state, don't draw:
+	// if the state has changed, redraw:
 	if(old_hover != hover) {
-		if(hover == true)
+		if(hover)
 			SDL_FillRect(root, rectangle, SDL_MapRGB(root->format, 0, 0, 0));
 		else
 			SDL_FillRect(root, rectangle, SDL_MapRGB(root->format, 80, 80, 80));

@@ -46,6 +46,8 @@ Textlabel
 				char const* label, int size, char r, char g, char b, char a);
 		~Textlabel(void);
 		void updateLabel(char const* label);
+		void updateColor(char const r, char const g, char const b,
+				char const a);
 		void print(void);
 	
 	private:

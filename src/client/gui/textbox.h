@@ -1,5 +1,5 @@
 /*
- * EYVA - various SDL related functionalities
+ * EYVA - textbox element for GUI
  * Copyright (C) 2011 ayekat (martin.weber@epfl.ch)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,28 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _GUI_UTILS_H_
-#define _GUI_UTILS_H_
+#ifndef _TEXTBOX_H_
+#define _TEXTBOX_H_
 
-#include <generic/utils/exception.h>
+#include "gui_component.h"
+#include "textbox_character.h"
+#include "textlabel.h"
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_ttf.h>
+#include <vector>
 
-enum
-GUIComponentName
+class
+Textbox : public GUIComponent
 {
-	// main menu:
-	GUI_COMPONENT_SCREEN_LOGIN,
-	GUI_COMPONENT_INPUT_LOGIN_NAME,
-	GUI_COMPONENT_BUTTON_LOGIN_SUBMIT
-};
-
-namespace
-GUIUtils
-{
-	extern SDL_Surface* newSurface(Uint32 flags, int w, int h,
-			const SDL_Surface* dst);
+	public:
+		Textbox(SDL_Surface* root, int x, int y, int w, int h,
+				char const* name);
+		~Textbox(void);
+		void handleMouseClick(Uint8 button, int x, int y);
+		void handleKeyPress(Uint8* keys);
+	
+	protected:
+		std::vector<TextboxCharacter*> input;
+		Textlabel* textlabel;
+		char* name;
+		int cursor_pos;
+		bool active;
 };
 
 #endif

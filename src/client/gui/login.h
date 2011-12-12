@@ -19,8 +19,9 @@
 #ifndef _GUI_LOGIN_H_
 #define _GUI_LOGIN_H_
 
-#include "gui_component.h"
+#include "gui_component.h" // defines following:
 #include "button.h"
+#include "textbox.h"
 
 class
 Login : public GUIComponent
