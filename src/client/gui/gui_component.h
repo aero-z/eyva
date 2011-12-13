@@ -22,8 +22,7 @@
 #include "gui_utils.h"
 
 #include <SDL/SDL.h>
-#include <map>
-#include <utility>
+#include <vector>
 
 class
 GUIComponent
@@ -32,15 +31,15 @@ GUIComponent
 		GUIComponent(SDL_Surface* root, int x, int y, int width, int height);
 		virtual ~GUIComponent(void);
 		virtual void handleMouseMotion(int x, int y);
-		virtual void handleMouseClick(Uint8 button, int x, int y);
-		virtual void handleKeyPress(Uint8* keys);
+		virtual GUIComponentName handleMouseClick(Uint8 button, int x, int y);
+		virtual GUIComponentName handleKeyPress(Uint8* keys);
 	
 	protected:
 		SDL_Rect* rectangle;
 		SDL_Surface* root;
 		SDL_Surface* local;
-		std::map<GUIComponentName, GUIComponent*> components;
-		std::map<GUIComponentName, GUIComponent*>::iterator it;
+		std::vector<GUIComponent*> components;
+		int active;
 };
 
 #endif

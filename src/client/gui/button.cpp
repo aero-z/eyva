@@ -30,7 +30,6 @@ Button::Button(SDL_Surface* root, int x, int y, int w, int h, char const* label)
 		: GUIComponent(root, x, y, w, h)
 {
 	hover = false;
-	active = false;
 
 	textlabel = new Textlabel(root, MIDDLE_CENTER, x+w/2, y+h/2, label, 16,
 			255, 255, 255, 255);

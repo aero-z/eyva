@@ -29,7 +29,6 @@ Login : public GUIComponent
 	public:
 		Login(SDL_Surface* root, int x, int y, int w, int h);
 		~Login(void);
-		void handleMouseMotion(int x, int y); // overrides
 };
 
 #endif

@@ -32,15 +32,15 @@ Textbox : public GUIComponent
 		Textbox(SDL_Surface* root, int x, int y, int w, int h,
 				char const* name);
 		~Textbox(void);
-		void handleMouseClick(Uint8 button, int x, int y);
-		void handleKeyPress(Uint8* keys);
+		GUIComponentName handleMouseClick(Uint8 button, int x, int y);
+		GUIComponentName handleKeyPress(Uint8* keys);
 	
 	protected:
+		char* name;
 		std::vector<TextboxCharacter*> input;
 		Textlabel* textlabel;
-		char* name;
 		int cursor_pos;
-		bool active;
+		bool is_active;
 };
 
 #endif

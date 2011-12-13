@@ -35,6 +35,8 @@ GUIComponent::GUIComponent(SDL_Surface* root, int x, int y, int w, int h)
 	rectangle->y = y;
 	rectangle->h = h;
 	rectangle->w = w;
+
+	active = -1;
 }
 
 GUIComponent::~GUIComponent(void)
@@ -55,8 +57,8 @@ GUIComponent::~GUIComponent(void)
 void
 GUIComponent::handleMouseMotion(int x, int y)
 {
-	for(it = components.begin(); it != components.end(); it++)
-		it->second->handleMouseMotion(x, y);
+	for(size_t i = 0; i < components.size(); i++)
+		components[i]->handleMouseMotion(x, y);
 }
 
 /**
@@ -64,22 +66,41 @@ GUIComponent::handleMouseMotion(int x, int y)
  * @param button Mouse button bytemask.
  * @param x      X position of mouse.
  * @param y      Y position of mouse.
+ * @return       The name of the next component to focus on.
  */
-void
+GUIComponentName
 GUIComponent::handleMouseClick(Uint8 button, int x, int y)
 {
-	for(it = components.begin(); it != components.end(); it++)
-		it->second->handleMouseClick(button, x, y);
+	for(size_t i = 0; i < components.size(); i++)
+		components[i]->handleMouseClick(button, x, y);
+	// TODO
+	return GUI_COMPONENT_THIS;
 }
 
 /**
  * Trigger action on pressed key.
  * @param keys The pressed key.
+ * @return     The name of the next component to focus on.
  */
-void
+GUIComponentName
 GUIComponent::handleKeyPress(Uint8* keys)
 {
-	for(it = components.begin(); it != components.end(); it++)
-		it->second->handleKeyPress(keys);
+	// if there's no component, skip:
+	if(components.size() == 0)
+		return GUI_COMPONENT_NEXT;
+	
+	// if nothing is focused, just restart at the first component:
+	if(active < 0) active = 0;
+	GUIComponentName next = components[active]->handleKeyPress(keys);
+	switch(next) {
+		case GUI_COMPONENT_NEXT:
+			active = (active+1)%components.size();
+			return GUI_COMPONENT_THIS;
+		case GUI_COMPONENT_PREVIOUS:
+			active = (active+components.size()-1)%components.size();
+			return GUI_COMPONENT_THIS;
+		default:
+			return next;
+	}
 }
 

@@ -30,29 +30,13 @@ Login::Login(SDL_Surface* root, int x, int y, int w, int h)
 {
 	SDL_FillRect(root, NULL, SDL_MapRGB(root->format, 200, 200, 200));
 
-	// login name input field:
-	components.insert(std::pair<GUIComponentName, GUIComponent*>(
-			GUI_COMPONENT_INPUT_LOGIN_NAME, new Textbox(root,
-					50, 280, 280, 40, "name")));
-	// login button:
-	components.insert(std::pair<GUIComponentName, GUIComponent*>(
-			GUI_COMPONENT_BUTTON_LOGIN_SUBMIT, new Button(root,
-					350, 280, 100, 40, "login")));
+	components.push_back(new Textbox(root, 50, 280, 280, 40, "name"));
+	components.push_back(new Textbox(root, 50, 330, 280, 40, "password"));
+	components.push_back(new Button(root, 350, 280, 100, 40, "login"));
 }
 
 Login::~Login(void)
 {
-	//delete button_submit;
-}
-
-/**
- * Handle mouse motion.
- * @param x X position of the mouse.
- * @param y Y position of the mouse.
- */
-void
-Login::handleMouseMotion(int x, int y)
-{
-	components[GUI_COMPONENT_BUTTON_LOGIN_SUBMIT]->handleMouseMotion(x, y);
+	// VOID
 }
 
