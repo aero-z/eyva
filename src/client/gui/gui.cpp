@@ -26,24 +26,34 @@ GUI::GUI(void)
 	pipe = new Pipe();
 	term_signal = false;
 
-	// set up SDL:
+	// set up SDL and TTF:
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 		throw new Exception("SDL_Init() failed");
-	
-	// set up TTF:
-	if(!TTF_WasInit() && TTF_Init() < 0) {
+	if(!TTF_WasInit() && TTF_Init() < 0)
 		throw new Exception("TTF_Init() failed");
-	}
-	
+
 	// set up surface and event handling:
 	event = new SDL_Event();
 	root = SDL_SetVideoMode(800, 600, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
 	if(root == NULL)
 		throw new Exception("SDL_SetVideoMode() failed");
 	
-	// TODO temporary: login screen
+	// set window caption (TODO get rid of memory leaks:
+	/*
+	char caption[256]; // should be enough ...
+	snprintf(caption, 256, "eyva [build %d.%d.%d-%d]",
+			VERSION_MAJOR_RELEASE, VERSION_MINOR_RELEASE,
+			VERSION_MAJOR_PATCH, VERSION_MINOR_PATCH);
+	SDL_WM_SetCaption(caption, caption);
+	*/
+	
+	// components:
 	components.insert(std::pair<GUIComponentName, GUIComponent*>(
-			GUI_COMPONENT_SCREEN_LOGIN, new Login(root, 0, 0, 800, 600)));
+			GUI_COMPONENT_LOGIN, new Login(root, 0, 0, 800, 600)));
+
+	// focus login screen at the start:
+	active = GUI_COMPONENT_LOGIN;
+
 	SDL_Flip(root);
 }
 
@@ -82,6 +92,9 @@ GUI::run(void)
 /* PRIVATE METHODS */
 
 
+/**
+ * Handle an input event.
+ */
 void
 GUI::handleEvents(void)
 {
@@ -90,8 +103,20 @@ GUI::handleEvents(void)
 			term_signal = true;
 			break;
 		case SDL_KEYDOWN:
-			for(it = components.begin(); it != components.end(); it++)
-				it->second->handleKeyPress(SDL_GetKeyState(NULL));
+			if(active != GUI_COMPONENT_NONE) {
+				GUIComponentName next = components[active]->handleKeyPress(
+						SDL_GetKeyState(NULL));
+				switch(next) {
+					case GUI_COMPONENT_THIS:     // don't do anything
+					case GUI_COMPONENT_NEXT:     // not supposed to happen
+					case GUI_COMPONENT_PREVIOUS: // not supposed to happen
+						break;
+					default:
+						active = next;
+						components[active]->focus();
+						break;
+				}
+			}
 			break;
 		case SDL_MOUSEMOTION: {
 			int x, y;

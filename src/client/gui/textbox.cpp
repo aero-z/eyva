@@ -24,7 +24,6 @@ Textbox::Textbox(SDL_Surface* root, int x, int y, int w, int h,
 {
 	this->name = new char[strlen(name)+1]; // +1 for \0
 	strcpy(this->name, name);
-	is_active = false;
 
 	// TODO dynamically set font size:
 	textlabel = new Textlabel(root, TOP_LEFT, x+2, y+2, name, 20,
@@ -58,29 +57,11 @@ Textbox::handleMouseClick(Uint8 button, int x, int y)
 
 	// if the state has changed, redraw:
 	if(was_active != is_active) {
-		if(is_active) {
-			SDL_FillRect(root, rectangle,
-					SDL_MapRGB(root->format, 255, 255, 180));
-			textlabel->updateColor(0, 0, 0, 255);
-			char* c_input = new char[input.size()+1]; // +1 for \0
-			for(size_t i = 0; i < input.size(); i++)
-				c_input[i] = input[i]->getCharacter();
-			c_input[input.size()] = 0;
-			textlabel->updateLabel(c_input);
-			delete[] c_input;
-			textlabel->print();
-		} else {
-			SDL_FillRect(root, rectangle,
-					SDL_MapRGB(root->format, 255, 255, 255));
-			textlabel->updateColor(180, 180, 180, 255);
-			if(input.size() == 0)
-				textlabel->updateLabel(name);
-			textlabel->print();
-		}
-		textlabel->print();
+		if(is_active)
+			focus();
+		else
+			unfocus();
 	}
-
-	// TODO cursor position
 
 	return is_active ? GUI_COMPONENT_THIS : GUI_COMPONENT_NONE;
 }
@@ -93,7 +74,48 @@ Textbox::handleMouseClick(Uint8 button, int x, int y)
 GUIComponentName
 Textbox::handleKeyPress(Uint8* keys)
 {
-	// TODO
-	return GUI_COMPONENT_NONE;
+	if(keys[SDLK_TAB]) {
+		unfocus();
+		return GUI_COMPONENT_NEXT;
+	}
+	if(keys[SDLK_ESCAPE]) {
+		unfocus();
+		return GUI_COMPONENT_NONE;
+	}
+	return GUI_COMPONENT_THIS;
+}
+
+/**
+ * Effect when focused.
+ */
+void
+Textbox::focus(void)
+{
+	SDL_FillRect(root, rectangle,
+			SDL_MapRGB(root->format, 255, 255, 180));
+	textlabel->updateColor(0, 0, 0, 255);
+	char* c_input = new char[input.size()+1]; // +1 for \0
+	for(size_t i = 0; i < input.size(); i++)
+		c_input[i] = input[i]->getCharacter();
+	c_input[input.size()] = 0;
+	textlabel->updateLabel(c_input);
+	delete[] c_input;
+	textlabel->print();
+	is_active = true;
+}
+
+/**
+ * Effect when unfocused.
+ */
+void
+Textbox::unfocus(void)
+{
+	SDL_FillRect(root, rectangle,
+			SDL_MapRGB(root->format, 255, 255, 255));
+	textlabel->updateColor(180, 180, 180, 255);
+	if(input.size() == 0)
+		textlabel->updateLabel(name);
+	textlabel->print();
+	is_active = false;
 }
 

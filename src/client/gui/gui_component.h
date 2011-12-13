@@ -33,6 +33,8 @@ GUIComponent
 		virtual void handleMouseMotion(int x, int y);
 		virtual GUIComponentName handleMouseClick(Uint8 button, int x, int y);
 		virtual GUIComponentName handleKeyPress(Uint8* keys);
+		virtual void focus(void);
+		virtual void unfocus(void);
 	
 	protected:
 		SDL_Rect* rectangle;
@@ -40,6 +42,7 @@ GUIComponent
 		SDL_Surface* local;
 		std::vector<GUIComponent*> components;
 		int active;
+		bool is_active;
 };
 
 #endif

@@ -37,6 +37,7 @@ GUIComponent::GUIComponent(SDL_Surface* root, int x, int y, int w, int h)
 	rectangle->w = w;
 
 	active = -1;
+	is_active = false;
 }
 
 GUIComponent::~GUIComponent(void)
@@ -73,7 +74,6 @@ GUIComponent::handleMouseClick(Uint8 button, int x, int y)
 {
 	for(size_t i = 0; i < components.size(); i++)
 		components[i]->handleMouseClick(button, x, y);
-	// TODO
 	return GUI_COMPONENT_THIS;
 }
 
@@ -89,18 +89,46 @@ GUIComponent::handleKeyPress(Uint8* keys)
 	if(components.size() == 0)
 		return GUI_COMPONENT_NEXT;
 	
-	// if nothing is focused, just restart at the first component:
-	if(active < 0) active = 0;
-	GUIComponentName next = components[active]->handleKeyPress(keys);
-	switch(next) {
-		case GUI_COMPONENT_NEXT:
-			active = (active+1)%components.size();
-			return GUI_COMPONENT_THIS;
-		case GUI_COMPONENT_PREVIOUS:
-			active = (active+components.size()-1)%components.size();
-			return GUI_COMPONENT_THIS;
-		default:
-			return next;
+	if(active >= 0) {
+		GUIComponentName next = components[active]->handleKeyPress(keys);
+		switch(next) {
+			case GUI_COMPONENT_NONE:
+				return GUI_COMPONENT_THIS;
+			case GUI_COMPONENT_NEXT:
+				active = (active+1)%components.size();
+				components[active]->focus();
+				return GUI_COMPONENT_THIS;
+			case GUI_COMPONENT_PREVIOUS:
+				active = (active+components.size()-1)%components.size();
+				components[active]->focus();
+				return GUI_COMPONENT_THIS;
+			default:
+				return next;
+		}
+	} else {
+		if(keys[SDLK_TAB]) {
+			active = 0;
+			components[active]->focus();
+		}
+		return GUI_COMPONENT_THIS;
 	}
+}
+
+/**
+ * Effect when focused.
+ */
+void
+GUIComponent::focus(void)
+{
+	is_active = true;
+}
+
+/**
+ * Effect when unfocused.
+ */
+void
+GUIComponent::unfocus(void)
+{
+	is_active = false;
 }
 

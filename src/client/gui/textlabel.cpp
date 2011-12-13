@@ -111,7 +111,7 @@ void
 Textlabel::updateLabel(char const* label)
 {
 	delete[] this->label;
-	this->label = new char[strlen(label)];
+	this->label = new char[strlen(label)+1]; // +1 for \0
 	strcpy(this->label, label);
 	local = TTF_RenderText_Blended(font, label, color);
 }

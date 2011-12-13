@@ -17,10 +17,23 @@
  */
 
 #include "gui_utils.h"
+#include <cstdio>
 
 
 /* PUBLIC METHODS */
 
+
+/**
+ * Convert an SDL keyboard key format to a char.
+ * @return The character.
+ */
+char
+GUIUtils::ktoc(Uint8* keys)
+{
+	printf("%c\n", *keys);
+	// TODO
+	return 'A';
+}
 
 /**
  * Create a new SDL surface.

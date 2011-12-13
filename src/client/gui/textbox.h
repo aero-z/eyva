@@ -34,13 +34,14 @@ Textbox : public GUIComponent
 		~Textbox(void);
 		GUIComponentName handleMouseClick(Uint8 button, int x, int y);
 		GUIComponentName handleKeyPress(Uint8* keys);
+		void focus(void);
+		void unfocus(void);
 	
 	protected:
 		char* name;
 		std::vector<TextboxCharacter*> input;
 		Textlabel* textlabel;
 		int cursor_pos;
-		bool is_active;
 };
 
 #endif
